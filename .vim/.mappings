@@ -1,0 +1,52 @@
+let mapleader = " "         " Spacebar map leader
+nmap , :
+
+" mappings: for long lines over multiple rows, do proper navigation
+map j gj
+map k gk
+
+" Easier navigations through windows
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+
+" Close the current buffer and move to the previous one
+nmap <leader>bq :bp <BAR> bd #<CR>
+
+" Fugitive mappings
+nmap <leader>gs :Gstatus<cr>
+nmap <leader>gc :Gcommit<cr>
+nmap <leader>gd :Gdiff<cr>
+nmap <leader>gp :Gpush<cr>
+
+" settings nerdtree(tabs): always open and focus on files if opening
+map <silent> <Leader>e :NERDTreeToggle<CR>
+
+" Easy align settings
+" Start interactive EasyAlign in visual mode (e.g. vip<Enter>)
+vmap <Enter> <Plug>(EasyAlign) 
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap ga <Plug>(EasyAlign)
+
+" Tagbar 
+nnoremap <silent> <Leader>T :TagbarToggle<CR>
+
+" Vimux 
+nmap <leader>rm :VimuxRunCommand './make.sh'<CR>
+nmap <leader>rc :VimuxRunCommand 'make clean'<CR>
+nmap <leader>rt :VimuxRunCommand './make.sh && ./test.sh'<CR>
+nmap <leader>rl :VimuxRunCommand './latexmk.sh'<CR>
+
+" YCM
+nnoremap <leader>yg :YcmCompleter GoTo<CR>
+nnoremap <leader>yf :YcmCompleter FixIt<CR>
+nnoremap <leader>yd :YcmCompleter GetDoc<CR>
+nnoremap <leader>yt :YcmCompleter GetType<CR>
+nnoremap <leader>ye :YcmShowDetailedDiagnostic<CR>
+nnoremap <leader>yl :YcmDiags<CR>
+
+" Doxygen
+nnoremap <leader>d :Dox<CR>
+
+imap <expr> <CR> pumvisible() ? "\<c-y>" : "<Plug>delimitMateCR"
