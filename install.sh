@@ -45,4 +45,4 @@ cd ~/.vim/bundle/YouCompleteMe
 
 # cleanup
 cd ../../
-rm -r dotfiles
+rm -r vim-setup
