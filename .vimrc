@@ -1,6 +1,6 @@
 " Required 
-set nocompatible          
-filetype off             
+set nocompatible
+filetype off
 
 " vundle
 " Linux: (just check path really)
