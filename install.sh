@@ -1,10 +1,8 @@
 ## install dotfiles, assumes vim exists
 
 # install necessary applications
-apt-get install tmux 
-apt-get install silversearcher-ag
+apt-get install tmux
 apt-get install git
-apt-get install drush
 
 mkdir -p ~/.vim
 mkdir -p ~/.vim/plugins
@@ -31,6 +29,7 @@ mv .config/nvim ~.config/nvim
 # install stuff
 
 # dependencies
+apt-get update
 apt-get install build-essential cmake
 apt-get install python-dev
 pip2 install neovim
@@ -42,7 +41,3 @@ vim +PluginInstall +qall
 
 cd ~/.vim/bundle/YouCompleteMe
 ./install.py --clang-completer
-
-# cleanup
-cd ../../
-rm -r vim-setup

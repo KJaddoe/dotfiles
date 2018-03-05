@@ -89,12 +89,6 @@ augroup noProg
     autocmd BufRead,BufNewFile *.md setlocal spell spelllang=en_us 
 augroup END
 
-" rainbow settings
-au VimEnter * RainbowParenthesesToggle
-au Syntax * RainbowParenthesesLoadRound
-au Syntax * RainbowParenthesesLoadSquare
-au Syntax * RainbowParenthesesLoadBraces
-
 " this mapping Enter key to <C-y> to chose the current highlight item 
 " and close the selection list, same as other IDEs.
 " CONFLICT with some plugins like tpope/Endwise
