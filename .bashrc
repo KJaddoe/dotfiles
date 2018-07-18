@@ -11,18 +11,10 @@ WHITE="\[\033[1;37m\]"
 LIGHT_GRAY="\[\033[0;37m\]"
 COLOR_NONE="\[\e[0m\]"
 
-alias tmux="tmux -2"
 alias ls="ls --color=auto"
 
 #PS1="${GREEN}\u:\W\$ ${GREEN}"
 trap '[[ -t 1 ]] && tput sgr0' DEBUG
-
-# tmux cd
-tc()
-{
-    cd $1;
-    tmux refresh-client -S;
-}
 
 export LC_ALL=en_US.utf-8
 export LANG="$LC_ALL"
