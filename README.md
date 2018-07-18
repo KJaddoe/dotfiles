@@ -1,7 +1,2 @@
-Vim etc.
+KJaddoe's dotfiles
 ==================
-
-* vim configurations
-* tmux configurations 
-
-credits to https://github.com/samkatt/dotfiles
