@@ -2,8 +2,10 @@
 apt-get update && apt-get install -y \
   vim \
   wget \
+  curl \
   git \
-  zsh 
+  zsh \
+  build-essential
 
 # change default shell to zsh
 chsh -s $(which zsh)
