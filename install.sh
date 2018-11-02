@@ -1,7 +1,19 @@
-## install dotfiles, assumes vim exists
-
 # install necessary applications
-apt-get install git
+apt-get update && apt-get install -y \
+  vim \
+  wget \
+  git \
+  zsh 
+
+# change default shell to zsh
+chsh -s $(which zsh)
+
+# install oh-my-zsh
+wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
+# install nvm
+wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | zsh
+
+# ------------------------ setup dotfiles ------------------------------------------
 
 mkdir -p ~/.vim
 mkdir -p ~/.vim/plugins

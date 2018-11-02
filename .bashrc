@@ -18,3 +18,24 @@ trap '[[ -t 1 ]] && tput sgr0' DEBUG
 
 export LC_ALL=en_US.utf-8
 export LANG="$LC_ALL"
+
+# tmux cd
+tc()
+{
+    cd $1;
+    tmux refresh-client -S;
+}
+
+LS_COLORS='ow=01;36;40'
+
+export LS_COLORS
+export LC_ALL=en_US.utf-8
+export LANG="$LC_ALL"
+
+export PATH="$(yarn global bin):$PATH"
+
+alias docker="docker.exe"
+alias docker-compose="docker-compose.exe"
+
+alias hostfile="vim /mnt/c/Windows/System32/drivers/etc/hosts"
+
