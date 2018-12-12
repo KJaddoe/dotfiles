@@ -34,8 +34,7 @@ export LANG="$LC_ALL"
 
 export PATH="$(yarn global bin):$PATH"
 
-alias docker="docker.exe"
-alias docker-compose="docker-compose.exe"
+export DOCKER_HOST=tcp://localhost:2375
 
 alias hostfile="vim /mnt/c/Windows/System32/drivers/etc/hosts"
 
