@@ -25,6 +25,9 @@ curl-o-https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | ba
 nvm install --lts
 nvm use --lts
 
+# global install prettier
+yarn global add prettier
+
 # change default shell to zsh
 chsh -s $(which zsh)
 
