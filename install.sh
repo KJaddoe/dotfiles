@@ -1,9 +1,6 @@
 # docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-# yarn
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 
 # install necessary applications
 apt-get update && apt-get install -y \
@@ -17,16 +14,16 @@ apt-get update && apt-get install -y \
   apt-transport-https \
   ca-certificates \
   software-properties-common \
-  yarn \
   docker-ce
 
 # install NVM and nodejs
 curl-o-https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
 nvm install --lts
 nvm use --lts
+nvm alias default lts/*
 
 # global install prettier
-yarn global add prettier
+npm i -g prettier
 
 # change default shell to zsh
 chsh -s $(which zsh)
@@ -38,8 +35,6 @@ wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh |
 
 # export docker host to .zshrc
 echo "export DOCKER_HOST=localhost:2375" >> ~/.zshrc
-# export yarn global path
-echo "export PATH="$(yarn global bin):$PATH" >> ~/.zshrc
 
 # ------------------------ setup dotfiles ------------------------------------------
 
