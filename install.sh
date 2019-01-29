@@ -18,6 +18,9 @@ apt-get update && apt-get install -y \
   software-properties-common \
   docker-ce
 
+# change default shell to zsh
+chsh -s $(which zsh)
+
 # install NVM and nodejs
 curl-o-https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
 nvm install --lts
@@ -27,16 +30,16 @@ nvm alias default lts/*
 # global install prettier
 npm i -g prettier
 
-# change default shell to zsh
-chsh -s $(which zsh)
-
 # install oh-my-zsh
 wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
 # install nvm
 wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | zsh
 
 # export docker host to .zshrc
-echo "export DOCKER_HOST=localhost:2375" >> ~/.zshrc
+grep -q -x -F 'export DOCKER_HOST=localhost:2375' ~/.zshrc || echo 'export DOCKER_HOST=localhost:2375' >> ~/.zshrc
+# windows hostfile alias
+grep -q -x -F 'alias hostfile="vim /mnt/c/Windows/System32/drivers/etc/hosts"' ~/.zshrc || echo 'alias hostfile="vim /mnt/c/Windows/System32/drivers/etc/hosts"' >> ~/.zshrc
+
 
 # ------------------------ setup dotfiles ------------------------------------------
 
@@ -45,7 +48,6 @@ mkdir -p ~/.vim/plugins
 mkdir -p ~/.vim/colors
 
 # move all dot files to home directory
-cp .bashrc ~
 cp .vimrc ~
 cp .inputrc ~
 
