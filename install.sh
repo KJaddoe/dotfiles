@@ -10,6 +10,8 @@ apt-get update && apt-get install -y \
   git \
   zsh \
   build-essential \
+  cmake \
+  python-dev
   libssl-dev \
   apt-transport-https \
   ca-certificates \
@@ -63,9 +65,6 @@ cp .config/nvim ~.config/nvim
 # install stuff
 
 # dependencies
-apt-get update
-apt-get install build-essential cmake
-apt-get install python-dev
 pip2 install neovim
 pip3 install neovim
 

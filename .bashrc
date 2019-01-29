@@ -32,8 +32,6 @@ export LS_COLORS
 export LC_ALL=en_US.utf-8
 export LANG="$LC_ALL"
 
-export PATH="$(yarn global bin):$PATH"
-
 export DOCKER_HOST=tcp://localhost:2375
 
 alias hostfile="vim /mnt/c/Windows/System32/drivers/etc/hosts"
