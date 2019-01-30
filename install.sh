@@ -1,3 +1,4 @@
+#!/bin/bash
 # docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
@@ -40,6 +41,7 @@ grep -q -x -F 'export DOCKER_HOST=localhost:2375' ~/.zshrc || echo 'export DOCKE
 # windows hostfile alias
 grep -q -x -F 'alias hostfile="vim /mnt/c/Windows/System32/drivers/etc/hosts"' ~/.zshrc || echo 'alias hostfile="vim /mnt/c/Windows/System32/drivers/etc/hosts"' >> ~/.zshrc
 
+cp wsl.conf /etc
 
 # ------------------------ setup dotfiles ------------------------------------------
 
