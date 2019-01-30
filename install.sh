@@ -24,16 +24,13 @@ wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - 
 # install nvm
 wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.34.00/install.sh | zsh
 # change default shell to zsh
-chsh -s $(which zsh) | zsh
+#chsh -s $(which zsh)
 # set node installation
-. ~/.nvm/nvm.sh
-. ~/.profile
-. ~/.bashrc
-nvm install --lts
-nvm use --lts
-nvm alias default lts/*
+#nvm install --lts
+#nvm use --lts
+#nvm alias default lts/*
 # global install prettier
-npm i -g prettier | zsh
+#npm i -g prettier | zsh
 
 # export docker host to .zshrc
 grep -q -x -F 'export DOCKER_HOST=localhost:2375' ~/.zshrc || echo 'export DOCKER_HOST=localhost:2375' >> ~/.zshrc
