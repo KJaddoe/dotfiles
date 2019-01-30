@@ -19,19 +19,20 @@ apt-get update && apt-get install -y \
   software-properties-common \
   docker-ce
 
-# change default shell to zsh
-chsh -s $(which zsh) | zsh
-
-# global install prettier
-npm i -g prettier | zsh
-
 # install oh-my-zsh
 wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
 # install nvm
 wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | zsh
+# change default shell to zsh
+chsh -s $(which zsh) | zsh
+# set node installation
+. /usr/local/opt/nvm/nvm.sh
 nvm install --lts | zsh
 nvm use --lts | zsh
 nvm alias default lts/* | zsh
+# global install prettier
+npm i -g prettier | zsh
+
 
 # export docker host to .zshrc
 grep -q -x -F 'export DOCKER_HOST=localhost:2375' ~/.zshrc || echo 'export DOCKER_HOST=localhost:2375' >> ~/.zshrc
