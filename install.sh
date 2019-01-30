@@ -22,11 +22,10 @@ apt-get update && apt-get install -y \
 # install oh-my-zsh
 wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
 # install nvm
-wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | zsh
+wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.34.00/install.sh | zsh
 # change default shell to zsh
 chsh -s $(which zsh) | zsh
 # set node installation
-. /usr/local/opt/nvm/nvm.sh
 nvm install --lts | zsh
 nvm use --lts | zsh
 nvm alias default lts/* | zsh
