@@ -13,3 +13,5 @@ if command -v docker >/dev/null 2>&1; then
 	curl -sL https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker \
 		-o "$HOME/.docker/completions/_docker"
 fi
+
+sudo apt install docker-ce -y
