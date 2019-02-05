@@ -2,8 +2,6 @@
 
 ## Before installation
 
-install the requirements for [deoplete]: https://github.com/Shougo/deoplete.nvim
-
 ## After installation
 
 1. Change the default shell to zsh using `chsh -s ($which zsh)`
