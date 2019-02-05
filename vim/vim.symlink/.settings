@@ -74,9 +74,6 @@ let g:syntastic_always_populate_loc_list = 1
 let g:nerdtree_tabs_focus_on_files = 1
 let g:NERDTreeShowHidden           = 1
 
-" delimitMate settings
-let delimitMate_expand_cr=1
-
 " latexbox settings: necessary for auto viewing and highlighting properly
 let g:LatexBox_latexmk_options = "-pdfps"
 let g:LatexBox_latexmk_preview_continuously=1
@@ -110,3 +107,24 @@ let g:prettier#config#bracket_spacing = 'true'
 let g:prettier#config#jsx_bracket_same_line = 'false'
 let g:prettier#autoformat = 0
 autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue PrettierAsync
+
+" use deoplete for Neovim.
+if has('nvim')
+  let g:deoplete#enable_at_startup = 1
+  let g:deoplete#ignore_sources = {}
+  let g:deoplete#ignore_sources._ = ['buffer', 'member', 'tag', 'file', 'neosnippet']
+  let g:deoplete#sources#go#sort_class = ['func', 'type', 'var', 'const']
+  let g:deoplete#sources#go#align_class = 1
+
+  " Use partial fuzzy matches like YouCompleteMe
+  call deoplete#custom#source('_', 'matchers', ['matcher_fuzzy'])
+  call deoplete#custom#source('_', 'converters', ['converter_remove_paren'])
+  call deoplete#custom#source('_', 'disabled_syntaxes', ['Comment', 'String'])
+endif
+
+" ==================== delimitMate ====================
+let g:delimitMate_expand_cr = 1
+let g:delimitMate_expand_space = 1
+let g:delimitMate_smart_quotes = 1
+let g:delimitMate_expand_inside_quotes = 0
+let g:delimitMate_smart_matchpairs = '^\%(\w\|\$\)'

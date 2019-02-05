@@ -1,0 +1,8 @@
+" Required 
+set nocompatible
+filetype off
+
+so ~/.vim/.plugins
+so ~/.vim/.settings
+so ~/.vim/.mappings
+so ~/.vim/.projectmappings

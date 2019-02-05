@@ -1,5 +1,7 @@
 # KJaddoe's dotfiles
 
+## Before installation
+
 ## After installation
 
 1. Change the default shell to zsh using `chsh -s ($which zsh)`
