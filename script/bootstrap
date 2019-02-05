@@ -105,7 +105,10 @@ sudo apt update && sudo apt install -y \
   tar \
   python3-pip \
   zip \
-  unzip
+  unzip \
+  apt-transport-https \
+  ca-certificates \
+  software-properties-common \
 
 info "installing dependencies"
 if ./bin/dot_update; then
