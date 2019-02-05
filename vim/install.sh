@@ -1,5 +1,4 @@
 #!/bin/sh
-sudo apt install python3-pip -y
 pip3 install --user pynvim
 
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \

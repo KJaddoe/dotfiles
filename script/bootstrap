@@ -103,6 +103,7 @@ sudo apt update && sudo apt install -y \
   curl \
   zsh \
   tar \
+  python3-pip
 
 info "installing dependencies"
 if ./bin/dot_update; then

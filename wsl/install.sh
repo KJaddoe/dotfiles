@@ -1,2 +1,2 @@
 #!/bin/sh
-cp ./wsl.conf /etc/
+sudo cp "$DOTFILES/wsl/wsl.conf" /etc/
