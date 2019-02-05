@@ -1,6 +1,5 @@
 " load plugins
 call plug#begin('~/.vim/plugged')
-Plug 'gmarik/vundle'
 
 Plug 'scrooloose/nerdtree'
 Plug 'scrooloose/nerdcommenter'
@@ -9,7 +8,6 @@ Plug 'scrooloose/syntastic'
 Plug 'tpope/vim-fugitive'
 Plug 'bling/vim-airline'
 Plug 'flazz/vim-colorschemes'
-Plug 'Valloric/YouCompleteMe'
 Plug 'Raimondi/delimitMate'
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
@@ -23,5 +21,13 @@ Plug 'Quramy/vim-js-pretty-template'
 Plug 'pangloss/vim-javascript'
 Plug 'elzr/vim-json'
 Plug 'prettier/vim-prettier'
+
+if has('nvim')
+  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+else
+  Plug 'Shougo/deoplete.nvim'
+  Plug 'roxma/nvim-yarp'
+  Plug 'roxma/vim-hug-neovim-rpc'
+endif
 
 call plug#end()
