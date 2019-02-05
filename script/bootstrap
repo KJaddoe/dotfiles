@@ -98,6 +98,12 @@ find_zsh() {
 setup_gitconfig
 install_dotfiles
 
+apt-get update && apt-get install -y \
+  wget \
+  curl \
+  zsh \
+  tar
+
 info "installing dependencies"
 if ./bin/dot_update; then
 	success "dependencies installed"
