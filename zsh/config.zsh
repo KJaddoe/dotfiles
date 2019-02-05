@@ -68,11 +68,11 @@ bindkey "${terminfo[kend]}" end-of-line
 bindkey '^[[F' end-of-line
 
 # delete char with backspaces and delete
-#bindkey '^[[3~' delete-char
-#bindkey '^?' backward-delete-char
+bindkey '^[[3~' delete-char
+bindkey '^?' backward-delete-char
 
 # delete word with ctrl+backspace
-#bindkey '^[[3;5~' backward-delete-word
+bindkey '^[[3;5~' backward-delete-word
 #bindkey '^[[3~' backward-delete-word
 
 # search history with fzf if installed, default otherwise
