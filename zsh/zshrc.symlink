@@ -9,6 +9,9 @@ export PROJECTS="/d/programming/projects"
 export EDITOR='vim'
 export VEDITOR='code'
 
+# NVM config
+export NVM_LAZY_LOAD=true
+
 # all of our zsh files
 typeset -U config_files
 config_files=($DOTFILES/*/*.zsh)
