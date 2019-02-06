@@ -14,14 +14,15 @@ nnoremap <C-H> <C-W><C-H>
 " Close the current buffer and move to the previous one
 nmap <leader>bq :bp <BAR> bd #<CR>
 
-" Fugitive mappings
-nmap <leader>gs :Gstatus<cr>
-nmap <leader>gc :Gcommit<cr>
-nmap <leader>gd :Gdiff<cr>
-nmap <leader>gp :Gpush<cr>
+" ==================== Fugitive ====================
+nnoremap <leader>ga :Git add %:p<CR><CR>
+nnoremap <leader>gs :Gstatus<CR>
+nnoremap <leader>gp :Gpush<CR>
+vnoremap <leader>gb :Gblame<CR>"
 
 " settings nerdtree(tabs): always open and focus on files if opening
-map <silent> <Leader>e :NERDTreeToggle<CR>
+noremap <Leader>e :NERDTreeToggle<cr>
+noremap <Leader>f :NERDTreeFind<cr>
 
 " Easy align settings
 " Start interactive EasyAlign in visual mode (e.g. vip<Enter>)

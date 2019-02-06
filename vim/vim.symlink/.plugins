@@ -5,8 +5,6 @@ Plug 'scrooloose/nerdtree'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tmhedberg/matchit'
 Plug 'scrooloose/syntastic'
-Plug 'tpope/vim-fugitive'
-Plug 'bling/vim-airline'
 Plug 'flazz/vim-colorschemes'
 Plug 'Raimondi/delimitMate'
 Plug 'SirVer/ultisnips'
@@ -21,6 +19,14 @@ Plug 'Quramy/vim-js-pretty-template'
 Plug 'pangloss/vim-javascript'
 Plug 'elzr/vim-json'
 Plug 'prettier/vim-prettier'
+
+" git integration
+Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'"
+
+" airline stuff
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
 
 if has('nvim')
   Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }

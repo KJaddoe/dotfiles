@@ -11,6 +11,6 @@ zsh-users/zsh-autosuggestions
 
 # these should be at last!
 # sindresorhus/pure
-robbyrussell/oh-my-zsh path:themes/agnoster.zsh-theme
+bhilburn/powerlevel9k
 zdharma/fast-syntax-highlighting
 zsh-users/zsh-history-substring-search
