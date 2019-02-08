@@ -93,9 +93,7 @@ inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 
 " snippets
 " trigger configuration
-let g:UltiSnipsExpandTrigger="<c-j>"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+" let g:UltiSnipsExpandTrigger="<tab>"
 
 set nowrap
 
@@ -120,6 +118,7 @@ if has('nvim')
   call deoplete#custom#source('_', 'matchers', ['matcher_fuzzy'])
   call deoplete#custom#source('_', 'converters', ['converter_remove_paren'])
   call deoplete#custom#source('_', 'disabled_syntaxes', ['Comment', 'String'])
+
 endif
 
 " ==================== delimitMate ====================
@@ -131,3 +130,20 @@ let g:delimitMate_smart_matchpairs = '^\%(\w\|\$\)'
 
 " spell check for git commits
 autocmd FileType gitcommit setlocal spell
+
+" autocomplete
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+let g:deoplete#omni#functions = {}
+let g:deoplete#omni#functions.typescript = [
+  \ 'tern#Complete',
+  \ 'jspc#omni'
+\]
+let g:deoplete#omni#functions.javascript = [
+  \ 'tern#Complete',
+  \ 'jspc#omni'
+\]
+set completeopt=longest,menuone,preview
+let g:deoplete#sources = {}
+let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
+let g:tern#command = ['tern']
+let g:tern#arguments = ['--persistent']

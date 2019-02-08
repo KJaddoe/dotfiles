@@ -7,8 +7,13 @@ Plug 'tmhedberg/matchit'
 Plug 'scrooloose/syntastic'
 Plug 'flazz/vim-colorschemes'
 Plug 'Raimondi/delimitMate'
+
+" autocompletion
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
+Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx', 'typescript']  }
+Plug 'carlitux/deoplete-ternjs', { 'for': ['javascript', 'javascript.jsx', 'typescript']  }
+Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx', 'typescript']  }
 
 " syntax
 Plug 'genoma/vim-less'

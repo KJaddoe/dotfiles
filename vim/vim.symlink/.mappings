@@ -51,5 +51,11 @@ nnoremap <leader>yl :YcmDiags<CR>
 " Doxygen
 nnoremap <leader>d :Dox<CR>
 
+" Autocomplete
+autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
+autocmd FileType typescript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
+let g:UltiSnipsExpandTrigger="<C-j>"
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+
 imap <expr> <CR> pumvisible() ? "\<c-y>" : "<Plug>delimitMateCR"
 map <F7> mzgg=G`z
