@@ -1,5 +1,5 @@
 #!/bin/sh
-pip3 install --user pynvim
+pip3 install --user --upgrade pynvim
 
 sudo add-apt-repository ppa:neovim-ppa/stable
 sudo apt install neovim -y
