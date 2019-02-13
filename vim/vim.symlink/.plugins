@@ -22,11 +22,11 @@ Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'Shougo/neosnippet.vim'
 Plug 'Shougo/neosnippet-snippets'
-"Plug 'carlitux/deoplete-ternjs', { do: 'npm install -g tern' }
+"Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
 "Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx', 'typescript']  }
 
 Plug 'HerringtonDarkholme/yats.vim'
-Plug 'mhartington/nvim-typescript', {'do': ':!install.sh \| UpdateRemotePlugins', do: 'npm install -g neovim typescript'}
+Plug 'mhartington/nvim-typescript', {'do': ':!npm install -g neovim typescript \|!install.sh \| UpdateRemotePlugins'}
 " For Denite features
 Plug 'Shougo/denite.nvim'
 
@@ -38,7 +38,7 @@ Plug 'nelsyeung/twig.vim'
 Plug 'Quramy/vim-js-pretty-template'
 Plug 'pangloss/vim-javascript'
 Plug 'elzr/vim-json'
-Plug 'prettier/vim-prettier', { do: 'npm install -g prettier' }
+Plug 'prettier/vim-prettier', { 'do': 'npm install -g prettier' }
 
 " git integration
 Plug 'tpope/vim-fugitive'
