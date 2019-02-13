@@ -81,9 +81,9 @@ let g:LatexBox_latexmk_preview_continuously=1
 
 " Regular files need spelling and no highlight end 
 augroup noProg
-    autocmd BufRead,BufNewFile *.txt setlocal spell spelllang=en_us 
-    autocmd BufRead,BufNewFile *.tex setlocal spell spelllang=en_us 
-    autocmd BufRead,BufNewFile *.md setlocal spell spelllang=en_us 
+autocmd BufRead,BufNewFile *.txt setlocal spell spelllang=en_us 
+autocmd BufRead,BufNewFile *.tex setlocal spell spelllang=en_us 
+autocmd BufRead,BufNewFile *.md setlocal spell spelllang=en_us 
 augroup END
 
 " this mapping Enter key to <C-y> to chose the current highlight item 
@@ -106,7 +106,8 @@ let g:prettier#config#jsx_bracket_same_line = 'false'
 let g:prettier#autoformat = 0
 autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue PrettierAsync
 
-" use deoplete for Neovim.
+" ==================== Deoplete ====================
+" deoplete tab-complete
 if has('nvim')
   let g:deoplete#enable_at_startup = 1
   let g:deoplete#ignore_sources = {}
@@ -121,6 +122,46 @@ if has('nvim')
   call deoplete#custom#source('_', 'converters', ['converter_remove_paren'])
   call deoplete#custom#source('_', 'disabled_syntaxes', ['Comment', 'String'])
 
+  set completeopt=longest,menuone,preview
+  "let g:deoplete#sources = {}
+  "let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
+
+  if !exists('g:deoplete#omni#input_patterns')
+    let g:deoplete#omni#input_patterns = {}
+  endif
+  "if !exists('g:deoplete#omni#functions')
+  "  let g:deoplete#omni#functions = {}
+  "endif
+  "let g:deoplete#omni#functions.typescript = [
+  "\ 'tern#Complete',
+  "\ 'jspc#omni'
+  "\]
+  "let g:deoplete#omni#functions.javascript = [
+  "\ 'tern#Complete',
+  "\ 'jspc#omni'
+  "\]
+  " let g:deoplete#disable_auto_complete = 1
+
+endif
+
+" ==================== Omni ====================
+augroup omnifuncs
+autocmd!
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+augroup end
+
+" ==================== Tern ====================
+autocmd FileType javascript nnoremap <silent> <buffer> gb :TernDef<CR>
+if exists('g:plugs["tern_for_vim"]')
+let g:tern_show_argument_hints = 'on_hold'
+let g:tern_show_signature_in_pum = 1
+let g:tern#command = ['tern']
+let g:tern#arguments = ['--persistent']
+autocmd FileType javascript setlocal omnifunc=tern#Complete
 endif
 
 " ==================== delimitMate ====================
@@ -135,17 +176,4 @@ autocmd FileType gitcommit setlocal spell
 
 " autocomplete
 autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
-let g:deoplete#omni#functions = {}
-let g:deoplete#omni#functions.typescript = [
-  \ 'tern#Complete',
-  \ 'jspc#omni'
-\]
-let g:deoplete#omni#functions.javascript = [
-  \ 'tern#Complete',
-  \ 'jspc#omni'
-\]
-set completeopt=longest,menuone,preview
-let g:deoplete#sources = {}
-let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
-let g:tern#command = ['tern']
-let g:tern#arguments = ['--persistent']
+autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif"
