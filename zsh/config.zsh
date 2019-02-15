@@ -41,6 +41,14 @@ setopt HIST_VERIFY
 setopt HIST_EXPIRE_DUPS_FIRST
 # dont ask for confirmation in rm globs*
 setopt RM_STAR_SILENT
+# cd by typing directory name if it's not a command
+setopt AUTO_CD
+# automatically list choices on ambiguous completion
+setopt AUTO_LIST
+# automatically use menu completion
+setopt AUTO_MENU
+# move cursor to end if word had one match
+setopt ALWAYS_TO_END
 
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
