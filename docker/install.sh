@@ -20,4 +20,3 @@ if command -v docker >/dev/null 2>&1; then
   sudo usermod -aG docker ${USER}
   su - ${USER}
 fi
-
