@@ -14,3 +14,13 @@ nvm install --lts
 nvm use --lts
 nvm alias default lts/*
 ```
+
+## Node packages used for vim
+```bash
+npm install -g \
+  eslint \
+  neovim \
+  prettier \
+  tern \
+  typescript
+```

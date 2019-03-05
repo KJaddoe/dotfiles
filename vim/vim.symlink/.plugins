@@ -8,7 +8,6 @@ else
   Plug 'roxma/nvim-yarp'
   Plug 'roxma/vim-hug-neovim-rpc'
 endif
-Plug 'zchee/deoplete-go', { 'do': 'make' }
 
 Plug 'scrooloose/nerdtree'
 Plug 'scrooloose/nerdcommenter'
