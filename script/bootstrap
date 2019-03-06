@@ -98,21 +98,6 @@ find_zsh() {
 setup_gitconfig
 install_dotfiles
 
-sudo apt update && sudo apt install -y \
-  wget \
-  curl \
-  zsh \
-  tar \
-  python-dev \
-  python-pip \
-  python3-dev \
-  python3-pip \
-  zip \
-  unzip \
-  apt-transport-https \
-  ca-certificates \
-  software-properties-common
-
 info "installing dependencies"
 if ./bin/dot_update; then
 	success "dependencies installed"
