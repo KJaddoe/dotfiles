@@ -4,7 +4,6 @@ caarlos0/zsh-git-fetch-merge kind:path
 caarlos0/zsh-git-sync kind:path
 caarlos0/zsh-mkc
 caarlos0/zsh-open-pr kind:path
-lukechilds/zsh-nvm
 mafredri/zsh-async
 robbyrussell/oh-my-zsh path:plugins/git-auto-fetch
 rupa/z
