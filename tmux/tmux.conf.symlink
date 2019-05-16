@@ -3,6 +3,7 @@ set -g @plugin 'tmux-plugins/tmux-copycat'
 set -g @plugin 'tmux-plugins/tmux-pain-control'
 set -g @plugin 'tmux-plugins/tmux-sensible'
 set -g @plugin 'tmux-plugins/tmux-yank'
+set -g @plugin 'jimeh/tmux-themepack'
 
 run '~/.tmux/plugins/tpm/tpm'
 
