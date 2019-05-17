@@ -1,5 +1,5 @@
 # set the command escape time to 0
-set -s escape-time 0
+set -sg escape-time 0
 set -g history-limit 5000
 
 # smart pane switching with awareness of vim splits
