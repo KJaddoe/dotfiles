@@ -2,6 +2,17 @@
 set -sg escape-time 0
 set -g history-limit 5000
 
+# use zsh & make pbcopy/paste work
+ set-option -g default-terminal /bin/zsh
+ bind w new-window -c "#{pane_current_path}"
+
+ # It's 2016
+ set -g default-terminal "screen-256color"
+
+ # Automatically set window title and don't let it change
+ set-option -g set-titles on
+ set-option -g allow-rename off
+
 # smart pane switching with awareness of vim splits
 bind -n C-h run "(tmux display-message -p '#{pane_current_command}' | grep -iq vim && tmux send-keys C-h) || tmux select-pane -L"
 bind -n C-j run "(tmux display-message -p '#{pane_current_command}' | grep -iq vim && tmux send-keys C-j) || tmux select-pane -D"
