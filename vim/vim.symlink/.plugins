@@ -47,4 +47,7 @@ Plug 'airblade/vim-gitgutter'"
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
+" tmux navigation
+Plug 'christoomey/vim-tmux-navigator'
+
 call plug#end()
