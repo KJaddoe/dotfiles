@@ -1,13 +1,6 @@
-# set the command escape time to 0
-set -sg escape-time 0
-set -g history-limit 5000
-
 # use zsh & make pbcopy/paste work
  set-option -g default-terminal /bin/zsh
  bind w new-window -c "#{pane_current_path}"
-
- # It's 2016
- set -g default-terminal "screen-256color"
 
  # Automatically set window title and don't let it change
  set-option -g set-titles on
