@@ -178,7 +178,3 @@ autocmd FileType gitcommit setlocal spell
 " autocomplete
 autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
 autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif"
-
-set  rtp+=/usr/local/lib/python2.7/dist-packages/powerline/bindings/vim/
-set laststatus=2
-set t_Co=256
