@@ -1,10 +1,11 @@
 # use zsh & make pbcopy/paste work
- bind w new-window -c "#{pane_current_path}"
+bind w new-window -c "#{pane_current_path}"
 
- # Automatically set window title and don't let it change
- set-option -g set-titles on
- set-option -g allow-rename off
+# Automatically set window title and don't let it change
+set-option -g set-titles on
+set-option -g allow-rename off
 
+# ----------------------- Plugins -----------------------
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-copycat'
 set -g @plugin 'tmux-plugins/tmux-pain-control'
@@ -12,8 +13,8 @@ set -g @plugin 'tmux-plugins/tmux-sensible'
 set -g @plugin 'tmux-plugins/tmux-yank'
 
 set -g @plugin 'christoomey/vim-tmux-navigator'
-set -g @plugin 'jimeh/tmux-themepack'
-
-set -g @themepack 'powerline/block/blue'
 
 run '~/.tmux/plugins/tpm/tpm'
+
+run-shell "powerline-daemon -q"
+source "/usr/share/powerline/bindings/tmux/powerline.conf"
