@@ -1,5 +1,4 @@
 # use zsh & make pbcopy/paste work
- set-option -g default-terminal /bin/zsh
  bind w new-window -c "#{pane_current_path}"
 
  # Automatically set window title and don't let it change
