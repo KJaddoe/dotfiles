@@ -30,12 +30,6 @@ vmap <Enter> <Plug>(EasyAlign)
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
 nmap ga <Plug>(EasyAlign)
 
-" Vimux 
-nmap <leader>rm :VimuxRunCommand './make.sh'<CR>
-nmap <leader>rc :VimuxRunCommand 'make clean'<CR>
-nmap <leader>rt :VimuxRunCommand './make.sh && ./test.sh'<CR>
-nmap <leader>rl :VimuxRunCommand './latexmk.sh'<CR>
-
 " Doxygen
 nnoremap <leader>d :Dox<CR>
 
