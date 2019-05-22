@@ -21,16 +21,10 @@ nnoremap <leader>gp :Gpush<CR>
 nnoremap <leader>gc :Gcommit<CR>
 vnoremap <leader>gb :Gblame<CR>"
 
-" settings nerdtree(tabs): always open and focus on files if opening
+" ==================== NerdTree ====================
 noremap <Leader>e :NERDTreeToggle<cr>
 
-" Easy align settings
-" Start interactive EasyAlign in visual mode (e.g. vip<Enter>)
-vmap <Enter> <Plug>(EasyAlign) 
-" Start interactive EasyAlign for a motion/text object (e.g. gaip)
-nmap ga <Plug>(EasyAlign)
-
-" Autocomplete
+" ==================== Autocomplete ====================
 autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
 autocmd FileType typescript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
 let g:UltiSnipsExpandTrigger="<C-j>"
