@@ -1,7 +1,6 @@
 filetype plugin indent on   " Identify language specific indent options
 filetype plugin on
 syntax on                   " use syntax..
-let g:load_doxygen_syntax=1
 
 set autoread                " auto reload files on change
 set noswapfile
@@ -54,7 +53,7 @@ set wildmode=longest,list:longest
 " ctrlp settings
 let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
 
-" airline settings 
+" ==================== Airline ====================
 set laststatus                            =2
 let g:airline#extensions#tabline#enabled  = 1    " Enable the list of buffers
 let g:airline#extensions#tabline#fnamemod = ':t' " show just name
@@ -64,27 +63,20 @@ let g:airline_powerline_fonts = 1
 let g:syntastic_cpp_compiler_options     = '-std=c++11'
 let g:syntastic_always_populate_loc_list = 1
 
-" settings nerdtree(tabs): always open and focus on files if opening
+" ==================== NerdTree ====================
+autocmd VimEnter * NERDTree " Open nerdtree on vim startup
+autocmd VimEnter * wincmd p " Focus on main window on startup
 let g:nerdtree_tabs_focus_on_files = 1
 let g:NERDTreeShowHidden           = 1
 
-" latexbox settings: necessary for auto viewing and highlighting properly
-let g:LatexBox_latexmk_options = "-pdfps"
-let g:LatexBox_latexmk_preview_continuously=1
-
-
-" Regular files need spelling and no highlight end 
+" Regular files need spelling and no highlight end
 augroup noProg
 autocmd BufRead,BufNewFile *.txt setlocal spell spelllang=en_us 
 autocmd BufRead,BufNewFile *.tex setlocal spell spelllang=en_us 
 autocmd BufRead,BufNewFile *.md setlocal spell spelllang=en_us 
 augroup END
 
-" this mapping Enter key to <C-y> to chose the current highlight item 
-" and close the selection list, same as other IDEs.
-" CONFLICT with some plugins like tpope/Endwise
-inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-
+" ==================== UltiSnips ====================
 " snippets
 " trigger configuration
 " let g:UltiSnipsExpandTrigger="<tab>"
@@ -94,7 +86,7 @@ set nowrap
 let g:javascript_plugin_jsdoc = 1
 let g:javascript_plugin_ngdoc = 1
 
-" Prettier plugin settings
+" ==================== Prettier ====================
 let g:prettier#config#bracket_spacing = 'true'
 let g:prettier#config#jsx_bracket_same_line = 'false'
 let g:prettier#autoformat = 0
