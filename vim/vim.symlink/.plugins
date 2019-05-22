@@ -59,4 +59,7 @@ Plug 'junegunn/fzf.vim'
 " Surround
 Plug 'tpope/vim-surround'
 
+" Emmet
+Plug 'mattn/emmet-vim'
+
 call plug#end()
