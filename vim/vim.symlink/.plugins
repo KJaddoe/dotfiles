@@ -29,7 +29,7 @@ Plug 'mhartington/nvim-typescript', {'do': ':!npm install -g neovim typescript \
 " For Denite features
 Plug 'Shougo/denite.nvim'
 
-" syntax
+" ==================== Syntax ====================
 Plug 'genoma/vim-less'
 Plug 'digitaltoad/vim-pug'
 Plug 'nelsyeung/twig.vim'
@@ -37,11 +37,12 @@ Plug 'nelsyeung/twig.vim'
 Plug 'Quramy/vim-js-pretty-template'
 Plug 'pangloss/vim-javascript'
 Plug 'elzr/vim-json'
+Plug 'w0rp/ale'
 Plug 'prettier/vim-prettier', { 'do': 'npm install -g prettier' }
 
 " git integration
 Plug 'tpope/vim-fugitive'
-Plug 'airblade/vim-gitgutter'"
+Plug 'airblade/vim-gitgutter'
 
 " airline stuff
 Plug 'vim-airline/vim-airline'
