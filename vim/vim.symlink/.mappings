@@ -30,9 +30,6 @@ vmap <Enter> <Plug>(EasyAlign)
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
 nmap ga <Plug>(EasyAlign)
 
-" Doxygen
-nnoremap <leader>d :Dox<CR>
-
 " Autocomplete
 autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
 autocmd FileType typescript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
