@@ -23,7 +23,6 @@ vnoremap <leader>gb :Gblame<CR>"
 
 " settings nerdtree(tabs): always open and focus on files if opening
 noremap <Leader>e :NERDTreeToggle<cr>
-noremap <Leader>f :NERDTreeFind<cr>
 
 " Easy align settings
 " Start interactive EasyAlign in visual mode (e.g. vip<Enter>)
