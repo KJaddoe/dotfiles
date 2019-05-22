@@ -31,9 +31,6 @@ vmap <Enter> <Plug>(EasyAlign)
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
 nmap ga <Plug>(EasyAlign)
 
-" Tagbar 
-nnoremap <silent> <Leader>T :TagbarToggle<CR>
-
 " Vimux 
 nmap <leader>rm :VimuxRunCommand './make.sh'<CR>
 nmap <leader>rc :VimuxRunCommand 'make clean'<CR>
