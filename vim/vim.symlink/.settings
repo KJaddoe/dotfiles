@@ -109,39 +109,62 @@ let g:prettier#config#trailing_comma = 'all'
 let g:prettier#autoformat = 0
 autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.html PrettierAsync
 
+" ==================== NeoSnippet ====================
+" Plugin key-mappings.
+" Note: It must be "imap" and "smap".  It uses <Plug> mappings.
+imap <C-k>     <Plug>(neosnippet_expand_or_jump)
+smap <C-k>     <Plug>(neosnippet_expand_or_jump)
+xmap <C-k>     <Plug>(neosnippet_expand_target)
+
+" SuperTab like snippets behavior.
+" Note: It must be "imap" and "smap".  It uses <Plug> mappings.
+imap <expr><TAB>
+  \ pumvisible() ? "\<C-n>" :
+  \ neosnippet#expandable_or_jumpable() ?
+  \    "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>"
+smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
+  \ "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>"
+
+" For conceal markers.
+if has('conceal')
+  set conceallevel=2 concealcursor=niv
+endif"
+let g:neosnippet#enable_completed_snippet = 1
 " ==================== Deoplete ====================
 if has('nvim')
   let g:deoplete#enable_at_startup = 1
-  let g:deoplete#ignore_sources = {}
-  let g:deoplete#ignore_sources._ = ['buffer', 'member', 'tag', 'file', 'neosnippet']
-  let g:deoplete#sources#go#sort_class = ['func', 'type', 'var', 'const']
-  let g:deoplete#sources#go#align_class = 1
-  let g:deoplete#file#enable_buffer_path = 1
+  let g:deoplete#enable_at_startup = 1
+  let g:deoplete#enable_ignore_case = 1
   let g:deoplete#enable_smart_case = 1
+  let g:deoplete#enable_camel_case = 1
+  let g:deoplete#enable_refresh_always = 1
+
+  let g:deoplete#max_abbr_width = 0
+  let g:deoplete#max_menu_width = 0
+
+  let g:deoplete#file#enable_buffer_path = 1
 
   " Use partial fuzzy matches like YouCompleteMe
-  call deoplete#custom#source('_', 'matchers', ['matcher_fuzzy'])
-  call deoplete#custom#source('_', 'converters', ['converter_remove_paren'])
-  call deoplete#custom#source('_', 'disabled_syntaxes', ['Comment', 'String'])
+  "call deoplete#custom#source('_', 'matchers', ['matcher_fuzzy'])
+  "call deoplete#custom#source('_', 'converters', ['converter_remove_paren'])
+  "call deoplete#custom#source('_', 'disabled_syntaxes', ['Comment', 'String'])
 
-  set completeopt=longest,menuone,preview
+  "set completeopt=longest,menuone,preview
   "let g:deoplete#sources = {}
   "let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
 
-  if !exists('g:deoplete#omni#input_patterns')
-    let g:deoplete#omni#input_patterns = {}
+  "let g:deoplete#omni#input_patterns = get(g:,'deoplete#omni#input_patterns',{})
+  if !exists('g:deoplete#omni#functions')
+    let g:deoplete#omni#functions = {}
   endif
-  "if !exists('g:deoplete#omni#functions')
-  "  let g:deoplete#omni#functions = {}
-  "endif
-  "let g:deoplete#omni#functions.typescript = [
-  "\ 'tern#Complete',
-  "\ 'jspc#omni'
-  "\]
-  "let g:deoplete#omni#functions.javascript = [
-  "\ 'tern#Complete',
-  "\ 'jspc#omni'
-  "\]
+  let g:deoplete#omni#functions.typescript = [
+  \ 'tern#Complete',
+  \ 'jspc#omni'
+  \]
+  let g:deoplete#omni#functions.javascript = [
+  \ 'tern#Complete',
+  \ 'jspc#omni'
+  \]
   "let g:deoplete#disable_auto_complete = 1
 
 endif

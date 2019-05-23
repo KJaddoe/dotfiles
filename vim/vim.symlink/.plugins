@@ -9,34 +9,43 @@ else
   Plug 'roxma/vim-hug-neovim-rpc'
 endif
 
+Plug 'ervandew/supertab'
+"Plug 'ludovicchabant/vim-gutentags'
+
+" ==================== Tree ====================
 Plug 'scrooloose/nerdtree'
+" ==================== Commenting ====================
 Plug 'scrooloose/nerdcommenter'
+" ==================== Match ====================
 Plug 'tmhedberg/matchit'
-Plug 'scrooloose/syntastic'
+" ==================== Colorschemes ====================
 Plug 'flazz/vim-colorschemes'
+" ==================== Auto close quotes ====================
 Plug 'Raimondi/delimitMate'
 
-" autocompletion
-Plug 'SirVer/ultisnips'
-Plug 'honza/vim-snippets'
-Plug 'wokalski/autocomplete-flow'
+" ==================== Snippets ====================
 Plug 'Shougo/neosnippet.vim'
 Plug 'Shougo/neosnippet-snippets'
-"Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
-"Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx', 'typescript']  }
+Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx', 'typescript', 'typescript.tsx']  }
 
-Plug 'HerringtonDarkholme/yats.vim'
-Plug 'mhartington/nvim-typescript', {'do': ':!npm install -g neovim typescript \|!install.sh \| UpdateRemotePlugins'}
+" autocompletion
+Plug 'wokalski/autocomplete-flow'
+
 " For Denite features
 Plug 'Shougo/denite.nvim'
+
+" ==================== Javascript ====================
+Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
+Plug 'pangloss/vim-javascript'
+
+" ==================== Typescript ====================
+Plug 'HerringtonDarkholme/yats.vim'
+Plug 'mhartington/nvim-typescript', {'do': ':!./install.sh \| :UpdateRemotePlugins'}
 
 " ==================== Syntax ====================
 Plug 'genoma/vim-less'
 Plug 'digitaltoad/vim-pug'
 Plug 'nelsyeung/twig.vim'
-"Plug 'leafgarland/typescript-vim'
-Plug 'Quramy/vim-js-pretty-template'
-Plug 'pangloss/vim-javascript'
 Plug 'elzr/vim-json'
 Plug 'w0rp/ale'
 Plug 'prettier/vim-prettier', { 'do': 'npm install -g prettier' }
