@@ -73,8 +73,6 @@ let g:syntastic_cpp_compiler_options     = '-std=c++11'
 let g:syntastic_always_populate_loc_list = 1
 
 " ==================== NerdTree ====================
-autocmd VimEnter * NERDTree " Open nerdtree on vim startup
-" autocmd VimEnter * wincmd p " Focus on main window on startup
 let g:nerdtree_tabs_focus_on_files = 1
 let g:NERDTreeShowHidden           = 1
 
