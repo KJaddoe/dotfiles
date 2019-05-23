@@ -34,6 +34,9 @@ Plug 'wokalski/autocomplete-flow'
 " For Denite features
 Plug 'Shougo/denite.nvim'
 
+" ==================== Python ====================
+Plug 'deoplete-plugins/deoplete-jedi'
+
 " ==================== Javascript ====================
 Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
 Plug 'pangloss/vim-javascript'
