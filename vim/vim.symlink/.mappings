@@ -21,6 +21,15 @@ nnoremap <leader>gp :Gpush<CR>
 nnoremap <leader>gc :Gcommit<CR>
 vnoremap <leader>gb :Gblame<CR>"
 
+" ==================== Surround ====================
+vmap <leader>" S"lvi"
+vmap <leader>' S'lvi'
+vmap <leader>` S`lvi`
+vmap <leader>( S )lvi(
+vmap <leader>{ S }lvi{
+vmap <leader>[ S ]lvi[
+vmap <leader>< S>lvi<
+
 " ==================== NerdTree ====================
 noremap <Leader>e :NERDTreeToggle<cr>
 
@@ -31,4 +40,5 @@ let g:UltiSnipsExpandTrigger="<C-j>"
 inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
 
 imap <expr> <CR> pumvisible() ? "\<c-y>" : "<Plug>delimitMateCR"
+imap kj <Esc>
 map <F7> mzgg=G`z
