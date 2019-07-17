@@ -24,8 +24,11 @@ Plug 'flazz/vim-colorschemes'
 Plug 'Raimondi/delimitMate'
 
 " ==================== Snippets ====================
-Plug 'Shougo/neosnippet.vim'
-Plug 'Shougo/neosnippet-snippets'
+Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
+
+"Plug 'Shougo/neosnippet.vim'
+"Plug 'Shougo/neosnippet-snippets'
 Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx', 'typescript', 'typescript.tsx']  }
 
 " autocompletion

@@ -4,6 +4,7 @@ syntax on                   " use syntax..
 
 set autoread                " auto reload files on change
 set noswapfile
+set nowrap
 
 " read file settings
 set ffs=unix,dos,mac
@@ -83,16 +84,6 @@ autocmd BufRead,BufNewFile *.tex setlocal spell spelllang=en_us
 autocmd BufRead,BufNewFile *.md setlocal spell spelllang=en_us 
 augroup END
 
-" ==================== UltiSnips ====================
-" snippets
-" trigger configuration
-" let g:UltiSnipsExpandTrigger="<tab>"
-
-set nowrap
-
-let g:javascript_plugin_jsdoc = 1
-let g:javascript_plugin_ngdoc = 1
-
 " ==================== Ale ====================
 let g:ale_sign_error = '✘'
 let g:ale_sign_warning = '⚠'
@@ -109,27 +100,6 @@ let g:prettier#config#trailing_comma = 'all'
 let g:prettier#autoformat = 0
 autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.html PrettierAsync
 
-" ==================== NeoSnippet ====================
-" Plugin key-mappings.
-" Note: It must be "imap" and "smap".  It uses <Plug> mappings.
-imap <C-k>     <Plug>(neosnippet_expand_or_jump)
-smap <C-k>     <Plug>(neosnippet_expand_or_jump)
-xmap <C-k>     <Plug>(neosnippet_expand_target)
-
-" SuperTab like snippets behavior.
-" Note: It must be "imap" and "smap".  It uses <Plug> mappings.
-imap <expr><TAB>
-  \ pumvisible() ? "\<C-n>" :
-  \ neosnippet#expandable_or_jumpable() ?
-  \    "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>"
-smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
-  \ "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>"
-
-" For conceal markers.
-if has('conceal')
-  set conceallevel=2 concealcursor=niv
-endif"
-let g:neosnippet#enable_completed_snippet = 1
 " ==================== Deoplete ====================
 if has('nvim')
   let g:deoplete#enable_at_startup = 1
@@ -145,13 +115,9 @@ if has('nvim')
   let g:deoplete#file#enable_buffer_path = 1
 
   " Use partial fuzzy matches like YouCompleteMe
-  "call deoplete#custom#source('_', 'matchers', ['matcher_fuzzy'])
-  "call deoplete#custom#source('_', 'converters', ['converter_remove_paren'])
-  "call deoplete#custom#source('_', 'disabled_syntaxes', ['Comment', 'String'])
-
-  "set completeopt=longest,menuone,preview
-  "let g:deoplete#sources = {}
-  "let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
+  call deoplete#custom#source('_', 'matchers', ['matcher_fuzzy'])
+  call deoplete#custom#source('_', 'converters', ['converter_remove_paren'])
+  call deoplete#custom#source('_', 'disabled_syntaxes', ['Comment', 'String'])
 
   "let g:deoplete#omni#input_patterns = get(g:,'deoplete#omni#input_patterns',{})
   if !exists('g:deoplete#omni#functions')
@@ -182,12 +148,70 @@ augroup end
 " ==================== Tern ====================
 autocmd FileType javascript nnoremap <silent> <buffer> gb :TernDef<CR>
 if exists('g:plugs["tern_for_vim"]')
-let g:tern_show_argument_hints = 'on_hold'
-let g:tern_show_signature_in_pum = 1
-let g:tern#command = ['tern']
-let g:tern#arguments = ['--persistent']
-autocmd FileType javascript setlocal omnifunc=tern#Complete
+  let g:tern_show_argument_hints = 'on_hold'
+  let g:tern_show_signature_in_pum = 1
+  let g:tern#command = ['tern']
+  let g:tern#arguments = ['--persistent']
+  autocmd FileType javascript setlocal omnifunc=tern#Complete
 endif
+
+" Set bin if you have many instalations
+"let g:deoplete#sources#ternjs#tern_bin = '/path/to/tern_bin'
+"let g:deoplete#sources#ternjs#timeout = 1
+
+" Whether to include the types of the completions in the result data. Default: 0
+let g:deoplete#sources#ternjs#types = 1
+
+" Whether to include the distance (in scopes for variables, in prototypes for 
+" properties) between the completions and the origin position in the result 
+" data. Default: 0
+let g:deoplete#sources#ternjs#depths = 1
+
+" Whether to include documentation strings (if found) in the result data.
+" Default: 0
+let g:deoplete#sources#ternjs#docs = 1
+
+" When on, only completions that match the current word at the given point will
+" be returned. Turn this off to get all results, so that you can filter on the 
+" client side. Default: 1
+let g:deoplete#sources#ternjs#filter = 0
+
+" Whether to use a case-insensitive compare between the current word and 
+" potential completions. Default 0
+let g:deoplete#sources#ternjs#case_insensitive = 1
+
+" When completing a property and no completions are found, Tern will use some 
+" heuristics to try and return some properties anyway. Set this to 0 to 
+" turn that off. Default: 1
+let g:deoplete#sources#ternjs#guess = 0
+
+" Determines whether the result set will be sorted. Default: 1
+let g:deoplete#sources#ternjs#sort = 0
+
+" When disabled, only the text before the given position is considered part of 
+" the word. When enabled (the default), the whole variable name that the cursor
+" is on will be included. Default: 1
+let g:deoplete#sources#ternjs#expand_word_forward = 0
+
+" Whether to ignore the properties of Object.prototype unless they have been 
+" spelled out by at least two characters. Default: 1
+let g:deoplete#sources#ternjs#omit_object_prototype = 0
+
+" Whether to include JavaScript keywords when completing something that is not 
+" a property. Default: 0
+let g:deoplete#sources#ternjs#include_keywords = 1
+
+" If completions should be returned when inside a literal. Default: 1
+let g:deoplete#sources#ternjs#in_literal = 0
+
+
+"Add extra filetypes
+let g:deoplete#sources#ternjs#filetypes = [
+  \ 'jsx',
+  \ 'javascript.jsx',
+  \ 'vue',
+  \ '...'
+\ ]
 
 " ==================== delimitMate ====================
 let g:delimitMate_expand_cr = 1
@@ -208,7 +232,7 @@ autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif"
 let g:NERDSpaceDelims = 1
 
 " Use compact syntax for prettified multi-line comments
-let g:NERDCompactSexyComs = 1
+"let g:NERDCompactSexyComs = 1
 
 " Allow commenting and inverting empty lines (useful when commenting a region)
 let g:NERDCommentEmptyLines = 1
