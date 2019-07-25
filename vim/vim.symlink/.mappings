@@ -14,6 +14,9 @@ nnoremap <C-H> <C-W><C-H>
 " Close the current buffer and move to the previous one
 nmap <leader>bq :bp <BAR> bd #<CR>
 
+" Map Ctrl-Backspace to delete the previous word in insert mode.
+:imap <C-BS> <C-W>"
+
 " ==================== Fugitive ====================
 nnoremap <leader>ga :Git add %:p<CR><CR>
 nnoremap <leader>gs :Gstatus<CR>
