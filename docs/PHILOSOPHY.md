@@ -10,21 +10,19 @@ project being much more topic-centric. I realized I could split a lot of things
 up into the main areas I used (Ruby, git, system libraries, and so on), so I
 structured the project accordingly.
 
-You can also [read my post on the subject](http://carlosbecker.com/posts/dotfiles-are-meant-to-be-forked).
-
 ## Decisions
 
 ### Do not install a lot of software
 
-At first, this repo contained the homebrew installation and other stuff like
+At first, this repo contained the dependency installation and other stuff like
 that. I realized it would be better to split that into another repo, so
 this one would contain only the configs, and the other handles only software
 installation.
 
-With that in mind, [machine](http://github.com/caarlos0/machine) was born.
+With that in mind, [machine](http://gitlab.com/KJaddoe/machine) was born.
 
 It's an Ansible recipe that can install a bunch of stuff, and you can comment
-out what you don't want. Works on both Linux and OSX.
+out what you don't want.
 
 ### Default `EDITOR` and `PROJECTS`
 
@@ -34,12 +32,6 @@ override to that variable in `~/.localrc`.
 
 `PROJECTS` is default to `~/Code`. The shortcut to that folder in the shell
 is `c`. You can override this default in `~/.localrc`.
-
-### Lots of editors
-
-I use `vim` a lot, but I also use `code`, and used to use `atom` and
-`sublime-text`. So, the configs for all these editors are provided, you can
-use the one you like the most.
 
 ### Topical
 
@@ -66,16 +58,16 @@ There are a few special files in the hierarchy:
   but still keep those autoloaded files in your home directory. These get
   symlinked in when you run `script/bootstrap`.
 - **topic/install.sh**: Any file with this name and with exec permission, will
-ran at `bootstrap` and `dot_update` phase, and are expected to install plugins,
-and stuff like that.
+  ran at `bootstrap` and `dot_update` phase, and are expected to install plugins,
+  and stuff like that.
 
 ### ZSH plugins
 
-This project uses the [pure][pure] prompt (which is awesome!) and some other
+This project uses the [Powerlevel9k][powerlevel9k] prompt (which is awesome!) and some other
 [zsh plugins](/antibody/bundles.txt). All of them managed by [Antibody][antibody],
 a faster and simpler Antigen-like program written in Go.
 
-[pure]: https://github.com/sindresorhus/pure
+[powerlevel9k]: https://github.com/Powerlevel9k/powerlevel9k
 [antibody]: https://github.com/caarlos0/antibody
 
 ### Compatibility
