@@ -24,6 +24,9 @@ done
 # load antibody plugins
 source ~/.zsh_plugins.sh
 
+# Fix terminal crashing issue https://github.com/zdharma/fast-syntax-highlighting/issues/146
+export FAST_HIGHLIGHT[chroma-git]="chroma/-ogit.ch"
+
 # load everything but the path and completion files
 for file in ${${config_files:#*/path.zsh}:#*/completion.zsh}; do
   source "$file"
@@ -43,7 +46,6 @@ for file in ${(M)config_files:#*/completion.zsh}; do
 done
 
 unset config_files updated_at
-
 
 # Load fzf zsh
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
