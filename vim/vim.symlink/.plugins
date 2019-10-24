@@ -79,7 +79,4 @@ Plug 'tpope/vim-surround'
 " Emmet
 Plug 'mattn/emmet-vim'
 
-" Indent lines
-Plug 'Yggdroot/indentLine'
-
 call plug#end()
