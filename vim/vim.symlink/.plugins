@@ -53,7 +53,7 @@ Plug 'genoma/vim-less'
 Plug 'digitaltoad/vim-pug'
 Plug 'nelsyeung/twig.vim'
 Plug 'elzr/vim-json'
-Plug 'w0rp/ale'
+Plug 'dense-analysis/ale'
 Plug 'prettier/vim-prettier', { 'do': 'npm install -g prettier' }
 
 " git integration
