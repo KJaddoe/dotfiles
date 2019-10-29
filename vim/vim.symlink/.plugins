@@ -55,6 +55,7 @@ Plug 'nelsyeung/twig.vim'
 Plug 'elzr/vim-json'
 Plug 'dense-analysis/ale'
 Plug 'prettier/vim-prettier', { 'do': 'npm install -g prettier' }
+Plug 'psf/black'
 
 " git integration
 Plug 'tpope/vim-fugitive'
