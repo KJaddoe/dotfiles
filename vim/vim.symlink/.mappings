@@ -36,13 +36,19 @@ vmap <leader>< S>lvi<
 " ==================== NerdTree ====================
 noremap <Leader>e :NERDTreeToggle<cr>
 
-" ==================== Autocomplete ====================
-autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
-autocmd FileType typescript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
-
 " ==================== UltiSnips ====================
 let g:UltiSnipsExpandTrigger="<C-j>"
 "inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+
+" ==================== Deoplete ====================
+inoremap <silent><expr> <TAB>
+\ pumvisible() ? "\<C-n>" :
+\ <SID>check_back_space() ? "\<TAB>" :
+\ deoplete#mappings#manual_complete()
+function! s:check_back_space() abort "{{{
+let col = col('.') - 1
+return !col || getline('.')[col - 1]  =~ '\s'
+endfunction"}}}
 
 imap <expr> <CR> pumvisible() ? "\<c-y>" : "<Plug>delimitMateCR"
 imap kj <Esc>
