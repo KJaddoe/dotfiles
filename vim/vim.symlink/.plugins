@@ -47,6 +47,9 @@ Plug 'pangloss/vim-javascript'
 Plug 'HerringtonDarkholme/yats.vim'
 Plug 'mhartington/nvim-typescript', {'do': ':!./install.sh \| :UpdateRemotePlugins'}
 
+" ==================== C# ====================
+Plug 'OmniSharp/omnisharp-vim', {'do': ':OmniSharpInstall'}
+
 " ==================== Syntax ====================
 Plug 'genoma/vim-less'
 Plug 'digitaltoad/vim-pug'
