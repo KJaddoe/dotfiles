@@ -250,3 +250,7 @@ autocmd Filetype json :IndentLinesDisable
 " ==================== Black ====================
 " Run black on save
 autocmd BufWritePre *.py execute ':Black'
+
+" ==================== Omnisharp ====================
+" Code format on save
+autocmd BufWritePre *.cs OmniSharpCodeFormat
