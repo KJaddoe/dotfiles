@@ -103,11 +103,6 @@ autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.gra
 " ==================== Deoplete ====================
 if has('nvim')
   let g:deoplete#enable_at_startup = 1
-  let g:deoplete#enable_at_startup = 1
-  let g:deoplete#enable_ignore_case = 1
-  "let g:deoplete#enable_smart_case = 1
-  let g:deoplete#enable_camel_case = 1
-  "let g:deoplete#enable_refresh_always = 1
 
   let g:deoplete#max_abbr_width = 0
   let g:deoplete#max_menu_width = 0
@@ -119,19 +114,13 @@ if has('nvim')
   call deoplete#custom#source('_', 'converters', ['converter_remove_paren'])
   call deoplete#custom#source('_', 'disabled_syntaxes', ['Comment', 'String'])
 
+  " Use smartcase.
+  call deoplete#custom#option('smart_case', v:true)
+
   "let g:deoplete#omni#input_patterns = get(g:,'deoplete#omni#input_patterns',{})
-  "if !exists('g:deoplete#omni#functions')
-  "  let g:deoplete#omni#functions = {}
-  "endif
-  "let g:deoplete#omni#functions.typescript = [
-  "\ 'tern#Complete',
-  "\ 'jspc#omni'
-  "\]
-  "let g:deoplete#omni#functions.javascript = [
-  "\ 'tern#Complete',
-  "\ 'jspc#omni'
-  "\]
-  "let g:deoplete#disable_auto_complete = 1
+
+  " Disable deoplete for c# files
+  autocmd FileType cs call deoplete#custom#buffer_option('auto_complete', v:false)
 
 endif
 
