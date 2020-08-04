@@ -105,14 +105,14 @@ if has('nvim')
   let g:deoplete#enable_at_startup = 1
   let g:deoplete#enable_at_startup = 1
   let g:deoplete#enable_ignore_case = 1
-  let g:deoplete#enable_smart_case = 1
+  "let g:deoplete#enable_smart_case = 1
   let g:deoplete#enable_camel_case = 1
-  let g:deoplete#enable_refresh_always = 1
+  "let g:deoplete#enable_refresh_always = 1
 
   let g:deoplete#max_abbr_width = 0
   let g:deoplete#max_menu_width = 0
 
-  let g:deoplete#file#enable_buffer_path = 1
+  "let g:deoplete#file#enable_buffer_path = 1
 
   " Use partial fuzzy matches like YouCompleteMe
   call deoplete#custom#source('_', 'matchers', ['matcher_fuzzy'])
@@ -120,17 +120,17 @@ if has('nvim')
   call deoplete#custom#source('_', 'disabled_syntaxes', ['Comment', 'String'])
 
   "let g:deoplete#omni#input_patterns = get(g:,'deoplete#omni#input_patterns',{})
-  if !exists('g:deoplete#omni#functions')
-    let g:deoplete#omni#functions = {}
-  endif
-  let g:deoplete#omni#functions.typescript = [
-  \ 'tern#Complete',
-  \ 'jspc#omni'
-  \]
-  let g:deoplete#omni#functions.javascript = [
-  \ 'tern#Complete',
-  \ 'jspc#omni'
-  \]
+  "if !exists('g:deoplete#omni#functions')
+  "  let g:deoplete#omni#functions = {}
+  "endif
+  "let g:deoplete#omni#functions.typescript = [
+  "\ 'tern#Complete',
+  "\ 'jspc#omni'
+  "\]
+  "let g:deoplete#omni#functions.javascript = [
+  "\ 'tern#Complete',
+  "\ 'jspc#omni'
+  "\]
   "let g:deoplete#disable_auto_complete = 1
 
 endif
