@@ -119,8 +119,14 @@ if has('nvim')
 
   "let g:deoplete#omni#input_patterns = get(g:,'deoplete#omni#input_patterns',{})
 
-  " Disable deoplete for c# files
-  autocmd FileType cs call deoplete#custom#buffer_option('auto_complete', v:false)
+  call deoplete#custom#source('omni', 'functions', {
+    \ 'javascript': ['tern#Complete', 'jspc#omni'],
+    \ 'cs': ['OmniSharp#Complete'],
+  \})
+
+  call deoplete#custom#var('omni', 'input_patterns', {
+    \ 'cs': '[^. *\t]\.\w*',
+  \})
 
 endif
 

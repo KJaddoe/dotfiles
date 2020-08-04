@@ -49,7 +49,6 @@ Plug 'mhartington/nvim-typescript', {'do': ':!./install.sh \| :UpdateRemotePlugi
 
 " ==================== C# ====================
 Plug 'OmniSharp/omnisharp-vim', {'do': ':OmniSharpInstall'}
-Plug 'neoclide/coc.nvim', {'branch': 'release', 'for': ['cs']}
 
 " ==================== Syntax ====================
 Plug 'genoma/vim-less'
