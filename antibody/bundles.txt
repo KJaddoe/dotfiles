@@ -13,7 +13,6 @@ robbyrussell/oh-my-zsh path:plugins/docker-compose
 robbyrussell/oh-my-zsh path:plugins/ng
 robbyrussell/oh-my-zsh path:plugins/npm
 robbyrussell/oh-my-zsh path:plugins/pip
-robbyrussell/oh-my-zsh path:plugins/gulp
 
 # these should be at last!
 romkatv/powerlevel10k
