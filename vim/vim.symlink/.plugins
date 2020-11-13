@@ -42,10 +42,11 @@ Plug 'deoplete-plugins/deoplete-jedi'
 " ==================== Javascript ====================
 Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
 Plug 'pangloss/vim-javascript'
+Plug 'maxmellon/vim-jsx-pretty'
 
 " ==================== Typescript ====================
 Plug 'HerringtonDarkholme/yats.vim'
-Plug 'mhartington/nvim-typescript', {'do': ':!./install.sh \| :UpdateRemotePlugins'}
+Plug 'leafgarland/typescript-vim'
 
 " ==================== C# ====================
 Plug 'OmniSharp/omnisharp-vim', {'do': ':OmniSharpInstall'}
