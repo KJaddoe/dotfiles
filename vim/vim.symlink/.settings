@@ -11,9 +11,8 @@ set ffs=unix,dos,mac
 set backspace=indent,eol,start 
 
 " Visual settings
-set t_Co=256
 set background=dark
-colorscheme jellybeans " lucius (dark) molokai (dark) jellybean (dark) ir_black (dark) iceberg molokai hemisu apprentice hybrid
+colorscheme gruvbox
 
 " UI
 set showcmd     " Show cmd below
@@ -35,6 +34,7 @@ set hlsearch
 set incsearch
 set smartcase
 set ignorecase
+set magic
 
 " Tabs / spaces
 set expandtab
@@ -254,3 +254,12 @@ autocmd BufWritePre *.cs OmniSharpCodeFormat
 " Note that the type is echoed to the Vim command line, and will overwrite
 " any other messages in this space including e.g. ALE linting messages."
 "autocmd CursorHold *.cs OmniSharpTypeLookup
+
+" ==================== LSP config ====================
+lua <<EOF
+  require'nvim_lsp'.tsserver.setup{}
+  require'nvim_lsp'.html.setup{}
+  require'nvim_lsp'.dockerls.setup{}
+  require'nvim_lsp'.cssls.setup{}
+  require'nvim_lsp'.yamlls.setup{}
+EOF

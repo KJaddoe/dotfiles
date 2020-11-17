@@ -2,7 +2,9 @@
 call plug#begin('~/.vim/plugged')
 
 if has('nvim')
+  Plug 'neovim/nvim-lsp'
   Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+  Plug 'Shougo/deoplete-lsp'
 else
   Plug 'Shougo/deoplete.nvim'
   Plug 'roxma/nvim-yarp'
@@ -40,7 +42,7 @@ Plug 'Shougo/denite.nvim'
 Plug 'deoplete-plugins/deoplete-jedi'
 
 " ==================== Javascript ====================
-Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
+Plug 'carlitux/deoplete-ternjs'
 Plug 'pangloss/vim-javascript'
 Plug 'maxmellon/vim-jsx-pretty'
 
@@ -59,6 +61,7 @@ Plug 'elzr/vim-json'
 Plug 'dense-analysis/ale'
 Plug 'prettier/vim-prettier'
 Plug 'psf/black'
+Plug 'scrooloose/syntastic'
 
 " git integration
 Plug 'tpope/vim-fugitive'
