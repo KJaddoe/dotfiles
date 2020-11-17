@@ -257,9 +257,9 @@ autocmd BufWritePre *.cs OmniSharpCodeFormat
 
 " ==================== LSP config ====================
 lua <<EOF
-  require'nvim_lsp'.tsserver.setup{}
-  require'nvim_lsp'.html.setup{}
-  require'nvim_lsp'.dockerls.setup{}
-  require'nvim_lsp'.cssls.setup{}
-  require'nvim_lsp'.yamlls.setup{}
+  require'lspconfig'.tsserver.setup{}
+  require'lspconfig'.html.setup{}
+  require'lspconfig'.dockerls.setup{}
+  require'lspconfig'.cssls.setup{}
+  require'lspconfig'.yamlls.setup{}
 EOF
