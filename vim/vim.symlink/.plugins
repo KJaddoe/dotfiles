@@ -42,7 +42,6 @@ Plug 'Shougo/denite.nvim'
 Plug 'deoplete-plugins/deoplete-jedi'
 
 " ==================== Javascript ====================
-Plug 'carlitux/deoplete-ternjs'
 Plug 'pangloss/vim-javascript'
 Plug 'maxmellon/vim-jsx-pretty'
 
