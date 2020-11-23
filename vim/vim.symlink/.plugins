@@ -1,26 +1,25 @@
 " load plugins
 call plug#begin('~/.vim/plugged')
 
-if has('nvim')
-  Plug 'neovim/nvim-lspconfig'
-  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-  Plug 'Shougo/deoplete-lsp'
-else
-  Plug 'Shougo/deoplete.nvim'
-  Plug 'roxma/nvim-yarp'
-  Plug 'roxma/vim-hug-neovim-rpc'
-endif
+Plug 'neovim/nvim-lspconfig'
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'Shougo/deoplete-lsp'
 
+" ==================== Sensible config ====================
 Plug 'tpope/vim-sensible'
 
 " ==================== Tree ====================
 Plug 'scrooloose/nerdtree'
+
 " ==================== Commenting ====================
 Plug 'scrooloose/nerdcommenter'
+
 " ==================== Match ====================
 Plug 'tmhedberg/matchit'
+
 " ==================== Colorschemes ====================
 Plug 'flazz/vim-colorschemes'
+
 " ==================== Auto close quotes ====================
 Plug 'Raimondi/delimitMate'
 
@@ -28,14 +27,9 @@ Plug 'Raimondi/delimitMate'
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 
-"Plug 'Shougo/neosnippet.vim'
-"Plug 'Shougo/neosnippet-snippets'
 Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx', 'typescript', 'typescript.tsx']  }
 
-" autocompletion
-Plug 'wokalski/autocomplete-flow'
-
-" For Denite features
+" ==================== Denite ====================
 Plug 'Shougo/denite.nvim'
 
 " ==================== Python ====================
