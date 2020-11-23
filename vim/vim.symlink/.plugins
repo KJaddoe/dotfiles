@@ -1,7 +1,7 @@
 " load plugins
 call plug#begin('~/.vim/plugged')
 
-Plug 'neovim/nvim-lspconfig'
+Plug 'neovim/nvim-lspconfig', { 'do': ':LspInstall omnisharp' }
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'Shougo/deoplete-lsp'
 
@@ -32,54 +32,42 @@ Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx', 'typescript', 
 " ==================== Denite ====================
 Plug 'Shougo/denite.nvim'
 
-" ==================== Python ====================
-Plug 'deoplete-plugins/deoplete-jedi'
-
 " ==================== Javascript ====================
 Plug 'pangloss/vim-javascript'
 Plug 'maxmellon/vim-jsx-pretty'
 
 " ==================== Typescript ====================
-Plug 'HerringtonDarkholme/yats.vim'
-Plug 'leafgarland/typescript-vim'
+"Plug 'HerringtonDarkholme/yats.vim'
+"Plug 'leafgarland/typescript-vim'
 
 " ==================== C# ====================
 Plug 'OmniSharp/omnisharp-vim', {'do': ':OmniSharpInstall'}
 
 " ==================== Syntax ====================
-Plug 'genoma/vim-less'
-Plug 'digitaltoad/vim-pug'
-Plug 'nelsyeung/twig.vim'
-Plug 'elzr/vim-json'
 Plug 'dense-analysis/ale'
 Plug 'prettier/vim-prettier'
 Plug 'psf/black'
 Plug 'scrooloose/syntastic'
 
-" git integration
+" ==================== Git ====================
 Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 
-" airline stuff
+" ==================== Airline theme ====================
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
-" tmux
+" ==================== Tmux ====================
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'tmux-plugins/vim-tmux'
 Plug 'tmux-plugins/vim-tmux-focus-events'
 
-" fzf
+" ==================== FZF ====================
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all'  }
 Plug 'junegunn/fzf.vim'
 
-" Surround
 Plug 'tpope/vim-surround'
-
-" Emmet
 Plug 'mattn/emmet-vim'
-
-" Indent lines
 Plug 'Yggdroot/indentLine'
 
 call plug#end()
