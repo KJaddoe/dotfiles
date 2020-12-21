@@ -118,11 +118,6 @@ if has('nvim')
 
   call deoplete#custom#source('omni', 'functions', {
     \ 'javascript': ['tern#Complete', 'jspc#omni'],
-    \ 'cs': ['OmniSharp#Complete'],
-  \})
-
-  call deoplete#custom#var('omni', 'input_patterns', {
-    \ 'cs': '[^. *\t]\.\w*',
   \})
 
 endif
