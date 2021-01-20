@@ -17,6 +17,6 @@
 # alias gpr='gp && git pr'
 # alias glnext='git log --oneline $(git describe --tags --abbrev=0 @^)..@'
 
-gi() {
-	curl -s "https://www.gitignore.io/api/$*"
+function gi() { 
+  curl -sLw n https://www.toptal.com/developers/gitignore/api/$@ ;
 }
