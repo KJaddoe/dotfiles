@@ -12,7 +12,7 @@
     - vars/java.yml
   roles:
     - role: geerlingguy.docker
-      #- role: geerlingguy.kubernetes
+    - role: geerlingguy.kubernetes
     - role: geerlingguy.nodejs
     - role: geerlingguy.java
     - role: geerlingguy.git
@@ -24,7 +24,6 @@
     # essentials:
     - include: tasks/apt.yml
     - include: tasks/core.yml
-    - include: tasks/dotfiles.yml
     - include: tasks/tmux.yml
 
     #

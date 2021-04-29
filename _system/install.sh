@@ -30,5 +30,5 @@ if test ! "$(which ansible)"; then
   exit 1
 fi
 
-ansible-galaxy install -r requirements.yml --force
-ansible-playbook main.yml -K
+ansible-galaxy install -r $(pwd -P)/_system/requirements.yml --force
+ansible-playbook $(pwd -P)/_system/main.yml -K
