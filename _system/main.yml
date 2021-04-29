@@ -1,0 +1,41 @@
+- hosts: localhost
+  become: yes
+  vars:
+    - is_ci: ansible_env.TRAVIS_JOB_ID is defined
+    - isnt_ci: ansible_env.TRAVIS_JOB_ID is not defined
+  vars_files:
+    - vars/node.yml
+    - vars/docker.yml
+    - vars/powerline.yml
+    - vars/pip.yml
+    - vars/dotnet_core.yml
+    - vars/java.yml
+  roles:
+    - role: geerlingguy.docker
+      #- role: geerlingguy.kubernetes
+    - role: geerlingguy.nodejs
+    - role: geerlingguy.java
+    - role: geerlingguy.git
+    - role: geerlingguy.pip
+    - role: mjanser.powerline
+    - role: rkm.dotnet_core
+      become: yes
+  tasks:
+    # essentials:
+    - include: tasks/apt.yml
+    - include: tasks/core.yml
+    - include: tasks/dotfiles.yml
+    - include: tasks/tmux.yml
+
+    #
+    # specific stuff than can be commented out
+    #
+
+    # tools
+
+    # languages
+    - include: tasks/python.yml
+    - include: tasks/ruby.yml
+
+    # editors, IDEs, terminals, etc
+    - include: tasks/neovim.yml

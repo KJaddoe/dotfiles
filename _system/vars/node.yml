@@ -1,0 +1,13 @@
+nodejs_npm_global_packages:
+  - name: eslint
+  - name: prettier
+  - name: typescript
+  - name: tern
+  - name: diff-so-fancy
+  - name: '@angular/cli'
+  # VIM LSP SERVER
+  - name: typescript-language-server
+  - name: vscode-html-languageserver-bin
+  - name: dockerfile-language-server-nodejs
+  - name: vscode-css-languageserver-bin
+  - name: yaml-language-server

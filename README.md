@@ -9,30 +9,17 @@
 I was a little tired of having long alias files and everything strewn about
 (which is extremely common on other dotfiles projects, too). That led to this
 project being much more topic-centric. I realized I could split a lot of things
-up into the main areas I used (Ruby, git, system libraries, and so on), so I
+up into the main areas I used (git, system libraries, and so on), so I
 structured the project accordingly.
 
 ## Decisions
 
-### Do not install a lot of software
-
-At first, this repo contained the dependency installation and other stuff like
-that. I realized it would be better to split that into another repo, so
-this one would contain only the configs, and the other handles only software
-installation.
-
-With that in mind, [machine](http://gitlab.com/KJaddoe/machine) was born.
-
-It's an Ansible recipe that can install a bunch of stuff, and you can comment
-out what you don't want.
-
 ### Default `EDITOR` and `PROJECTS`
 
-The default `EDITOR` right now is `code`, which is Microsoft's OpenSource
-Visual Studio Code editor. You can change that by adding your custom
+The default `EDITOR` right now is `vim`, more specifically neovim. You can change that by adding your custom
 override to that variable in `~/.localrc`.
 
-`PROJECTS` is default to `~/Code`. The shortcut to that folder in the shell
+`PROJECTS` is default to `~/Projecjts`. The shortcut to that folder in the shell
 is `c`. You can override this default in `~/.localrc`.
 
 ### Topical
@@ -74,11 +61,11 @@ a faster and simpler Antigen-like program written in Go.
 
 ### Compatibility
 
-I Mostly work on Linux using either WSL or a distro of Linux
-I try to keep it working in both Linux (no specific distro) and OS X,
-mostly because I use OS X at home and Linux at work.
+I Mostly work on Linux using either WSL or a distro of Linux.
 
-The CI also is also ran on Linux and OSX.
+# Installation
+
+The entire setup can be installed when you run `script/bootstrap`. This will also run the `_system` installation file. The system installation will install everything that is required to get my exact setup.
 
 # Personalization
 
@@ -93,10 +80,6 @@ file.
 
 You can just change the default `~/.gitconfig` file, since it includes the
 dotfiles managed one.
-
-## For psql
-
-You can edit the `~/.psqlrc.local` file.
 
 ## For ssh
 

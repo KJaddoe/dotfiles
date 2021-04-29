@@ -1,0 +1,20 @@
+- name: Install neovim dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - software-properties-common
+    - python3-dev
+
+- name: Add neovim repository
+  apt_repository:
+    repo: 'ppa:neovim-ppa/unstable'
+    state: present
+
+- name: Install neovim
+  package:
+    name: neovim
+
+- name: Install Ag
+  package:
+    name: silversearcher-ag

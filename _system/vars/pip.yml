@@ -1,0 +1,7 @@
+pip_install_packages:
+  - black
+  - rshell
+  - pylint
+  - jedi
+  - pynvim
+  - jedi_language_server

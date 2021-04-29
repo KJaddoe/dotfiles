@@ -1,0 +1,10 @@
+- name: Install tmux
+  package:
+    name: tmux
+    state: present
+
+- name: Clone TPM repository
+  git:
+    repo: 'https://github.com/tmux-plugins/tpm.git'
+    dest: ~/.tmux/plugins/tpm
+  become: no
