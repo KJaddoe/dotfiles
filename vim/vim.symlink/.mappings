@@ -18,11 +18,8 @@ nmap <leader>bq :bp <BAR> bd #<CR>
 :imap <C-BS> <C-W>"
 
 " ==================== Fugitive ====================
-nnoremap <leader>ga :Git add %:p<CR><CR>
-nnoremap <leader>gs :Gstatus<CR>
-nnoremap <leader>gp :Gpush<CR>
-nnoremap <leader>gc :Gcommit<CR>
-vnoremap <leader>gb :Gblame<CR>"
+nnoremap <leader>gs :Git<CR>
+nnoremap <leader>gp :Git push<CR>
 
 " ==================== Surround ====================
 vmap <leader>" S"lvi"
