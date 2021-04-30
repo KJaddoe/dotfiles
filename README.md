@@ -67,6 +67,17 @@ I Mostly work on Linux using either WSL or a distro of Linux.
 
 The entire setup can be installed when you run `script/bootstrap`. This will also run the `_system` installation file. The system installation will install everything that is required to get my exact setup.
 
+## Issues
+
+When having issues installing on wsl some of the following links helped me to get it working:
+https://github.com/MicrosoftDocs/WSL/issues/457#issuecomment-730731900 (deamon not running or can't get deamon status)
+
+### Dotnet
+
+When having issues installing the dotnet package try adding the package using the following guide (ubuntu 20.04)
+https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#2004-
+after that, the dotnet ansible role can be used to install the package
+
 # Personalization
 
 > How to add custom configuration without messing the local repository

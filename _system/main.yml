@@ -12,7 +12,7 @@
     - vars/java.yml
   roles:
     - role: geerlingguy.docker
-      #- role: geerlingguy.kubernetes
+    # - role: geerlingguy.kubernetes
     - role: geerlingguy.nodejs
     - role: geerlingguy.java
     - role: geerlingguy.git
