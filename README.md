@@ -67,6 +67,10 @@ I Mostly work on Linux using either WSL or a distro of Linux.
 
 The entire setup can be installed when you run `script/bootstrap`. This will also run the `_system` installation file. The system installation will install everything that is required to get my exact setup.
 
+## Tmux
+
+to install the tmux plugins you will have to manually do `prefix + I` to install the plugins using tpm. The set prefix is `ctrl + b`
+
 ## Issues
 
 When having issues installing on wsl some of the following links helped me to get it working:
