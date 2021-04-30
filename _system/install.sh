@@ -20,7 +20,8 @@ elif test "$(uname)" = "Linux"; then
   if test -f /etc/lsb-release && test ! "$(which ansible)"; then
     echo "Installing ansible..."
     sudo apt-get update
-    sudo apt-get install python3 python3-pip
+    sudo apt-get install python3
+    sudo apt-get install python3-pip
     sudo -H pip3 install ansible
   fi
 fi
