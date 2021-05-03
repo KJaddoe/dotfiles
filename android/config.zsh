@@ -1,5 +1,5 @@
 #!/bin/zsh
-export ANDROID_HOME=~/Android
+export ANDROID_HOME=/opt/android-sdk-linux
 
 export PATH=$ANDROID_HOME/tools:$PATH
 export PATH=$ANDROID_HOME/platform-tools:$PATH

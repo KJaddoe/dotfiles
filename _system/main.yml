@@ -4,37 +4,39 @@
     - is_ci: ansible_env.TRAVIS_JOB_ID is defined
     - isnt_ci: ansible_env.TRAVIS_JOB_ID is not defined
   vars_files:
-    - vars/node.yml
     - vars/docker.yml
-    - vars/powerline.yml
-    - vars/pip.yml
-    - vars/dotnet_core.yml
+    - vars/node.yml
     - vars/java.yml
+    - vars/pip.yml
+    - vars/powerline.yml
+    - vars/dotnet_core.yml
+    - vars/android.yml
   roles:
-    - role: geerlingguy.docker
-    # - role: geerlingguy.kubernetes
-    - role: geerlingguy.nodejs
-    - role: geerlingguy.java
-    - role: geerlingguy.git
-    - role: geerlingguy.pip
-    - role: mjanser.powerline
-    - role: rkm.dotnet_core
+    # - role: geerlingguy.docker
+    # # - role: geerlingguy.kubernetes
+    # - role: geerlingguy.nodejs
+    # - role: geerlingguy.java
+    # - role: geerlingguy.git
+    # - role: geerlingguy.pip
+    # - role: mjanser.powerline
+    # - role: rkm.dotnet_core
+    - role: nickpack.android_sdk
       become: yes
   tasks:
     # essentials:
-    - include: tasks/apt.yml
-    - include: tasks/core.yml
-    - include: tasks/tmux.yml
-
-    #
-    # specific stuff than can be commented out
-    #
-
-    # tools
-
-    # languages
-    - include: tasks/python.yml
-    - include: tasks/ruby.yml
-
-    # editors, IDEs, terminals, etc
-    - include: tasks/neovim.yml
+    # - include: tasks/apt.yml
+    # - include: tasks/core.yml
+    # - include: tasks/tmux.yml
+#
+    # #
+    # # specific stuff than can be commented out
+    # #
+#
+    # # tools
+#
+    # # languages
+    # - include: tasks/python.yml
+    # - include: tasks/ruby.yml
+#
+    # # editors, IDEs, terminals, etc
+    # - include: tasks/neovim.yml

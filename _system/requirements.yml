@@ -6,3 +6,4 @@
 - src: geerlingguy.pip
 - src: mjanser.powerline
 - src: rkm.dotnet_core
+- src: nickpack.android_sdk

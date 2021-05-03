@@ -1,0 +1,11 @@
+android_sdks_to_install:
+  - android-21
+  - android-22
+  - android-23
+  - android-24
+  - android-25
+  - android-26
+  - android-27
+  - android-28
+  - android-29
+  - android-30
