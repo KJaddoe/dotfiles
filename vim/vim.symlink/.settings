@@ -226,5 +226,5 @@ lua <<EOF
   require'lspconfig'.cssls.setup{}
   require'lspconfig'.yamlls.setup{}
   require'lspconfig'.jedi_language_server.setup{}
-  require'lspconfig'.omnisharp.setup{}
+  require'lspconfig'.angularls.setup{}
 EOF
