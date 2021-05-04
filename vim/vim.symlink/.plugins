@@ -1,7 +1,7 @@
 " load plugins
 call plug#begin('~/.vim/plugged')
 
-Plug 'neovim/nvim-lspconfig', { 'do': ':LspInstall omnisharp' }
+Plug 'neovim/nvim-lspconfig'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'Shougo/deoplete-lsp'
 

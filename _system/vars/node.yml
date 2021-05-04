@@ -11,3 +11,4 @@ nodejs_npm_global_packages:
   - name: dockerfile-language-server-nodejs
   - name: vscode-css-languageserver-bin
   - name: yaml-language-server
+  - name: '@angular/language-server'
