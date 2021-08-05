@@ -203,7 +203,8 @@ let g:NERDTrimTrailingWhitespace = 1
 let g:NERDToggleCheckAllLines = 1
 
 " ==================== Indentline ====================
-autocmd Filetype json :IndentLinesDisable
+let g:indentLine_fileTypeExclude = ['json']
+let g:indentLine_char_list = ['|', '¦', '┆', '┊']
 
 " ==================== Black ====================
 " Run black on save
