@@ -1,4 +1,3 @@
-android_sdk_download_location: https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
 android_sdks_to_install:
   - android-21
   - android-22
