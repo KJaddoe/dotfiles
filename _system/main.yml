@@ -32,7 +32,7 @@
     # # specific stuff than can be commented out
     # #
 
-    # # tools
+    # tools
 
     # languages
     - include: tasks/python.yml
