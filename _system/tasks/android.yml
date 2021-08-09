@@ -1,0 +1,5 @@
+- name: Install the android-sdk package
+  become: yes
+  package:
+    name: android-sdk
+    state: present
