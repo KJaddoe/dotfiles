@@ -10,7 +10,6 @@
     - vars/pip.yml
     - vars/powerline.yml
     - vars/dotnet_core.yml
-    - vars/android.yml
   roles:
     - role: geerlingguy.docker
     # - role: geerlingguy.kubernetes
@@ -20,7 +19,6 @@
     - role: geerlingguy.pip
     - role: mjanser.powerline
     - role: rkm.dotnet_core
-    - role: nickpack.android_sdk
       become: yes
   tasks:
     # essentials:
@@ -32,7 +30,8 @@
     # # specific stuff than can be commented out
     # #
 
-    # # tools
+    # tools
+    - include: tasks/android.yml
 
     # languages
     - include: tasks/python.yml
