@@ -7,8 +7,7 @@ nodejs_npm_global_packages:
   - name: '@angular/cli'
   # VIM LSP SERVER
   - name: typescript-language-server
-  - name: vscode-html-languageserver-bin
+  - name: vscode-langservers-extracted
   - name: dockerfile-language-server-nodejs
-  - name: vscode-css-languageserver-bin
   - name: yaml-language-server
   - name: '@angular/language-server'

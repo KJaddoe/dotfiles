@@ -221,10 +221,19 @@ autocmd BufWritePre *.cs OmniSharpCodeFormat
 
 " ==================== LSP config ====================
 lua <<EOF
+  --Enable (broadcasting) snippet capability for completion
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+  require'lspconfig'.html.setup {
+    capabilities = capabilities,
+  }
+  require'lspconfig'.cssls.setup{
+    capabilities = capabilities,
+  }
+
   require'lspconfig'.tsserver.setup{}
-  require'lspconfig'.html.setup{}
   require'lspconfig'.dockerls.setup{}
-  require'lspconfig'.cssls.setup{}
   require'lspconfig'.yamlls.setup{}
   require'lspconfig'.jedi_language_server.setup{}
   require'lspconfig'.angularls.setup{}
