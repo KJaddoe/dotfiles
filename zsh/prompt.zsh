@@ -1,5 +1,2 @@
 #!/bin/zsh
 export REPORTTIME=10
-export POWERLEVEL9K_SHORTEN_DIR_LENGTH=2
-export POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(user dir vcs)
-export POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status root_indicator)

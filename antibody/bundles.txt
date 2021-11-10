@@ -13,8 +13,8 @@ robbyrussell/oh-my-zsh path:plugins/docker-compose
 robbyrussell/oh-my-zsh path:plugins/ng
 robbyrussell/oh-my-zsh path:plugins/npm
 robbyrussell/oh-my-zsh path:plugins/pip
+robbyrussell/oh-my-zsh path:plugins/fzf
 
 # these should be at last!
 romkatv/powerlevel10k
-zdharma/fast-syntax-highlighting
 zsh-users/zsh-history-substring-search
