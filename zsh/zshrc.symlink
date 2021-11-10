@@ -31,9 +31,6 @@ done
 # load antibody plugins
 source ~/.zsh_plugins.sh
 
-# Fix terminal crashing issue https://github.com/zdharma/fast-syntax-highlighting/issues/146
-export FAST_HIGHLIGHT[chroma-git]="chroma/-ogit.ch"
-
 # load everything but the path and completion files
 for file in ${${config_files:#*/path.zsh}:#*/completion.zsh}; do
   source "$file"
@@ -55,11 +52,6 @@ unset config_files updated_at
 # Load fzf zsh
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# use .localrc for SUPER SECRET CRAP that you don't
-# want in your public, versioned repo.
-# shellcheck disable=SC1090
-[ -f ~/.localrc ] && . ~/.localrc
-
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
@@ -78,3 +70,7 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+# use .localrc for SUPER SECRET CRAP that you don't
+# want in your public, versioned repo.
+# shellcheck disable=SC1090
+[ -f ~/.localrc ] && . ~/.localrc
