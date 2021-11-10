@@ -18,3 +18,4 @@ robbyrussell/oh-my-zsh path:plugins/fzf
 # these should be at last!
 romkatv/powerlevel10k
 zsh-users/zsh-history-substring-search
+zsh-users/zsh-syntax-highlighting
