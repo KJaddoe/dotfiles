@@ -1,5 +1,6 @@
 nodejs_npm_global_packages:
   - name: eslint
+  - name: eslint_d
   - name: prettier
   - name: typescript
   - name: tern
@@ -10,4 +11,6 @@ nodejs_npm_global_packages:
   - name: vscode-langservers-extracted
   - name: dockerfile-language-server-nodejs
   - name: yaml-language-server
+  - name: diagnostic-languageserver
   - name: '@angular/language-server'
+  - name: emmet-ls
