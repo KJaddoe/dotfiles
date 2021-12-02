@@ -1,0 +1,22 @@
+- clean: ['~/.config', '/etc/wsl.conf']
+
+- link:
+    ~/.config/nvim: nvim/config
+    ~/.gvimrc: nvim/gvimrc
+    ~/.editorconfig: editorconfig/editorconfig
+    ~/.eslintrc.json: eslint/eslintrc.json
+    ~/.gitignore: git/gitignore
+    ~/.gitconfig.local: git/gitconfig.local
+    ~/.npmrc: node/npmrc
+    ~/.psqlrc: postgres/psqlrc
+    ~/.p10k.zsh: powerlevel10k/p10k.zsh
+    ~/.prettierrc.json: prettier/prettierrc.json
+    ~/.gemrc: ruby/gemrc
+    ~/.tern-config: tern/tern-config
+    ~/.tmux.conf: tmux/tmux.conf
+    ~/.zshrc: zsh/zshrc
+
+- shell:
+    - [git submodule update --init --recursive, Installing submodules]
+    - [~/.tmux/plugins/tpm/scripts/install_plugins.sh >/dev/null 2>&1, Installing tmux plugins]
+    - ["vim +PackerInstall +PackerClean! +qa", Installing and updating plugins]

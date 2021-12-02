@@ -25,6 +25,7 @@
     - python3-venv
     - socat
     - fzf
+    - ripgrep
 
 - name: Gets the zsh path
   shell: which zsh
