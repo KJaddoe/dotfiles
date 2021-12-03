@@ -128,10 +128,10 @@ local on_attach = function(client, bufnr)
   autocmd("CursorHold", "<buffer>", "lua require'lspsaga.diagnostic'.show_line_diagnostics()")
 
   vim.bo.omnifunc = "v:lua.vim.lsp.omnifunc"
-  vim.fn.sign_define("LspDiagnosticsSignError", {text = "•"})
-  vim.fn.sign_define("LspDiagnosticsSignWarning", {text = "•"})
-  vim.fn.sign_define("LspDiagnosticsSignInformation", {text = "•"})
-  vim.fn.sign_define("LspDiagnosticsSignHint", {text = "•"})
+  vim.fn.sign_define("DiagnosticSignError", {text = ""})
+  vim.fn.sign_define("DiagnosticSignWarn", {text = ""})
+  vim.fn.sign_define("DiagnosticSignInformation", {text = ""})
+  vim.fn.sign_define("DiagnosticSignHint", {text = ""})
 
   if client.resolved_capabilities.document_highlight then
     vim.api.nvim_command("autocmd CursorHold  <buffer> lua vim.lsp.buf.document_highlight()")
