@@ -132,8 +132,10 @@ return require "packer".startup(
     -- Lua
     use {"tbastos/vim-lua"}
 
+    -- Treesitter
     use {"nvim-treesitter/nvim-treesitter"}
     use {"nvim-treesitter/nvim-treesitter-angular"}
+    use {"nvim-treesitter/nvim-treesitter-c-sharp"}
     use {"nvim-treesitter/playground"}
 
     use {"hrsh7th/nvim-compe"}
