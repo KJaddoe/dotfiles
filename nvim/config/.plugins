@@ -10,9 +10,6 @@ Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx', 'typescript', 
 " ==================== Denite ====================
 Plug 'Shougo/denite.nvim'
 
-" ==================== C# ====================
-Plug 'OmniSharp/omnisharp-vim', {'do': ':OmniSharpInstall'}
-
 " ==================== Syntax ====================
 Plug 'prettier/vim-prettier'
 Plug 'psf/black'
