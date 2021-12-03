@@ -25,9 +25,6 @@ M.map("n", "q", "<nop>")
 M.map("n", "<leader>ve", ":edit ~/.config/nvim/init.vim<cr>")
 M.map("n", "<leader>vr", ":source ~/.config/nvim/init.vim<cr>")
 
-M.map("n", "<leader>k", ":nohlsearch<cr>")
-M.map("n", "<leader>Q", ":bufdo bdelete<cr>")
-
 -- Maintain the cursor position when yanking a visual selection
 -- http://ddrscott.github.io/blog/2016/yank-without-jank/
 M.map("v", "y", "myy`y")

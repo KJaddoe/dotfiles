@@ -139,7 +139,9 @@ return require "packer".startup(
     use {"hrsh7th/nvim-compe"}
     use {"neovim/nvim-lspconfig"}
     use {"glepnir/lspsaga.nvim"}
-    --
+    -- C#
+    use {"OmniSharp/omnisharp-vim", run = ':OmniSharpInstall'}
+	--
     use {"nvim-telescope/telescope.nvim"}
     use {"nvim-telescope/telescope-github.nvim"}
     use {"nvim-telescope/telescope-packer.nvim"}

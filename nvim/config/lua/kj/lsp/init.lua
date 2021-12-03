@@ -140,7 +140,8 @@ local on_attach = function(client, bufnr)
   end
 
 end
-local servers = {"pylsp", "bashls", "sourcekit"}
+local servers = {"pylsp", "bashls", "sourcekit", "yamlls", "dockerls",
+"jedi_language_server", "omnisharp"}
 for _, lsp in ipairs(servers) do
   lspconfig[lsp].setup {
     on_attach = on_attach,
