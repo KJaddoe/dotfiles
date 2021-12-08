@@ -80,7 +80,6 @@ M.map("i", "jj", "<esc>")
 
 -- Fugitive
 M.map("t", "<Esc>", "<c-\\><c-n><esc><cr>")
-M.map("n", "<leader>gs", ":Git<cr>")
 M.map("n", "<leader>gp", ":Git push<cr>")
 
 -- terminal M.mappings
