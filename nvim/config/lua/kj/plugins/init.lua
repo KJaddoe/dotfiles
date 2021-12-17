@@ -135,12 +135,12 @@ return require "packer".startup(
     -- Treesitter
     use {"nvim-treesitter/nvim-treesitter"}
     use {"nvim-treesitter/nvim-treesitter-angular"}
-    use {"nvim-treesitter/nvim-treesitter-c-sharp"}
     use {"nvim-treesitter/playground"}
 
     use {"hrsh7th/nvim-compe"}
     use {"neovim/nvim-lspconfig"}
-    use {"glepnir/lspsaga.nvim"}
+    -- use {"glepnir/lspsaga.nvim"}
+    use {"tami5/lspsaga.nvim"}
     -- C#
     use {"OmniSharp/omnisharp-vim", run = ':OmniSharpInstall'}
 	--
