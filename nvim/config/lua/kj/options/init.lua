@@ -23,7 +23,7 @@ Option.b = function(options)
 end
 
 Option.g {
-  scrolloff = 8,
+  scrolloff = 999,
   termguicolors = true,
   mouse = "a",
   clipboard = "unnamedplus",
