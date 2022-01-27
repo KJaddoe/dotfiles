@@ -103,6 +103,7 @@ return require "packer".startup(
     use {"racer-rust/vim-racer"}
     -- Python
     use {"tmhedberg/SimpylFold", ft = "python"}
+    use {"psf/black"}
     -- JS/TS
     use {"othree/yajs.vim"}
     use {"MaxMEllon/vim-jsx-pretty"}
