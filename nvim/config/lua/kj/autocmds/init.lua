@@ -7,7 +7,6 @@ end
 M.autocmd("BufEnter",     "*",   "if &buftype == 'terminal' | :startinsert | endif")
 M.autocmd("BufReadPost",  "*",   [[if line("'\"") > 0 && line ("'\"") <= line("$") | exe "normal! g'\"" | endif]])
 M.autocmd("BufWritePre",  "*",   "%s/\\s\\+$//e")
-M.autocmd("BufWritePost", "*",   "FormatWrite")
 
 M.autocmd("ColorScheme",  "*",   "lua require('kj.colors').setItalics()")
 M.autocmd("CompleteDone", "*",   "pclose")
