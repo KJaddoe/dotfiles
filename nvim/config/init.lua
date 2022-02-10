@@ -1,9 +1,11 @@
 -- Author: Karan Jaddoe
 -- Repo: https://github.com/KJaddoe/dotfiles
 
+require "kj.plugins"
 require "kj.options"
 require "kj.mappings"
-require "kj.plugins"
+require "kj.commands"
+-- require "kj.completion"
 require "kj.colors"
 
 require "kj.autocmds"

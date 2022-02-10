@@ -52,6 +52,7 @@ M.map("n", "<Leader>h", "<cmd>lua require('kj.telescope').help_tags()<cr>")
 M.map("n", "<Leader>c", "<cmd>lua require('kj.telescope').colors()<cr>")
 M.map("n", "<Leader>a", "<cmd>Telescope live_grep<cr>")
 M.map("n", "<Leader>b", "<cmd>Telescope buffers<cr>")
+M.map("n", "z=", "<cmd>Telescope spell_suggest<cr>")
 M.map("n", "<Leader>f", "<cmd>Format<cr>")
 M.map("n", "H", "^")
 M.map("n", "L", "g_")
@@ -71,6 +72,9 @@ M.map("n", "k", "v:count == 0 ? 'gk' : 'k'", {expr = true})
 M.map("n", "j", "v:count == 0 ? 'gj' : 'j'", {expr = true})
 M.map("v", "k", "v:count == 0 ? 'gk' : 'k'", {expr = true})
 M.map("v", "j", "v:count == 0 ? 'gj' : 'j'", {expr = true})
+M.map('v', "Ô", ":m '>+1<CR>gv=gv")
+M.map('v', "", ":m '<-2<CR>gv=gv")
+
 M.map("v", "<", "<gv")
 M.map("v", ">", ">gv")
 M.map("n", "<Leader>d", '"_d')
@@ -110,6 +114,29 @@ for i = 1, 9 do
   M.map("t", "<leader>" .. i, '<C-\\><C-n>:lua require"bufferline".go_to_buffer(' .. i .. ")<CR>")
 end
 
-vim.cmd("cnoreabbrev x Sayonara")
+vim.cmd("cnoreabbrev <silent> x lua require('kj.commands').BufDel()")
+
+-- vim.cmd("cnoreabbrev x Sayonara")
+
+-- Show package versions
+M.map("n", "<leader>ns", ":lua require('package-info').show()<CR>" )
+
+-- Hide package versions
+M.map("n", "<leader>nc", ":lua require('package-info').hide()<CR>")
+
+-- Update package on line
+M.map("n", "<leader>nu", ":lua require('package-info').update()<CR>")
+
+-- Delete package on line
+M.map("n", "<leader>nd", ":lua require('package-info').delete()<CR>")
+
+-- Install a new package
+M.map("n", "<leader>ni", ":lua require('package-info').install()<CR>")
+
+-- Reinstall dependencies
+M.map("n", "<leader>nr", ":lua require('package-info').reinstall()<CR>")
+
+-- Install a different package version
+M.map("n", "<leader>np", ":lua require('package-info').change_version()<CR>")
 
 return M
