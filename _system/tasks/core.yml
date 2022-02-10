@@ -26,6 +26,7 @@
     - socat
     - fzf
     - ripgrep
+    - fdfind
 
 - name: Gets the zsh path
   shell: which zsh

@@ -18,7 +18,7 @@ local M = {
   white  = "#ffffff"
 }
 
-vim.cmd("colorscheme gruvbox")
+vim.cmd("colorscheme catppuccin")
 
 function M.setItalics()
   vim.cmd("hi Comment gui=italic")
@@ -31,5 +31,7 @@ function M.setItalics()
   vim.cmd("hi htmlArg gui=italic")
   vim.cmd("hi pythonSelf gui=italic")
 end
+
+M.setItalics()
 
 return M
