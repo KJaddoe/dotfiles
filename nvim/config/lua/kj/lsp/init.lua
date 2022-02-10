@@ -141,7 +141,7 @@ local on_attach = function(client, bufnr)
 
 end
 local servers = {"pylsp", "bashls", "sourcekit", "yamlls", "dockerls",
-"jedi_language_server", "omnisharp"}
+"jedi_language_server"}
 for _, lsp in ipairs(servers) do
   lspconfig[lsp].setup {
     on_attach = on_attach,
@@ -270,6 +270,13 @@ lspconfig.angularls.setup {
   on_new_config = function(new_config)
     new_config.cmd = ngls_cmd
   end
+}
+
+lspconfig.omnisharp.setup {
+  on_attach = function(_, bufnr)
+    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+  end,
+  cmd = { "~/.cache/omnisharp-vim/omnisharp-roslyn/run", "--languageserver" , "--hostPID", tostring(pid) },
 }
 
 return M
