@@ -5,7 +5,7 @@ require "kj.plugins"
 require "kj.options"
 require "kj.mappings"
 require "kj.commands"
--- require "kj.completion"
+require "kj.completion"
 require "kj.colors"
 
 require "kj.autocmds"
