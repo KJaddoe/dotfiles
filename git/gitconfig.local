@@ -46,9 +46,6 @@
 [submodule]
 	fetchJobs = 4
 [commit]
-  gpgSign = true
 	template = ~/.dotfiles/git/template.txt
-[tag]
-  gpgSign = true
 [log]
 	showSignature = false
