@@ -14,3 +14,4 @@ nodejs_npm_global_packages:
   - name: diagnostic-languageserver
   - name: '@angular/language-server'
   - name: emmet-ls
+  - name: bash-language-server
