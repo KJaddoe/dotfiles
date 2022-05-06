@@ -27,6 +27,7 @@
     - fzf
     - ripgrep
     - fdfind
+    - net-tools
 
 - name: Gets the zsh path
   shell: which zsh
