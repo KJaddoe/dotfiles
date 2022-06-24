@@ -264,6 +264,9 @@ return require "packer".startup(
         "f3fora/cmp-spell"
       }
     }
+
+    use {"rafamadriz/friendly-snippets"}
+
     -- Currently bugged on neovim 0.7
     -- use {"simrat39/symbols-outline.nvim"}
     use {"nvim-lua/lsp-status.nvim"}
