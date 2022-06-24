@@ -1,6 +1,8 @@
 local luasnip = require("luasnip")
 local cmp = require'cmp'
 
+require("luasnip.loaders.from_vscode").lazy_load()
+
 local M = {}
 
 local has_words_before = function()
