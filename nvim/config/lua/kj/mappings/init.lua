@@ -15,6 +15,13 @@ function M.mapBuf(buf, mode, lhs, rhs, opts)
   end
   vim.api.nvim_buf_set_keymap(buf, mode, lhs, rhs, options)
 end
+function M.keymap(modes, mapping, func, opts)
+  local options = {noremap = true, silent = true}
+  if opts then
+    options = vim.tbl_extend("force", options, opts)
+  end
+  vim.keymap.set(modes, mapping, func, opts)
+end
 
 -- Allow gf to open non-existent files
 M.map("", "gf", ":edit <cfile><cr>")
@@ -47,7 +54,7 @@ M.map("n", "N", "Nzzzv")
 M.map("n", "J", "mzJ`z")
 
 M.map("n", "<Leader>H", '<cmd>TSHighlightCapturesUnderCursor<cr>')
-M.map("n", "<c-p>", "<cmd>lua require('kj.telescope').find_files()<cr>")
+M.keymap({"n"}, "<c-p>", function() require('k.telescope').find_files()end )
 M.map("n", "<Leader>h", "<cmd>lua require('kj.telescope').help_tags()<cr>")
 M.map("n", "<Leader>c", "<cmd>lua require('kj.telescope').colors()<cr>")
 M.map("n", "<Leader>a", "<cmd>Telescope live_grep<cr>")
