@@ -54,7 +54,7 @@ M.map("n", "N", "Nzzzv")
 M.map("n", "J", "mzJ`z")
 
 M.map("n", "<Leader>H", '<cmd>TSHighlightCapturesUnderCursor<cr>')
-M.keymap({"n"}, "<c-p>", function() require('k.telescope').find_files()end )
+M.keymap({"n"}, "<c-p>", function() require('kj.telescope').find_files()end )
 M.map("n", "<Leader>h", "<cmd>lua require('kj.telescope').help_tags()<cr>")
 M.map("n", "<Leader>c", "<cmd>lua require('kj.telescope').colors()<cr>")
 M.map("n", "<Leader>a", "<cmd>Telescope live_grep<cr>")
