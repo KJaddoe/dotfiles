@@ -630,20 +630,20 @@ canvas.register_hooks {
   on_enter = function()
     api.nvim_command("doautocmd User YanilTreeEnter")
     vim.wo.cursorline = true
-    vim.cmd("hi YanilGitUntracked gui=None guifg=#65737e")
-    vim.cmd("hi YanilTreeDirectory guifg=#6699cc")
-    vim.cmd("hi YanilTreeLinkTo guibg=none")
-    vim.cmd("hi YanilTreeFile guibg=none")
+    vim.cmd("hi YanilGitUntracked gui=None fg=#65737e")
+    vim.cmd("hi YanilTreeDirectory fg=#6699cc")
+    vim.cmd("hi YanilTreeLinkTo bg=none")
+    vim.cmd("hi YanilTreeFile bg=none")
     vim.cmd("setl nowrap")
     -- vim.cmd("silent vertical resize 45")
     git.update(yanilTree.cwd)
     -- vim.cmd('setlocal winhighlight=EndOfBuffer:YanilEndOfBuffer,Normal:YanilNormal,SignColumn:YanilSignColumn,NormalNC:YanilnNormalNC,VertSplit:YanilVertSplit')
 
     --
-    -- vim.cmd('hi YanilNormal guibg=#11171A')
-    -- vim.cmd('hi YanilEndOfBuffer guifg=#11171A')
-    -- vim.cmd('hi YanilnNormalNC guibg=#11171A')
-    -- vim.cmd('hi YanilVertSplit guibg=#19222A guifg=#19222A')
+    -- vim.cmd('hi YanilNormal bg=#11171A')
+    -- vim.cmd('hi YanilEndOfBuffer fg=#11171A')
+    -- vim.cmd('hi YanilnNormalNC bg=#11171A')
+    -- vim.cmd('hi YanilVertSplit bg=#19222A fg=#19222A')
   end
 }
 canvas.setup {
