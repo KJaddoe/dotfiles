@@ -9,23 +9,26 @@ vim.api.nvim_command('packadd packer.nvim')
 
 local no_errors, error_msg = pcall(function()
 
-  local time
-  local profile_info
-  local should_profile = false
-  if should_profile then
-    local hrtime = vim.loop.hrtime
-    profile_info = {}
-    time = function(chunk, start)
-      if start then
-        profile_info[chunk] = hrtime()
-      else
-        profile_info[chunk] = (hrtime() - profile_info[chunk]) / 1e6
-      end
+_G._packer = _G._packer or {}
+_G._packer.inside_compile = true
+
+local time
+local profile_info
+local should_profile = false
+if should_profile then
+  local hrtime = vim.loop.hrtime
+  profile_info = {}
+  time = function(chunk, start)
+    if start then
+      profile_info[chunk] = hrtime()
+    else
+      profile_info[chunk] = (hrtime() - profile_info[chunk]) / 1e6
     end
-  else
-    time = function(chunk, start) end
   end
-  
+else
+  time = function(chunk, start) end
+end
+
 local function save_profiles(threshold)
   local sorted_times = {}
   for chunk_name, time_taken in pairs(profile_info) do
@@ -38,8 +41,10 @@ local function save_profiles(threshold)
       results[i] = elem[1] .. ' took ' .. elem[2] .. 'ms'
     end
   end
+  if threshold then
+    table.insert(results, '(Only showing plugins that took longer than ' .. threshold .. ' ms ' .. 'to load)')
+  end
 
-  _G._packer = _G._packer or {}
   _G._packer.profile_output = results
 end
 
@@ -80,6 +85,11 @@ _G.packer_plugins = {
     path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/LuaSnip",
     url = "https://github.com/L3MON4D3/LuaSnip"
   },
+  ["NeoClear.lua"] = {
+    loaded = true,
+    path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/NeoClear.lua",
+    url = "https://github.com/nyngwang/NeoClear.lua"
+  },
   SimpylFold = {
     loaded = false,
     needs_bufread = true,
@@ -97,6 +107,11 @@ _G.packer_plugins = {
     path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/cmp-nvim-lsp",
     url = "https://github.com/hrsh7th/cmp-nvim-lsp"
   },
+  ["cmp-nvim-lsp-signature-help"] = {
+    loaded = true,
+    path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/cmp-nvim-lsp-signature-help",
+    url = "https://github.com/hrsh7th/cmp-nvim-lsp-signature-help"
+  },
   ["cmp-spell"] = {
     loaded = true,
     path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/cmp-spell",
@@ -111,6 +126,12 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/delimitMate",
     url = "https://github.com/Raimondi/delimitMate"
+  },
+  ["dressing.nvim"] = {
+    config = { "\27LJ\2\2\v\0\1\1\0\0\0\1L\0\2\0\v\0\1\1\0\0\0\1L\0\2\0Š\5\1\0\5\0\27\0#6\0\0\0'\1\1\0B\0\2\0029\0\2\0005\1\f\0005\2\3\0005\3\4\0=\3\5\0025\3\6\0=\3\a\0025\3\b\0=\3\t\0023\3\n\0=\3\v\2=\2\r\0015\2\14\0005\3\15\0=\3\16\0025\3\17\0005\4\18\0=\4\t\0035\4\19\0=\4\5\0035\4\20\0=\4\a\0035\4\21\0=\4\22\0033\4\23\0=\4\v\3=\3\24\0024\3\0\0=\3\25\2=\2\26\1B\0\2\1K\0\1\0\vselect\25format_item_override\fbuiltin\0\15min_height\1\3\0\0\3\5\4š³æÌ\t™³¦þ\3\1\3\0\0\3(\4š³æÌ\t™³¦þ\3\1\3\0\0\3Œ\1\4š³æÌ\t™³¦ÿ\3\1\0\2\rwinblend\3\0\17winhighlight\20Normal:MyNormal\1\0\4\15max_height\4Í™³æ\fÌ™³ÿ\3\rrelative\vcursor\vanchor\aNW\vborder\frounded\fbackend\1\0\0\1\0\2\16trim_prompt\2\fenabled\2\ninput\1\0\0\roverride\0\16win_options\1\0\2\rwinblend\3\n\17winhighlight\5\14min_width\1\3\0\0\3\20\4š³æÌ\t™³¦þ\3\14max_width\1\3\0\0\3Œ\1\4Í™³æ\fÌ™³ÿ\3\1\0\b\rrelative\vcursor\17prefer_width\3(\fenabled\2\17prompt_align\tleft\vanchor\aSW\vborder\frounded\19default_prompt\vInput:\16insert_only\2\nsetup\rdressing\frequire\0" },
+    loaded = true,
+    path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/dressing.nvim",
+    url = "https://github.com/stevearc/dressing.nvim"
   },
   ["editorconfig-vim"] = {
     loaded = true,
@@ -318,6 +339,11 @@ _G.packer_plugins = {
     path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/switch.vim",
     url = "https://github.com/AndrewRadev/switch.vim"
   },
+  ["symbols-outline.nvim"] = {
+    loaded = true,
+    path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/symbols-outline.nvim",
+    url = "https://github.com/simrat39/symbols-outline.nvim"
+  },
   ["telescope-fzy-native.nvim"] = {
     loaded = true,
     path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/telescope-fzy-native.nvim",
@@ -348,6 +374,16 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/trouble.nvim",
     url = "https://github.com/folke/trouble.nvim"
+  },
+  ["true-zen.nvim"] = {
+    loaded = true,
+    path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/true-zen.nvim",
+    url = "https://github.com/Pocco81/true-zen.nvim"
+  },
+  ["vim-browserslist"] = {
+    loaded = true,
+    path = "/home/anirvan/.local/share/nvim/site/pack/packer/start/vim-browserslist",
+    url = "https://github.com/antonk52/vim-browserslist"
   },
   ["vim-colors-synthwave"] = {
     loaded = true,
@@ -540,6 +576,22 @@ time([[Defining packer_plugins]], false)
 time([[Config for octo.nvim]], true)
 try_loadstring("\27LJ\2\0022\0\0\2\0\3\0\0066\0\0\0'\1\1\0B\0\2\0029\0\2\0B\0\1\1K\0\1\0\nsetup\tocto\frequire\0", "config", "octo.nvim")
 time([[Config for octo.nvim]], false)
+-- Config for: dressing.nvim
+time([[Config for dressing.nvim]], true)
+try_loadstring("\27LJ\2\2\v\0\1\1\0\0\0\1L\0\2\0\v\0\1\1\0\0\0\1L\0\2\0Š\5\1\0\5\0\27\0#6\0\0\0'\1\1\0B\0\2\0029\0\2\0005\1\f\0005\2\3\0005\3\4\0=\3\5\0025\3\6\0=\3\a\0025\3\b\0=\3\t\0023\3\n\0=\3\v\2=\2\r\0015\2\14\0005\3\15\0=\3\16\0025\3\17\0005\4\18\0=\4\t\0035\4\19\0=\4\5\0035\4\20\0=\4\a\0035\4\21\0=\4\22\0033\4\23\0=\4\v\3=\3\24\0024\3\0\0=\3\25\2=\2\26\1B\0\2\1K\0\1\0\vselect\25format_item_override\fbuiltin\0\15min_height\1\3\0\0\3\5\4š³æÌ\t™³¦þ\3\1\3\0\0\3(\4š³æÌ\t™³¦þ\3\1\3\0\0\3Œ\1\4š³æÌ\t™³¦ÿ\3\1\0\2\rwinblend\3\0\17winhighlight\20Normal:MyNormal\1\0\4\15max_height\4Í™³æ\fÌ™³ÿ\3\rrelative\vcursor\vanchor\aNW\vborder\frounded\fbackend\1\0\0\1\0\2\16trim_prompt\2\fenabled\2\ninput\1\0\0\roverride\0\16win_options\1\0\2\rwinblend\3\n\17winhighlight\5\14min_width\1\3\0\0\3\20\4š³æÌ\t™³¦þ\3\14max_width\1\3\0\0\3Œ\1\4Í™³æ\fÌ™³ÿ\3\1\0\b\rrelative\vcursor\17prefer_width\3(\fenabled\2\17prompt_align\tleft\vanchor\aSW\vborder\frounded\19default_prompt\vInput:\16insert_only\2\nsetup\rdressing\frequire\0", "config", "dressing.nvim")
+time([[Config for dressing.nvim]], false)
+-- Config for: nvim-colorizer.lua
+time([[Config for nvim-colorizer.lua]], true)
+try_loadstring("\27LJ\2\0027\0\0\2\0\3\0\0066\0\0\0'\1\1\0B\0\2\0029\0\2\0B\0\1\1K\0\1\0\nsetup\14colorizer\frequire\0", "config", "nvim-colorizer.lua")
+time([[Config for nvim-colorizer.lua]], false)
+-- Config for: indent-blankline.nvim
+time([[Config for indent-blankline.nvim]], true)
+try_loadstring("\27LJ\2\2ù\2\0\0\2\0\v\0\0256\0\0\0009\0\1\0005\1\3\0=\1\2\0006\0\0\0009\0\1\0005\1\5\0=\1\4\0006\0\0\0009\0\1\0'\1\a\0=\1\6\0006\0\0\0009\0\1\0+\1\1\0=\1\b\0006\0\0\0009\0\1\0+\1\1\0=\1\t\0006\0\0\0009\0\1\0+\1\1\0=\1\n\0K\0\1\0004indent_blankline_show_trailing_blankline_indent*indent_blankline_show_current_context$indent_blankline_use_treesitter\aÂ¦\26indent_blankline_char\1\6\0\0\thelp\rstartify\14dashboard\vpacker\nYanil&indent_blankline_filetype_exclude\1\2\0\0\rterminal%indent_blankline_buftype_exclude\6g\bvim\0", "config", "indent-blankline.nvim")
+time([[Config for indent-blankline.nvim]], false)
+-- Config for: stabilize.nvim
+time([[Config for stabilize.nvim]], true)
+try_loadstring("\27LJ\2\0027\0\0\2\0\3\0\0066\0\0\0'\1\1\0B\0\2\0029\0\2\0B\0\1\1K\0\1\0\nsetup\14stabilize\frequire\0", "config", "stabilize.nvim")
+time([[Config for stabilize.nvim]], false)
 -- Config for: trouble.nvim
 time([[Config for trouble.nvim]], true)
 try_loadstring("\27LJ\2\0029\0\0\2\0\3\0\a6\0\0\0'\1\1\0B\0\2\0029\0\2\0004\1\0\0B\0\2\1K\0\1\0\nsetup\ftrouble\frequire\0", "config", "trouble.nvim")
@@ -548,26 +600,14 @@ time([[Config for trouble.nvim]], false)
 time([[Config for gitsigns.nvim]], true)
 try_loadstring("\27LJ\2\2Å\2\0\0\4\0\16\0\0196\0\0\0'\1\1\0B\0\2\0029\0\2\0005\1\3\0005\2\5\0005\3\4\0=\3\6\0025\3\a\0=\3\b\0025\3\t\0=\3\n\0025\3\v\0=\3\f\0025\3\r\0=\3\14\2=\2\15\1B\0\2\1K\0\1\0\nsigns\17changedelete\1\0\2\ttext\6~\ahl\26GitGutterChangeDelete\14topdelete\1\0\2\ttext\bâ€¾\ahl\20GitGutterDelete\vdelete\1\0\2\ttext\6_\ahl\20GitGutterDelete\vchange\1\0\2\ttext\bâ”‚\ahl\20GitGutterChange\badd\1\0\0\1\0\2\ttext\bâ”‚\ahl\17GitGutterAdd\1\0\1\15debug_mode\1\nsetup\rgitsigns\frequire\0", "config", "gitsigns.nvim")
 time([[Config for gitsigns.nvim]], false)
--- Config for: nvim-colorizer.lua
-time([[Config for nvim-colorizer.lua]], true)
-try_loadstring("\27LJ\2\0027\0\0\2\0\3\0\0066\0\0\0'\1\1\0B\0\2\0029\0\2\0B\0\1\1K\0\1\0\nsetup\14colorizer\frequire\0", "config", "nvim-colorizer.lua")
-time([[Config for nvim-colorizer.lua]], false)
 -- Config for: nvim
 time([[Config for nvim]], true)
 try_loadstring("\27LJ\2\2Ü\5\0\0\a\0\18\0\0236\0\0\0'\1\1\0B\0\2\0029\1\2\0004\2\3\0005\3\3\0005\4\4\0=\4\5\0035\4\6\0005\5\a\0005\6\b\0=\6\t\0055\6\n\0=\6\v\5=\5\f\0045\5\r\0=\5\14\0045\5\15\0=\5\16\4=\4\17\3>\3\1\2B\1\2\1K\0\1\0\17integrations\21indent_blankline\1\0\2\fenabled\1\26colored_indent_levels\1\rnvimtree\1\0\2\fenabled\2\14show_root\2\15native_lsp\15underlines\1\0\4\16information\14underline\rwarnings\14underline\verrors\14underline\nhints\14underline\17virtual_text\1\0\4\16information\vitalic\rwarnings\vitalic\verrors\vitalic\nhints\vitalic\1\0\1\fenabled\2\1\0\17\15treesitter\2\14vim_sneak\1\15lightspeed\1\14which_key\1\14dashboard\1\16lsp_trouble\1\rmarkdown\1\rgitsigns\1\15bufferline\1\vbarbar\1\bhop\1\rlsp_saga\1\tfern\1\15ts_rainbow\1\14telescope\1\vneogit\1\14gitgutter\1\vstyles\1\0\5\rcomments\vitalic\14variables\tNONE\14functions\vitalic\rkeywords\vitalic\fstrings\tNONE\1\0\3\17transparency\1\16colorscheme\21dark_catppuccino\16term_colors\1\nsetup\15catppuccin\frequire\0", "config", "nvim")
 time([[Config for nvim]], false)
--- Config for: indent-blankline.nvim
-time([[Config for indent-blankline.nvim]], true)
-try_loadstring("\27LJ\2\2ù\2\0\0\2\0\v\0\0256\0\0\0009\0\1\0005\1\3\0=\1\2\0006\0\0\0009\0\1\0005\1\5\0=\1\4\0006\0\0\0009\0\1\0'\1\a\0=\1\6\0006\0\0\0009\0\1\0+\1\1\0=\1\b\0006\0\0\0009\0\1\0+\1\1\0=\1\t\0006\0\0\0009\0\1\0+\1\1\0=\1\n\0K\0\1\0004indent_blankline_show_trailing_blankline_indent*indent_blankline_show_current_context$indent_blankline_use_treesitter\aÂ¦\26indent_blankline_char\1\6\0\0\thelp\rstartify\14dashboard\vpacker\nYanil&indent_blankline_filetype_exclude\1\2\0\0\rterminal%indent_blankline_buftype_exclude\6g\bvim\0", "config", "indent-blankline.nvim")
-time([[Config for indent-blankline.nvim]], false)
 -- Config for: Comment.nvim
 time([[Config for Comment.nvim]], true)
 try_loadstring("\27LJ\2\2ß\3\0\1\6\0\22\00066\1\0\0009\1\1\0019\1\2\1\a\1\3\0X\0010€6\1\4\0'\2\5\0B\1\2\0029\2\6\0009\3\6\0019\3\a\3\5\2\3\0X\2\2€'\2\b\0X\3\1€'\2\t\0+\3\0\0009\4\6\0009\5\6\0019\5\n\5\5\4\5\0X\4\a€6\4\4\0'\5\v\0B\4\2\0029\4\f\4B\4\1\2\18\3\4\0X\4\16€9\4\r\0009\5\r\0019\5\14\5\4\4\5\0X\4\5€9\4\r\0009\5\r\0019\5\15\5\5\4\5\0X\4\6€6\4\4\0'\5\v\0B\4\2\0029\4\16\4B\4\1\2\18\3\4\0006\4\4\0'\5\17\0B\4\2\0029\4\18\0045\5\19\0=\2\20\5=\3\21\5D\4\2\0K\0\1\0\rlocation\bkey\1\0\0\28calculate_commentstring&ts_context_commentstring.internal\30get_visual_start_location\6V\6v\fcmotion\24get_cursor_location#ts_context_commentstring.utils\nblock\16__multiline\14__default\tline\nctype\18Comment.utils\frequire\20typescriptreact\rfiletype\abo\bvimN\1\0\3\0\6\0\t6\0\0\0'\1\1\0B\0\2\0029\0\2\0005\1\4\0003\2\3\0=\2\5\1B\0\2\1K\0\1\0\rpre_hook\1\0\0\0\nsetup\fComment\frequire\0", "config", "Comment.nvim")
 time([[Config for Comment.nvim]], false)
--- Config for: stabilize.nvim
-time([[Config for stabilize.nvim]], true)
-try_loadstring("\27LJ\2\0027\0\0\2\0\3\0\0066\0\0\0'\1\1\0B\0\2\0029\0\2\0B\0\1\1K\0\1\0\nsetup\14stabilize\frequire\0", "config", "stabilize.nvim")
-time([[Config for stabilize.nvim]], false)
 vim.cmd [[augroup packer_load_aucmds]]
 vim.cmd [[au!]]
   -- Filetype lazy-loads
@@ -581,6 +621,13 @@ time([[Sourcing ftdetect script at: /home/anirvan/.local/share/nvim/site/pack/pa
 vim.cmd [[source /home/anirvan/.local/share/nvim/site/pack/packer/opt/vim-markdown/ftdetect/markdown.vim]]
 time([[Sourcing ftdetect script at: /home/anirvan/.local/share/nvim/site/pack/packer/opt/vim-markdown/ftdetect/markdown.vim]], false)
 vim.cmd("augroup END")
+
+_G._packer.inside_compile = false
+if _G._packer.needs_bufread == true then
+  vim.cmd("doautocmd BufRead")
+end
+_G._packer.needs_bufread = false
+
 if should_profile then save_profiles() end
 
 end)
