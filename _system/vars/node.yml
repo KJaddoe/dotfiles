@@ -6,6 +6,7 @@ nodejs_npm_global_packages:
   - name: tern
   - name: diff-so-fancy
   - name: '@angular/cli'
+  - name: 'tree-sitter-cli'
   # VIM LSP SERVER
   - name: typescript-language-server
   - name: vscode-langservers-extracted
