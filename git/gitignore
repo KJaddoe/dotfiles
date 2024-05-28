@@ -12,5 +12,9 @@
 .settings
 .ruby-version
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 dump.rdb
 main.tfvars

@@ -74,3 +74,7 @@ unset __conda_setup
 # want in your public, versioned repo.
 # shellcheck disable=SC1090
 [ -f ~/.localrc ] && . ~/.localrc
+
+
+# Load Angular CLI autocompletion.
+source <(ng completion script)
