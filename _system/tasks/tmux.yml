@@ -4,7 +4,7 @@
     state: present
 
 - name: Clone TPM repository
+  become: false
   git:
     repo: 'https://github.com/tmux-plugins/tpm.git'
     dest: ~/.tmux/plugins/tpm
-  become: no
