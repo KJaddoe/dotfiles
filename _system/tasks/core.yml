@@ -26,7 +26,7 @@
     - socat
     - fzf
     - ripgrep
-    - fdfind
+    - fd-find
     - net-tools
 
 - name: Gets the zsh path
@@ -39,7 +39,7 @@
   when: isnt_ci
 
 - name: Install antibody
-  become: yes
+  become: true
   shell: curl -sfL git.io/antibody | sh -s - -b /usr/local/bin
   args:
     warn: no

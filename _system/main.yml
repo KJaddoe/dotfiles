@@ -1,5 +1,5 @@
 - hosts: localhost
-  become: yes
+  become: true
   vars:
     - is_ci: ansible_env.TRAVIS_JOB_ID is defined
     - isnt_ci: ansible_env.TRAVIS_JOB_ID is not defined
@@ -9,8 +9,6 @@
     - vars/java.yml
     - vars/pip.yml
     - vars/powerline.yml
-    - vars/dotnet_core.yml
-    - vars/android.yml
   roles:
     - role: geerlingguy.docker
     # - role: geerlingguy.kubernetes
@@ -19,14 +17,12 @@
     - role: geerlingguy.git
     - role: geerlingguy.pip
     - role: mjanser.powerline
-    # - role: rkm.dotnet_core
-    # - role: nickpack.android_sdk
-      become: yes
+      become: true
   tasks:
     # essentials:
-    - include: tasks/apt.yml
-    - include: tasks/core.yml
-    - include: tasks/tmux.yml
+    - include_task: tasks/apt.yml
+    - include_task: tasks/core.yml
+    - include_task: tasks/tmux.yml
 
     # #
     # # specific stuff than can be commented out
@@ -35,8 +31,8 @@
     # tools
 
     # languages
-    - include: tasks/python.yml
-    - include: tasks/ruby.yml
+    - include_task: tasks/python.yml
+    - include_task: tasks/ruby.yml
 
     # editors, IDEs, terminals, etc
-    - include: tasks/neovim.yml
+    - include_task: tasks/neovim.yml
