@@ -20,9 +20,9 @@
       become: true
   tasks:
     # essentials:
-    - include_task: tasks/apt.yml
-    - include_task: tasks/core.yml
-    - include_task: tasks/tmux.yml
+    - include_tasks: tasks/apt.yml
+    - include_tasks: tasks/core.yml
+    - include_tasks: tasks/tmux.yml
 
     # #
     # # specific stuff than can be commented out
@@ -31,8 +31,8 @@
     # tools
 
     # languages
-    - include_task: tasks/python.yml
-    - include_task: tasks/ruby.yml
+    - include_tasks: tasks/python.yml
+    - include_tasks: tasks/ruby.yml
 
     # editors, IDEs, terminals, etc
-    - include_task: tasks/neovim.yml
+    - include_tasks: tasks/neovim.yml
