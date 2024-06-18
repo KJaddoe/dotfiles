@@ -5,3 +5,5 @@ pip_install_packages:
   - jedi
   - pynvim
   - jedi_language_server
+  - ansible-dev-tools
+  - ansible-lint
