@@ -89,7 +89,6 @@ find_zsh() {
 }
 
 setup_gitconfig
-install_dotfiles
 
 info "installing dependencies"
 if ./bin/dot_update; then
@@ -104,6 +103,8 @@ if ./bin/dot_update; then
  	command -v chsh >/dev/null 2>&1 &&
  	chsh -s "$zsh" &&
  	success "set $("$zsh" --version) at $zsh as default shell"
+
+install_dotfiles
 
  echo ''
  echo '  All installed!'
