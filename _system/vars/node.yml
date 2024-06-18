@@ -1,3 +1,4 @@
+nodejs_version: '20.x'
 nodejs_npm_global_packages:
   - name: eslint
   - name: eslint_d
