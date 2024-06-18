@@ -31,7 +31,6 @@
     # tools
 
     # languages
-    - include_tasks: tasks/python.yml
     - include_tasks: tasks/ruby.yml
 
     # editors, IDEs, terminals, etc
