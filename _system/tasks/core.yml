@@ -41,5 +41,3 @@
 - name: Install antibody
   become: true
   shell: curl -sfL git.io/antibody | sh -s - -b /usr/local/bin
-  args:
-    warn: no
