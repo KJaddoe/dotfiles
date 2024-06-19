@@ -23,52 +23,6 @@ function M.keymap(modes, mapping, func, opts)
   vim.keymap.set(modes, mapping, func, opts)
 end
 
--- Allow gf to open non-existent files
-M.map("", "gf", ":edit <cfile><cr>")
-
-M.map("n", "Q", "<nop>")
-M.map("n", "q", "<nop>")
-
-M.map("n", "<leader>ve", ":edit ~/.config/nvim/init.vim<cr>")
-M.map("n", "<leader>vr", ":source ~/.config/nvim/init.vim<cr>")
-
--- Maintain the cursor position when yanking a visual selection
--- http://ddrscott.github.io/blog/2016/yank-without-jank/
-M.map("v", "y", "myy`y")
-M.map("v", "Y", "myY`y")
-
--- When text is wrapped, move by terminal rows, not lines, unless a count is provided
-M.map("n", "k", "v:count == 0 ? 'gk' : 'k'", {expr = true})
-M.map("n", "j", "v:count == 0 ? 'gj' : 'j'", {expr = true})
-M.map("v", "k", "v:count == 0 ? 'gk' : 'k'", {expr = true})
-M.map("v", "j", "v:count == 0 ? 'gj' : 'j'", {expr = true})
-
--- Paste replace visual selection without copying it
-M.map("v", "<leader>p", "_dP")
-
--- Make Y behave like the other capitals
-M.map("n", "Y", "y$")
-
-M.map("n", "n", "nzzzv")
-M.map("n", "N", "Nzzzv")
-M.map("n", "J", "mzJ`z")
-
-M.map("n", "<Leader>H", '<cmd>TSHighlightCapturesUnderCursor<cr>')
-M.keymap({"n"}, "<c-p>", function() require('kj.telescope').find_files()end )
-M.map("n", "<Leader>h", "<cmd>lua require('kj.telescope').help_tags()<cr>")
-M.map("n", "<Leader>c", "<cmd>lua require('kj.telescope').colors()<cr>")
-M.map("n", "<Leader>a", "<cmd>Telescope live_grep<cr>")
-M.map("n", "<Leader>b", "<cmd>Telescope buffers<cr>")
-M.map("n", "z=", "<cmd>Telescope spell_suggest<cr>")
-M.map("n", "<Leader>f", "<cmd>Format<cr>")
-M.map("n", "H", "^")
-M.map("n", "L", "g_")
-M.map("v", "H", "^")
-M.map("v", "L", "g_")
-M.map("n", "J", "5j")
-M.map("n", "K", "5k")
-M.map("v", "J", "5j")
-M.map("v", "K", "5k")
 M.map("v", "gJ", ":join<cr>")
 M.map("n", ";", ":", {nowait = true, silent = false})
 M.map("n", "<Space>", "za")
@@ -87,7 +41,6 @@ M.map("v", ">", ">gv")
 M.map("n", "<Leader>d", '"_d')
 M.map("v", "<Leader>d", '"_d')
 M.map("n", "<Esc>", "<cmd>noh<cr>")
-M.map("i", "jj", "<esc>")
 
 -- Fugitive
 M.map("t", "<Esc>", "<c-\\><c-n><esc><cr>")
@@ -114,16 +67,11 @@ M.map("t", "<C-l>", "<c-\\><c-n>:TmuxNavigateRight<cr>")
 M.map("t", "<C-h>", "<c-\\><c-n>:TmuxNavigateLeft<CR>")
 
 M.map("n", "<Leader>tm", "<cmd>TableModeToggle<cr>")
-M.map("n", "<Leader>u", "<cmd>PackerUpdate<cr>")
 
 for i = 1, 9 do
   M.map("n", "<leader>" .. i, ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>")
   M.map("t", "<leader>" .. i, '<C-\\><C-n>:lua require"bufferline".go_to_buffer(' .. i .. ")<CR>")
 end
-
-vim.cmd("cnoreabbrev <silent> x lua require('kj.commands').BufDel()")
-
--- vim.cmd("cnoreabbrev x Sayonara")
 
 -- Show package versions
 M.map("n", "<leader>ns", ":lua require('package-info').show()<CR>" )

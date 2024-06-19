@@ -1,17 +1,34 @@
--- Author: Karan Jaddoe
--- Repo: https://github.com/KJaddoe/dotfiles
+require("user.options")
+require("user.keymaps")
+require("user.autocommands")
+require("user.commands")
+require("user.plugins")
 
-require "kj.plugins"
-require "kj.options"
-require "kj.mappings"
-require "kj.commands"
-require "kj.completion"
-require "kj.colors"
+--
+-- UI
+--
+require("user.colorscheme")
+require("user.notify")
 
-require "kj.autocmds"
-require "kj.folds"
-require "kj.filetree"
-require "kj.statusline"
-require "kj.treesitter"
-require "kj.formatting"
-require "kj.lsp"
+--
+-- BASIC
+--
+require("user.indent")
+require("user.todo")
+require("user.harpoon")
+require("user.telescope")
+require("user.git")
+
+
+--
+-- CODING
+--
+require("user.lsp")
+require("user.cmp")
+require("user.treesitter")
+require("user.conform")
+
+require "user.mappings"
+
+require "user.folds"
+require "user.formatting"
