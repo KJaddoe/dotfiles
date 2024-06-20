@@ -182,7 +182,7 @@ require("lazy").setup({
     "max397574/better-escape.nvim",
     config = function()
       require("better_escape").setup({
-        mapping = { "jj" },
+        mapping = {"jk", "kj"},
         timeout = 100,
       })
     end,
