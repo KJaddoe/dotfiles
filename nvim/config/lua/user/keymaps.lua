@@ -8,6 +8,9 @@ keymap("", "<Space>", "<Nop>", opts)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+-- Quick command mode
+keymap("n", ";", ":", {nowait = true, silent = false})
+
 -- Normal --
 -- disable Ex mode, I always enter in it by mistake
 keymap("n", "Q", "<Nop>", opts)
@@ -89,9 +92,8 @@ keymap("i", ".", ".<c-g>u", opts)
 keymap("i", "!", "!<c-g>u", opts)
 keymap("i", "?", "?<c-g>u", opts)
 
--- alias quick jk/kj to esc
-keymap("i", "jk", "<ESC>", opts)
-keymap("i", "kj", "<ESC>", opts)
+-- alias quick jj to esc
+keymap("i", "jj", "<ESC>", opts)
 
 -- Visual --
 -- Stay in indent mode
