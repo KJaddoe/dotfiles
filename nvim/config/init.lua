@@ -26,9 +26,5 @@ require("user.git")
 require("user.lsp")
 require("user.cmp")
 require("user.treesitter")
-require("user.conform")
 
-require "user.mappings"
-
-require "user.folds"
 require "user.formatting"

@@ -39,6 +39,11 @@ keymap("n", "<leader>bsd", function()
   vim.api.nvim_win_set_cursor(0, cursor)
   vim.cmd("zz")
 end, opts)
+-- quickly move through buffers
+for i = 1, 9 do
+  keymap("n", "<leader>" .. i, ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>")
+  keymap("t", "<leader>" .. i, '<C-\\><C-n>:lua require"bufferline".go_to_buffer(' .. i .. ")<CR>")
+end
 
 -- save and quit
 keymap("n", "<leader>w", ":write<CR>", opts)

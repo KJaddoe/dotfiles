@@ -23,45 +23,6 @@ end
 
 local lspconfig = require("lspconfig")
 require("lspconfig.ui.windows").default_options.border = "rounded"
-lspconfig.gopls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-  settings = {
-    gopls = {
-      gofumpt = true,
-      codelenses = {
-        gc_details = true,
-        generate = true,
-        run_govulncheck = true,
-        test = true,
-        tidy = true,
-        upgrade_dependency = true,
-      },
-      hints = {
-        assignVariableTypes = true,
-        compositeLiteralFields = true,
-        compositeLiteralTypes = true,
-        constantValues = true,
-        functionTypeParameters = true,
-        parameterNames = true,
-        rangeVariableTypes = true,
-      },
-      analyses = {
-        nilness = true,
-        unusedparams = true,
-        unusedvariable = true,
-        unusedwrite = true,
-        useany = true,
-      },
-      staticcheck = true,
-      directoryFilters = { "-.git", "-node_modules" },
-      semanticTokens = true,
-    },
-  },
-  flags = {
-    debounce_text_changes = 150,
-  },
-})
 
 lspconfig.tsserver.setup({
   capabilities = capabilities,
@@ -105,11 +66,6 @@ lspconfig.yamlls.setup({
   },
 })
 
-lspconfig.nil_ls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
 lspconfig.cssls.setup({
   capabilities = capabilities,
   on_attach = on_attach,
@@ -138,21 +94,6 @@ lspconfig.bashls.setup({
 })
 
 lspconfig.pylsp.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
-lspconfig.golangci_lint_ls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
-lspconfig.terraformls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
-lspconfig.tflint.setup({
   capabilities = capabilities,
   on_attach = on_attach,
 })
@@ -187,24 +128,24 @@ lspconfig.angularls.setup {
 }
 
 -- Make runtime files discoverable to the server
-local runtime_path = vim.split(package.path, ";", {})
-table.insert(runtime_path, "lua/?.lua")
-table.insert(runtime_path, "lua/?/init.lua")
-lspconfig.lua_ls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-  settings = {
-    Lua = {
-      completion = {
-        callSnippet = "Replace",
-      },
-      telemetry = { enable = false },
-      hint = {
-        enable = true,
-      },
-    },
-  },
-})
+-- local runtime_path = vim.split(package.path, ";", {})
+-- table.insert(runtime_path, "lua/?.lua")
+-- table.insert(runtime_path, "lua/?/init.lua")
+-- lspconfig.lua_ls.setup({
+--   capabilities = capabilities,
+--   on_attach = on_attach,
+--   settings = {
+--     Lua = {
+--       completion = {
+--         callSnippet = "Replace",
+--       },
+--       telemetry = { enable = false },
+--       hint = {
+--         enable = true,
+--       },
+--     },
+--   },
+-- })
 
 lspconfig.rust_analyzer.setup({
   capabilities = capabilities,

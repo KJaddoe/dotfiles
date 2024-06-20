@@ -17,3 +17,4 @@ nodejs_npm_global_packages:
   - name: '@angular/language-server'
   - name: emmet-ls
   - name: bash-language-server
+  - name: vim-language-server
