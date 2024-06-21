@@ -78,3 +78,6 @@ unset __conda_setup
 
 # Load Angular CLI autocompletion.
 source <(ng completion script)
+
+# Homebrew env
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)")
