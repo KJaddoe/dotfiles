@@ -128,24 +128,24 @@ lspconfig.angularls.setup {
 }
 
 -- Make runtime files discoverable to the server
--- local runtime_path = vim.split(package.path, ";", {})
--- table.insert(runtime_path, "lua/?.lua")
--- table.insert(runtime_path, "lua/?/init.lua")
--- lspconfig.lua_ls.setup({
---   capabilities = capabilities,
---   on_attach = on_attach,
---   settings = {
---     Lua = {
---       completion = {
---         callSnippet = "Replace",
---       },
---       telemetry = { enable = false },
---       hint = {
---         enable = true,
---       },
---     },
---   },
--- })
+local runtime_path = vim.split(package.path, ";", {})
+table.insert(runtime_path, "lua/?.lua")
+table.insert(runtime_path, "lua/?/init.lua")
+lspconfig.lua_ls.setup({
+  capabilities = capabilities,
+  on_attach = on_attach,
+  settings = {
+    Lua = {
+      completion = {
+        callSnippet = "Replace",
+      },
+      telemetry = { enable = false },
+      hint = {
+        enable = true,
+      },
+    },
+  },
+})
 
 lspconfig.rust_analyzer.setup({
   capabilities = capabilities,
