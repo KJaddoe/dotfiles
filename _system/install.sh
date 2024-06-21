@@ -24,6 +24,12 @@ elif test "$(uname)" = "Linux"; then
     sudo apt-get install python3-pip
     sudo -H pip3 install ansible
   fi
+  if test ! "$(which brew)"; then
+    echo "Installing homebrew..."
+	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  else
+    brew update
+  fi
 fi
 
 if test ! "$(which ansible)"; then
