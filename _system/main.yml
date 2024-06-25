@@ -24,11 +24,12 @@
     - include_tasks: tasks/core.yml
     - include_tasks: tasks/tmux.yml
 
-    # #
-    # # specific stuff than can be commented out
-    # #
+    #
+    # specific stuff than can be commented out
+    #
 
     # tools
+    - include_tasks: tasks/android.yml
 
     # languages
     - include_tasks: tasks/ruby.yml
