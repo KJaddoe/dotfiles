@@ -1,3 +1,3 @@
 #!/bin/zsh
-export WSL_HOST=$(tail -1 /etc/resolv.conf | cut -d' ' -f2)
+export WSL_HOST=$(ip route show | grep -i default | awk '{ print $3}')
 export GPG_TTY=$(tty)
