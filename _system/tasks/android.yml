@@ -1,0 +1,12 @@
+- name: Create the Android home folder
+  become: false
+  file:
+    path: ~/Android
+    state: directory
+
+- name: Unarchive android command line tools to ~/Android
+  become: false
+  unarchive:
+    src: https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+    dest: ~/Android
+    remote_src: yes
