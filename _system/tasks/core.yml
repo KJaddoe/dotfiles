@@ -5,7 +5,7 @@
 
 - name: Install core packages
   package:
-    name: "{{ item }}"
+    name: '{{ item }}'
     state: present
   with_items:
     - curl
@@ -24,7 +24,6 @@
     - python3-pip
     - python3-venv
     - socat
-    - fzf
     - ripgrep
     - fd-find
     - net-tools
