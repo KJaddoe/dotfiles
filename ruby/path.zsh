@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 export PATH="$PATH:$HOME/.rbenv/bin"
 
 __rbenv_started=0

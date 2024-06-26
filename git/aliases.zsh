@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 if command -v hub >/dev/null 2>&1; then
 	alias git='hub'
 fi
@@ -27,6 +27,6 @@ if command -v svu >/dev/null 2>&1; then
 	alias gtn='git tag `svu n`; svu c'
 fi
 
-function gi() { 
+function gi() {
   curl -sLw n https://www.toptal.com/developers/gitignore/api/$@ ;
 }
