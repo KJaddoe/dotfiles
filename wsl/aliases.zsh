@@ -1,1 +1,2 @@
-#!/bin/sh
+#!/bin/zsh
+alias explorer='explorer.exe'
