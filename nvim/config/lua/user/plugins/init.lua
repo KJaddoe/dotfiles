@@ -19,12 +19,14 @@ require("lazy").setup({
     priority = 1000,
     opts = {},
   },
-  {"kyazdani42/nvim-web-devicons",
+  {
+    "kyazdani42/nvim-web-devicons",
     config = function()
       require("nvim-web-devicons").setup()
     end,
   },
-  {"rcarriga/nvim-notify",
+  {
+    "rcarriga/nvim-notify",
     config = function()
       require("notify").setup({
         render = "compact",
@@ -116,18 +118,19 @@ require("lazy").setup({
     branch = "harpoon2",
     dependencies = { "nvim-lua/plenary.nvim" }
   },
-  {"tpope/vim-fugitive"},
-  {"tpope/vim-rhubarb"},
-  {"tpope/vim-abolish"},
-  {"tpope/vim-repeat"},
-  {"tpope/vim-eunuch"},
-  {"tpope/vim-sleuth"},
-  {"tpope/vim-speeddating"},
-  {"nvim-telescope/telescope.nvim",
+  { "tpope/vim-fugitive" },
+  { "tpope/vim-rhubarb" },
+  { "tpope/vim-abolish" },
+  { "tpope/vim-repeat" },
+  { "tpope/vim-eunuch" },
+  { "tpope/vim-sleuth" },
+  { "tpope/vim-speeddating" },
+  {
+    "nvim-telescope/telescope.nvim",
     dependencies = {
-        { "nvim-lua/plenary.nvim" },
-        { "nvim-telescope/telescope-github.nvim" },
-        { "nvim-telescope/telescope-file-browser.nvim" },
+      { "nvim-lua/plenary.nvim" },
+      { "nvim-telescope/telescope-github.nvim" },
+      { "nvim-telescope/telescope-file-browser.nvim" },
     },
     config = function()
       require('telescope').setup({
@@ -158,17 +161,19 @@ require("lazy").setup({
       require("telescope").load_extension "file_browser"
     end,
   },
-  { "asiryk/auto-hlsearch.nvim",
+  {
+    "asiryk/auto-hlsearch.nvim",
     tag = "1.1.0",
     config = function()
       require('auto-hlsearch').setup()
     end,
   },
-  {'alexghergh/nvim-tmux-navigation',
+  {
+    'alexghergh/nvim-tmux-navigation',
     config = function()
       local nvim_tmux_nav = require('nvim-tmux-navigation')
       nvim_tmux_nav.setup {
-          disable_when_zoomed = true -- defaults to false
+        disable_when_zoomed = true -- defaults to false
       }
       vim.keymap.set('n', "<C-h>", nvim_tmux_nav.NvimTmuxNavigateLeft)
       vim.keymap.set('n', "<C-j>", nvim_tmux_nav.NvimTmuxNavigateDown)
@@ -182,21 +187,21 @@ require("lazy").setup({
     "max397574/better-escape.nvim",
     config = function()
       require("better_escape").setup({
-        mapping = {"jk", "kj"},
+        mapping = { "jk", "kj" },
         timeout = 100,
       })
     end,
   },
-  {"famiu/bufdelete.nvim"},
+  { "famiu/bufdelete.nvim" },
   {
     'laytan/cloak.nvim',
     config = function()
-      require('cloak').setup({--[[ your config ]]})
+      require('cloak').setup({ --[[ your config ]] })
     end,
   },
 
   -- Coding --
-  {"neovim/nvim-lspconfig"},
+  { "neovim/nvim-lspconfig" },
   {
     'stevearc/conform.nvim',
     opts = {},
@@ -207,6 +212,9 @@ require("lazy").setup({
           fish = { "fish_indent" },
           html = { "prettier" },
           javascript = { "prettier" },
+          typescript = { "prettier" },
+          javascriptreact = { "prettier" },
+          typescriptreact = { "prettier" },
           json = { "jq" },
           lua = { "stylua" },
           markdown = { "prettier" },
@@ -217,6 +225,7 @@ require("lazy").setup({
           tf = { "terraform_fmt" },
           yaml = { "prettier" },
           zig = { "zigfmt" },
+          python = { "isort", "black" },
           ["_"] = { "trim_whitespace", "trim_newlines" },
         },
         format_on_save = {
@@ -253,7 +262,8 @@ require("lazy").setup({
     config = true,
     check_ts = true,
   },
-  {'windwp/nvim-ts-autotag',
+  {
+    'windwp/nvim-ts-autotag',
     config = function()
       require("nvim-ts-autotag").setup({ enable = true })
     end,
@@ -268,7 +278,7 @@ require("lazy").setup({
   },
   {
     "zbirenbaum/copilot-cmp",
-    config = function ()
+    config = function()
       require("copilot_cmp").setup()
     end
   },
@@ -283,16 +293,16 @@ require("lazy").setup({
       require("luasnip.loaders.from_vscode").lazy_load()
     end
   },
-  {"rafamadriz/friendly-snippets"},
-  { "folke/neodev.nvim", opts = {} },
+  { "rafamadriz/friendly-snippets" },
+  { "folke/neodev.nvim",           opts = {} },
   {
     "kylechui/nvim-surround",
     version = "*", -- Use for stability; omit to use `main` branch for the latest features
     event = "VeryLazy",
     config = function()
-        require("nvim-surround").setup({
-            -- Configuration here, or leave empty to use defaults
-        })
+      require("nvim-surround").setup({
+        -- Configuration here, or leave empty to use defaults
+      })
     end
   },
   {
@@ -300,42 +310,43 @@ require("lazy").setup({
     keys = { '<space>m', '<space>j', '<space>s' },
     dependencies = { 'nvim-treesitter/nvim-treesitter' }, -- if you install parsers with `nvim-treesitter`
     config = function()
-      require('treesj').setup({--[[ your config ]]})
+      require('treesj').setup({ --[[ your config ]] })
     end,
   },
-  {"nvim-treesitter/nvim-treesitter", build = ':TSUpdate'},
-  {"nvim-treesitter/nvim-treesitter-angular"},
-  {"nvim-treesitter/nvim-treesitter-textobjects"},
-  {"nvim-treesitter/nvim-treesitter-context"},
-  {"RRethy/nvim-treesitter-endwise"},
+  { "nvim-treesitter/nvim-treesitter",            build = ':TSUpdate' },
+  { "nvim-treesitter/nvim-treesitter-angular" },
+  { "nvim-treesitter/nvim-treesitter-textobjects" },
+  { "nvim-treesitter/nvim-treesitter-context" },
+  { "RRethy/nvim-treesitter-endwise" },
   {
     "numToStr/Comment.nvim",
     config = function()
       require("Comment").setup()
     end
   },
-  {"mhartington/formatter.nvim"},
+  { "mhartington/formatter.nvim" },
   {
     "folke/trouble.nvim",
     config = function()
       require("trouble").setup {}
     end
   },
-  {'akinsho/bufferline.nvim',
+  {
+    'akinsho/bufferline.nvim',
     version = "*",
     dependencies = 'nvim-tree/nvim-web-devicons',
     config = function()
       require("bufferline").setup()
     end
   },
-  {"dhruvasagar/vim-table-mode"},
+  { "dhruvasagar/vim-table-mode" },
   {
     "iamcco/markdown-preview.nvim",
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     ft = { "markdown" },
     build = function() vim.fn["mkdp#util#install"]() end,
   },
-  {"psf/black"},
+  { "psf/black" },
   {
     "norcalli/nvim-colorizer.lua",
     config = function()
@@ -345,14 +356,14 @@ require("lazy").setup({
   {
     'nvimdev/lspsaga.nvim',
     config = function()
-        require('lspsaga').setup({})
+      require('lspsaga').setup({})
     end,
     dependencies = {
-        'nvim-treesitter/nvim-treesitter', -- optional
-        'nvim-tree/nvim-web-devicons',     -- optional
+      'nvim-treesitter/nvim-treesitter', -- optional
+      'nvim-tree/nvim-web-devicons',     -- optional
     },
   },
-  {"OmniSharp/omnisharp-vim", build = ':OmniSharpInstall'},
+  { "OmniSharp/omnisharp-vim", build = ':OmniSharpInstall' },
   {
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
