@@ -119,12 +119,8 @@ lspconfig.zls.setup({
 })
 
 lspconfig.angularls.setup {
-  cmd = ngls_cmd,
   on_attach = on_attach,
   capabilities = capabilities,
-  on_new_config = function(new_config)
-    new_config.cmd = ngls_cmd
-  end
 }
 
 -- Make runtime files discoverable to the server
