@@ -9,7 +9,7 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- Quick command mode
-keymap("n", ";", ":", {noremap = true, nowait = true, silent = false})
+keymap("n", ";", ":", { noremap = true, nowait = true, silent = false })
 
 -- Normal --
 -- disable Ex mode, I always enter in it by mistake
@@ -31,7 +31,7 @@ keymap("n", "<A-Left>", ":vertical resize -2<CR>", opts)
 keymap("n", "<A-Right>", ":vertical resize +2<CR>", opts)
 
 -- buffer killing
-keymap("n", "<leader>q", ":Bdelete<CR>", opts) -- delete current buffer
+keymap("n", "<leader>q", ":Bdelete<CR>", opts)          -- delete current buffer
 keymap("n", "<leader>bad", ":%bd!<cr>:intro<cr>", opts) -- delete all buffers
 -- delete surrounding buffers, make sure to keep the cursor position
 keymap("n", "<leader>bsd", function()
@@ -124,3 +124,6 @@ keymap("x", "J", ":move '>+1<CR>gv-gv", opts)
 keymap("x", "K", ":move '<-2<CR>gv-gv", opts)
 keymap("x", "<A-j>", ":move '>+1<CR>gv-gv", opts)
 keymap("x", "<A-k>", ":move '<-2<CR>gv-gv", opts)
+
+-- Oil file explorer
+keymap("n", "-", '<CMD>Oil --float<CR>', opts)
