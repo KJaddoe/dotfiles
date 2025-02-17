@@ -20,9 +20,9 @@ elif test "$(uname)" = "Linux"; then
   if test -f /etc/lsb-release && test ! "$(which ansible)"; then
     echo "Installing ansible..."
     sudo apt-get update
-    sudo apt-get install python3
-    sudo apt-get install python3-pip
-    sudo -H pip3 install ansible
+	sudo apt install software-properties-common
+	sudo add-apt-repository --yes --update ppa:ansible/ansible
+	sudo apt install ansible
   fi
   if test ! "$(which brew)"; then
     echo "Installing homebrew..."
