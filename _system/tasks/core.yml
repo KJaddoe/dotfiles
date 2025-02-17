@@ -2,6 +2,7 @@
   package:
     name: ubuntu-restricted-extras
     state: present
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: Install core packages
   package:
