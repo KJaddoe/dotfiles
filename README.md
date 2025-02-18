@@ -53,11 +53,10 @@ There are a few special files in the hierarchy:
 ### ZSH plugins
 
 This project uses the [Powerlevel10k][powerlevel10k] prompt with the [Powerline font][https://github.com/powerline/fonts] and status bar (which is awesome!) and some other
-[zsh plugins](/antibody/bundles.txt). All of them managed by [Antibody][antibody],
-a faster and simpler Antigen-like program written in Go.
+[zsh plugins](/antidote/zsh_plugins.txt). All of them managed by [Antidote][antidote].
 
 [powerlevel10k]: https://github.com/romkatv/powerlevel10k
-[antibody]: https://github.com/caarlos0/antibody
+[antidote]: https://antidote.sh/
 [powerline font]: https://github.com/powerline/fonts
 
 ### Compatibility

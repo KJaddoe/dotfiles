@@ -38,7 +38,3 @@
   become_method: sudo
   shell: chsh -s /bin/zsh
   when: isnt_ci
-
-- name: Install antibody
-  become: true
-  shell: curl -sfL git.io/antibody | sh -s - -b /usr/local/bin

@@ -18,7 +18,11 @@
       create: true
       path: tmux/default.json
     ~/.zshrc: zsh/zshrc
+    ~/.zsh_plugins.txt: antidote/zsh_plugins.txt
 
 - shell:
     - [git submodule update --init --recursive, Installing submodules]
-    - [~/.tmux/plugins/tpm/scripts/install_plugins.sh >/dev/null 2>&1, Installing tmux plugins]
+    - [
+        ~/.tmux/plugins/tpm/scripts/install_plugins.sh >/dev/null 2>&1,
+        Installing tmux plugins,
+      ]
