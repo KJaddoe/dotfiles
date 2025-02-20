@@ -1,7 +1,2 @@
 - src: geerlingguy.java
-- src: geerlingguy.nodejs
-- src: geerlingguy.docker
-- src: geerlingguy.git
-- src: geerlingguy.kubernetes
-- src: geerlingguy.pip
 - src: mjanser.powerline

@@ -3,40 +3,43 @@
 set -e
 
 OS="$(uname)"
+TPM_DIR="$HOME/.tmux/plugins/tpm"
 
-install_fzf_ubuntu() {
-    echo "Installing fzf on Ubuntu..."
+install_tmux_ubuntu() {
+    echo "Installing tmux on Ubuntu..."
     sudo apt update
-    sudo apt install -y fzf
+    sudo apt install -y tmux
 }
 
-install_fzf_macos() {
-    echo "Installing fzf on macOS..."
+install_tmux_macos() {
+    echo "Installing tmux on macOS..."
+
     if ! command -v brew >/dev/null 2>&1; then
         echo "Homebrew not found! Installing Homebrew..."
         curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | sh
     fi
-    brew install fzf
+
+    brew install tmux
 }
 
-setup_fzf_keybindings() {
-    echo "Setting up fzf keybindings and completions..."
+install_tpm() {
+    echo "Installing TPM (Tmux Plugin Manager)..."
 
-    if [ -f ~/.fzf.zsh ]; then
-        source ~/.fzf.zsh
+    if [ ! -d "$TPM_DIR" ]; then
+        git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
+        echo "TPM installed successfully."
     else
-        echo "fzf configuration not found. Running fzf installation script..."
-        /usr/local/opt/fzf/install
+        echo "TPM is already installed."
     fi
 }
 
 verify_installation() {
     echo "Verifying installation..."
 
-    if command -v fzf >/dev/null 2>&1; then
-        echo "fzf is installed: $(fzf --version)"
+    if command -v tmux >/dev/null 2>&1; then
+        echo "Tmux is installed: $(tmux -v)"
     else
-        echo "fzf installation failed!"
+        echo "Tmux installation failed!"
         exit 1
     fi
 
@@ -46,14 +49,14 @@ verify_installation() {
 case "$OS" in
     Linux)
         if grep -qi "ubuntu" /etc/os-release; then
-            install_fzf_ubuntu
+            install_tmux_ubuntu
         else
             echo "Unsupported Linux distribution."
             exit 1
         fi
         ;;
     Darwin)
-        install_fzf_macos
+        install_tmux_macos
         ;;
     *)
         echo "Unsupported OS: $OS"
@@ -61,7 +64,7 @@ case "$OS" in
         ;;
 esac
 
-setup_fzf_keybindings
+install_tpm
 verify_installation
 
-echo "fzf installation and setup completed successfully!"
+echo "Tmux and TPM installation completed successfully!"

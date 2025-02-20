@@ -2,35 +2,16 @@
   vars:
     - should_be_root: "{{ true if ansible_pkg_mgr != 'brew' else false }}"
   vars_files:
-    - vars/docker.yml
-    - vars/node.yml
     - vars/java.yml
-    - vars/pip.yml
     - vars/powerline.yml
   roles:
-    - role: geerlingguy.docker
-    # - role: geerlingguy.kubernetes
-    - role: geerlingguy.nodejs
     - role: geerlingguy.java
-    - role: geerlingguy.git
-    - role: geerlingguy.pip
     - role: mjanser.powerline
       become: '{{ should_be_root }}'
   tasks:
     # essentials:
     - include_tasks: tasks/apt.yml
     - include_tasks: tasks/core.yml
-    - include_tasks: tasks/tmux.yml
-
-    #
-    # specific stuff than can be commented out
-    #
 
     # tools
     - include_tasks: tasks/android.yml
-
-    # languages
-    - include_tasks: tasks/ruby.yml
-
-    # editors, IDEs, terminals, etc
-    - include_tasks: tasks/neovim.yml

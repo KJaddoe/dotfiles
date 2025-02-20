@@ -1,41 +1,73 @@
-#!/bin/bash
-if test "$(uname)" = "Darwin"; then
-  if test ! $(which gcc); then
-    echo "Installing xcode..."
-    xcode-select --install
-  fi
-  if test ! "$(which brew)"; then
-    echo "Installing homebrew..."
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-  else
-    brew update
-  fi
-  if test ! "$(which ansible)"; then
-    echo "Installing ansible..."
-    brew install ansible
-  else
-    brew upgrade ansible
-  fi
-elif test "$(uname)" = "Linux"; then
-  if test -f /etc/lsb-release && test ! "$(which ansible)"; then
-    echo "Installing ansible..."
-    sudo apt-get update
-	sudo apt install software-properties-common
-	sudo add-apt-repository --yes --update ppa:ansible/ansible
-	sudo apt install ansible
-  fi
-  if test ! "$(which brew)"; then
-    echo "Installing homebrew..."
-	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  else
-    brew update
-  fi
+#!/bin/sh
+
+set -e
+
+OS="$(uname)"
+
+install_xcode_macos() {
+    if ! command -v gcc >/dev/null 2>&1; then
+        echo "Installing Xcode Command Line Tools..."
+        xcode-select --install
+    fi
+}
+
+install_homebrew() {
+    if ! command -v brew >/dev/null 2>&1; then
+        echo "Installing Homebrew..."
+        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | sh
+    else
+        echo "Updating Homebrew..."
+        brew update
+    fi
+}
+
+install_ansible_macos() {
+    if ! command -v ansible >/dev/null 2>&1; then
+        echo "Installing Ansible..."
+        brew install ansible
+    else
+        echo "Upgrading Ansible..."
+        brew upgrade ansible
+    fi
+}
+
+install_ansible_ubuntu() {
+    if ! command -v ansible >/dev/null 2>&1; then
+        echo "Installing Ansible..."
+        sudo apt-get update
+        sudo apt-get install -y software-properties-common
+        sudo add-apt-repository --yes --update ppa:ansible/ansible
+        sudo apt-get install -y ansible
+    fi
+}
+
+case "$OS" in
+    Darwin)
+        install_xcode_macos
+        install_homebrew
+        install_ansible_macos
+        ;;
+    Linux)
+        if grep -qi "ubuntu" /etc/os-release; then
+            install_homebrew
+            install_ansible_ubuntu
+        else
+            echo "Unsupported Linux distribution."
+            exit 1
+        fi
+        ;;
+    *)
+        echo "Unsupported OS: $OS"
+        exit 1
+        ;;
+esac
+
+if ! command -v ansible >/dev/null 2>&1; then
+    echo "Ansible installation failed or is not supported on this system."
+    exit 1
 fi
 
-if test ! "$(which ansible)"; then
-  echo "Not supported yet."
-  exit 1
-fi
-
-ansible-galaxy install -r $(pwd -P)/_system/requirements.yml --force
-ansible-playbook $(pwd -P)/_system/main.yml -K
+ANSIBLE_DIR="$(pwd -P)/_system"
+echo "Running Ansible..."
+ansible-galaxy install -r "$ANSIBLE_DIR/requirements.yml" --force
+ansible-playbook "$ANSIBLE_DIR/main.yml" -K
