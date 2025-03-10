@@ -123,6 +123,11 @@ lspconfig.angularls.setup {
   capabilities = capabilities,
 }
 
+lspconfig.csharp_ls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+
 -- Make runtime files discoverable to the server
 local runtime_path = vim.split(package.path, ";", {})
 table.insert(runtime_path, "lua/?.lua")

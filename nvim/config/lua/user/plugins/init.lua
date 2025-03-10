@@ -361,7 +361,6 @@ require("lazy").setup({
       'nvim-tree/nvim-web-devicons',     -- optional
     },
   },
-  { "OmniSharp/omnisharp-vim", build = ':OmniSharpInstall' },
   {
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
