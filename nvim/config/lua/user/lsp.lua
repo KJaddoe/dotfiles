@@ -118,9 +118,26 @@ lspconfig.zls.setup({
   on_attach = on_attach,
 })
 
+local function get_npm_global_root()
+  local handle = io.popen("npm root -g")
+  if handle then
+    local result = handle:read("*a")
+    handle:close()
+    return result:gsub("%s+$", "") -- Trim trailing whitespace/newline
+  end
+  return nil
+end
+local project_library_path = get_npm_global_root() or ""
+local cmd = { "ngserver", "--stdio", "--tsProbeLocations", project_library_path, "--ngProbeLocations",
+  project_library_path }
+
 lspconfig.angularls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
+  cmd = cmd,
+  on_new_config = function(new_config, new_root_dir)
+    new_config.cmd = cmd
+  end,
 }
 
 -- Make runtime files discoverable to the server
