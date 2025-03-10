@@ -84,7 +84,7 @@
 ; parseable=false
 ; prefer-offline=false
 ; prefer-online=false
-prefix=/usr/local/lib/npm
+; prefix=/usr/local/lib/npm
 ; preid=
 ; production=false
 ; progress=true

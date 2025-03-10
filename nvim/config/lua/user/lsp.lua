@@ -123,11 +123,6 @@ lspconfig.angularls.setup {
   capabilities = capabilities,
 }
 
-lspconfig.csharp_ls.setup {
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
-
 -- Make runtime files discoverable to the server
 local runtime_path = vim.split(package.path, ";", {})
 table.insert(runtime_path, "lua/?.lua")
@@ -158,6 +153,13 @@ lspconfig.taplo.setup({
   on_attach = on_attach,
 })
 
+lspconfig.csharp_ls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+
+
+-- setup diagnostics
 local float_config = {
   focusable = false,
   style = "minimal",
@@ -166,8 +168,6 @@ local float_config = {
   header = "",
   prefix = "",
 }
-
--- setup diagnostics
 vim.diagnostic.config({
   underline = true,
   update_in_insert = false,

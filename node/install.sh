@@ -1,35 +1,33 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
 OS="$(uname)"
 
-# Define global npm packages list
 NPM_PACKAGES=(
-    eslint
-    eslint_d
-    prettier
-    typescript
-    tern
-    diff-so-fancy
-    @angular/cli
-    tree-sitter-cli
-    typescript-language-server
-    vscode-langservers-extracted
-    dockerfile-language-server-nodejs
-    yaml-language-server
-    diagnostic-languageserver
-    @angular/language-server
-    emmet-ls
-    bash-language-server
-    vim-language-server
+    "eslint"
+    "eslint_d"
+    "prettier"
+    "typescript"
+    "tern"
+    "diff-so-fancy"
+    "@angular/cli"
+    "tree-sitter-cli"
+    "typescript-language-server"
+    "vscode-langservers-extracted"
+    "dockerfile-language-server-nodejs"
+    "yaml-language-server"
+    "diagnostic-languageserver"
+    "@angular/language-server"
+    "emmet-ls"
+    "bash-language-server"
+    "vim-language-server"
 )
 
 install_nvm_ubuntu() {
     echo "Installing NVM on Ubuntu..."
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+	source $NVIM_DIR/nvm.sh
     nvm install --lts
 }
 
@@ -41,8 +39,6 @@ install_nvm_macos() {
     fi
     brew install nvm
     mkdir -p "$HOME/.nvm"
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     nvm install --lts
 }
 
