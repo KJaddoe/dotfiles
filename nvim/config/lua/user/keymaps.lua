@@ -31,7 +31,7 @@ keymap("n", "<A-Left>", ":vertical resize -2<CR>", opts)
 keymap("n", "<A-Right>", ":vertical resize +2<CR>", opts)
 
 -- buffer killing
-keymap("n", "<leader>q", ":Bdelete<CR>", opts)          -- delete current buffer
+keymap("n", "<leader>q", ":Bdelete<CR>", opts) -- delete current buffer
 keymap("n", "<leader>bad", ":%bd!<cr>:intro<cr>", opts) -- delete all buffers
 -- delete surrounding buffers, make sure to keep the cursor position
 keymap("n", "<leader>bsd", function()
@@ -44,8 +44,16 @@ keymap("n", "<leader>bsd", function()
 end, opts)
 -- quickly move through buffers
 for i = 1, 9 do
-  keymap("n", "<leader>" .. i, ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>")
-  keymap("t", "<leader>" .. i, '<C-\\><C-n>:lua require"bufferline".go_to_buffer(' .. i .. ")<CR>")
+  keymap(
+    "n",
+    "<leader>" .. i,
+    ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>"
+  )
+  keymap(
+    "t",
+    "<leader>" .. i,
+    '<C-\\><C-n>:lua require"bufferline".go_to_buffer(' .. i .. ")<CR>"
+  )
 end
 
 -- save and quit
@@ -126,4 +134,4 @@ keymap("x", "<A-j>", ":move '>+1<CR>gv-gv", opts)
 keymap("x", "<A-k>", ":move '<-2<CR>gv-gv", opts)
 
 -- Oil file explorer
-keymap("n", "-", '<CMD>Oil --float<CR>', opts)
+keymap("n", "-", "<CMD>Oil --float<CR>", opts)

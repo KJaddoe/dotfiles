@@ -45,8 +45,8 @@ require("lazy").setup({
     end,
   },
   {
-    'nvim-lualine/lualine.nvim',
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    "nvim-lualine/lualine.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require("lualine").setup({
         options = {
@@ -81,15 +81,13 @@ require("lazy").setup({
   {
     "stevearc/dressing.nvim",
     config = function()
-      require("dressing").setup(
-        {
-          input = {
-            -- When true, <Esc> will close the modal
-            insert_only = true,
-          }
-        }
-      )
-    end
+      require("dressing").setup({
+        input = {
+          -- When true, <Esc> will close the modal
+          insert_only = true,
+        },
+      })
+    end,
   },
 
   -- Basics
@@ -102,7 +100,7 @@ require("lazy").setup({
           border = "rounded",
         },
       })
-    end
+    end,
   },
   {
     "folke/todo-comments.nvim",
@@ -111,12 +109,12 @@ require("lazy").setup({
       -- your configuration comes here
       -- or leave it empty to use the default settings
       -- refer to the configuration section below
-    }
+    },
   },
   {
     "ThePrimeagen/harpoon",
     branch = "harpoon2",
-    dependencies = { "nvim-lua/plenary.nvim" }
+    dependencies = { "nvim-lua/plenary.nvim" },
   },
   { "tpope/vim-fugitive" },
   { "tpope/vim-rhubarb" },
@@ -132,7 +130,7 @@ require("lazy").setup({
       { "nvim-telescope/telescope-github.nvim" },
     },
     config = function()
-      require('telescope').setup({
+      require("telescope").setup({
         defaults = {
           mappings = {
             i = {
@@ -163,23 +161,23 @@ require("lazy").setup({
     "asiryk/auto-hlsearch.nvim",
     tag = "1.1.0",
     config = function()
-      require('auto-hlsearch').setup()
+      require("auto-hlsearch").setup()
     end,
   },
   {
-    'alexghergh/nvim-tmux-navigation',
+    "alexghergh/nvim-tmux-navigation",
     config = function()
-      local nvim_tmux_nav = require('nvim-tmux-navigation')
-      nvim_tmux_nav.setup {
-        disable_when_zoomed = true -- defaults to false
-      }
-      vim.keymap.set('n', "<C-h>", nvim_tmux_nav.NvimTmuxNavigateLeft)
-      vim.keymap.set('n', "<C-j>", nvim_tmux_nav.NvimTmuxNavigateDown)
-      vim.keymap.set('n', "<C-k>", nvim_tmux_nav.NvimTmuxNavigateUp)
-      vim.keymap.set('n', "<C-l>", nvim_tmux_nav.NvimTmuxNavigateRight)
-      vim.keymap.set('n', "<C-\\>", nvim_tmux_nav.NvimTmuxNavigateLastActive)
-      vim.keymap.set('n', "<C-Space>", nvim_tmux_nav.NvimTmuxNavigateNext)
-    end
+      local nvim_tmux_nav = require("nvim-tmux-navigation")
+      nvim_tmux_nav.setup({
+        disable_when_zoomed = true, -- defaults to false
+      })
+      vim.keymap.set("n", "<C-h>", nvim_tmux_nav.NvimTmuxNavigateLeft)
+      vim.keymap.set("n", "<C-j>", nvim_tmux_nav.NvimTmuxNavigateDown)
+      vim.keymap.set("n", "<C-k>", nvim_tmux_nav.NvimTmuxNavigateUp)
+      vim.keymap.set("n", "<C-l>", nvim_tmux_nav.NvimTmuxNavigateRight)
+      vim.keymap.set("n", "<C-\\>", nvim_tmux_nav.NvimTmuxNavigateLastActive)
+      vim.keymap.set("n", "<C-Space>", nvim_tmux_nav.NvimTmuxNavigateNext)
+    end,
   },
   {
     "max397574/better-escape.nvim",
@@ -192,16 +190,17 @@ require("lazy").setup({
   },
   { "famiu/bufdelete.nvim" },
   {
-    'laytan/cloak.nvim',
+    "laytan/cloak.nvim",
     config = function()
-      require('cloak').setup({ --[[ your config ]] })
+      require("cloak").setup({ --[[ your config ]]
+      })
     end,
   },
 
   -- Coding --
   { "neovim/nvim-lspconfig" },
   {
-    'stevearc/conform.nvim',
+    "stevearc/conform.nvim",
     opts = {},
     config = function()
       require("conform").setup({
@@ -219,7 +218,7 @@ require("lazy").setup({
           nix = { "nixpkgs_fmt" },
           rust = { "rustfmt" },
           sh = { "shfmt" },
-          sql = { "pg_format", "sql_formatter" },
+          -- sql = { "pg_format", "sql_formatter" },
           tf = { "terraform_fmt" },
           yaml = { "prettier" },
           zig = { "zigfmt" },
@@ -252,16 +251,16 @@ require("lazy").setup({
       "L3MON4D3/LuaSnip",
       "saadparwaiz1/cmp_luasnip",
       "f3fora/cmp-spell",
-    }
+    },
   },
   {
-    'windwp/nvim-autopairs',
+    "windwp/nvim-autopairs",
     event = "InsertEnter",
     config = true,
     check_ts = true,
   },
   {
-    'windwp/nvim-ts-autotag',
+    "windwp/nvim-ts-autotag",
     config = function()
       require("nvim-ts-autotag").setup({ enable = true })
     end,
@@ -278,7 +277,7 @@ require("lazy").setup({
     "zbirenbaum/copilot-cmp",
     config = function()
       require("copilot_cmp").setup()
-    end
+    end,
   },
   {
     "L3MON4D3/LuaSnip",
@@ -289,10 +288,10 @@ require("lazy").setup({
         delete_check_events = "InsertLeave",
       })
       require("luasnip.loaders.from_vscode").lazy_load()
-    end
+    end,
   },
   { "rafamadriz/friendly-snippets" },
-  { "folke/neodev.nvim",           opts = {} },
+  { "folke/neodev.nvim", opts = {} },
   {
     "kylechui/nvim-surround",
     version = "*", -- Use for stability; omit to use `main` branch for the latest features
@@ -301,17 +300,18 @@ require("lazy").setup({
       require("nvim-surround").setup({
         -- Configuration here, or leave empty to use defaults
       })
-    end
-  },
-  {
-    'Wansmer/treesj',
-    keys = { '<space>m', '<space>j', '<space>s' },
-    dependencies = { 'nvim-treesitter/nvim-treesitter' }, -- if you install parsers with `nvim-treesitter`
-    config = function()
-      require('treesj').setup({ --[[ your config ]] })
     end,
   },
-  { "nvim-treesitter/nvim-treesitter",            build = ':TSUpdate' },
+  {
+    "Wansmer/treesj",
+    keys = { "<space>m", "<space>j", "<space>s" },
+    dependencies = { "nvim-treesitter/nvim-treesitter" }, -- if you install parsers with `nvim-treesitter`
+    config = function()
+      require("treesj").setup({ --[[ your config ]]
+      })
+    end,
+  },
+  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
   { "nvim-treesitter/nvim-treesitter-angular" },
   { "nvim-treesitter/nvim-treesitter-textobjects" },
   { "nvim-treesitter/nvim-treesitter-context" },
@@ -320,45 +320,47 @@ require("lazy").setup({
     "numToStr/Comment.nvim",
     config = function()
       require("Comment").setup()
-    end
+    end,
   },
   { "mhartington/formatter.nvim" },
   {
     "folke/trouble.nvim",
     config = function()
-      require("trouble").setup {}
-    end
+      require("trouble").setup({})
+    end,
   },
   {
-    'akinsho/bufferline.nvim',
+    "akinsho/bufferline.nvim",
     version = "*",
-    dependencies = 'nvim-tree/nvim-web-devicons',
+    dependencies = "nvim-tree/nvim-web-devicons",
     config = function()
       require("bufferline").setup()
-    end
+    end,
   },
   { "dhruvasagar/vim-table-mode" },
   {
     "iamcco/markdown-preview.nvim",
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     ft = { "markdown" },
-    build = function() vim.fn["mkdp#util#install"]() end,
+    build = function()
+      vim.fn["mkdp#util#install"]()
+    end,
   },
   { "psf/black" },
   {
     "norcalli/nvim-colorizer.lua",
     config = function()
-      require "colorizer".setup()
-    end
+      require("colorizer").setup()
+    end,
   },
   {
-    'nvimdev/lspsaga.nvim',
+    "nvimdev/lspsaga.nvim",
     config = function()
-      require('lspsaga').setup({})
+      require("lspsaga").setup({})
     end,
     dependencies = {
-      'nvim-treesitter/nvim-treesitter', -- optional
-      'nvim-tree/nvim-web-devicons',     -- optional
+      "nvim-treesitter/nvim-treesitter", -- optional
+      "nvim-tree/nvim-web-devicons", -- optional
     },
   },
   {
@@ -366,7 +368,7 @@ require("lazy").setup({
     ft = "lua", -- only load on lua files
   },
   {
-    'stevearc/oil.nvim',
+    "stevearc/oil.nvim",
     ---@module 'oil'
     ---@type oil.SetupOpts
     opts = {},
@@ -401,5 +403,5 @@ require("lazy").setup({
         },
       })
     end,
-  }
+  },
 })

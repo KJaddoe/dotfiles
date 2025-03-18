@@ -1,7 +1,8 @@
 local telescope = require("telescope")
 
 local select_one_or_multi = function(prompt_bufnr)
-  local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+  local picker =
+    require("telescope.actions.state").get_current_picker(prompt_bufnr)
   local multi = picker:get_multi_selection()
   if not vim.tbl_isempty(multi) then
     require("telescope.actions").close(prompt_bufnr)
@@ -22,7 +23,13 @@ local opts = { noremap = true, silent = true }
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<C-p>", function()
   builtin.find_files({
-    find_command = { "rg", "--hidden", "--files", "--smart-case", "--glob=!.git" },
+    find_command = {
+      "rg",
+      "--hidden",
+      "--files",
+      "--smart-case",
+      "--glob=!.git",
+    },
   })
 end, opts)
 vim.keymap.set("n", "<leader>of", function()

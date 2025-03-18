@@ -19,7 +19,6 @@ require("user.harpoon")
 require("user.telescope")
 require("user.git")
 
-
 --
 -- CODING
 --
@@ -27,4 +26,4 @@ require("user.lsp")
 require("user.cmp")
 require("user.treesitter")
 
-require "user.formatting"
+require("user.formatting")

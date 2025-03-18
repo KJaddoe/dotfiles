@@ -128,17 +128,23 @@ local function get_npm_global_root()
   return nil
 end
 local project_library_path = get_npm_global_root() or ""
-local cmd = { "ngserver", "--stdio", "--tsProbeLocations", project_library_path, "--ngProbeLocations",
-  project_library_path }
+local cmd = {
+  "ngserver",
+  "--stdio",
+  "--tsProbeLocations",
+  project_library_path,
+  "--ngProbeLocations",
+  project_library_path,
+}
 
-lspconfig.angularls.setup {
+lspconfig.angularls.setup({
   on_attach = on_attach,
   capabilities = capabilities,
   cmd = cmd,
   on_new_config = function(new_config, new_root_dir)
     new_config.cmd = cmd
   end,
-}
+})
 
 -- Make runtime files discoverable to the server
 local runtime_path = vim.split(package.path, ";", {})
@@ -170,11 +176,10 @@ lspconfig.taplo.setup({
   on_attach = on_attach,
 })
 
-lspconfig.csharp_ls.setup {
+lspconfig.csharp_ls.setup({
   on_attach = on_attach,
   capabilities = capabilities,
-}
-
+})
 
 -- setup diagnostics
 local float_config = {
@@ -193,8 +198,10 @@ vim.diagnostic.config({
   float = float_config,
 })
 
-vim.lsp.handlers[ms.textDocument_hover] = vim.lsp.with(vim.lsp.handlers.hover, float_config)
-vim.lsp.handlers[ms.textDocument_signatureHelp] = vim.lsp.with(vim.lsp.handlers.signature_help, float_config)
+vim.lsp.handlers[ms.textDocument_hover] =
+  vim.lsp.with(vim.lsp.handlers.hover, float_config)
+vim.lsp.handlers[ms.textDocument_signatureHelp] =
+  vim.lsp.with(vim.lsp.handlers.signature_help, float_config)
 vim.highlight.priorities.semantic_tokens = 95
 
 -- set up diagnostic signs
