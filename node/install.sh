@@ -105,4 +105,3 @@ install_npm_packages
 verify_installation
 
 echo "NVM, Node.js LTS, and npm packages installation completed successfully!"
-
