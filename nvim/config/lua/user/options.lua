@@ -39,8 +39,9 @@ vim.opt.spellfile = vim.uv.os_homedir() .. "/.spell.add"
 vim.opt.laststatus = 2
 vim.opt.cursorline = true
 vim.opt.list = true
-vim.opt.showbreak="↪"
-vim.opt.listchars = "eol:↲,tab:» ,trail:·,extends:<,precedes:>,conceal:┊,nbsp:␣"
+vim.opt.showbreak = "↪"
+vim.opt.listchars =
+  "eol:↲,tab:» ,trail:·,extends:<,precedes:>,conceal:┊,nbsp:␣"
 vim.opt.grepprg = "rg --vimgrep --smart-case --follow"
 vim.opt.background = "dark"
 vim.opt.termguicolors = true

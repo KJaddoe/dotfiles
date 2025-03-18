@@ -3,8 +3,12 @@ local formatter = require("formatter")
 local prettierConfig = function()
   return {
     exe = "prettier",
-    args = {"--stdin-filepath", vim.fn.shellescape(vim.api.nvim_buf_get_name(0)), "--single-quote"},
-    stdin = true
+    args = {
+      "--stdin-filepath",
+      vim.fn.shellescape(vim.api.nvim_buf_get_name(0)),
+      "--single-quote",
+    },
+    stdin = true,
   }
 end
 
@@ -20,10 +24,10 @@ local formatterConfig = {
     function()
       return {
         exe = "luafmt",
-        args = {"--indent-count", 2, "--stdin"},
-        stdin = true
+        args = { "--indent-count", 2, "--stdin" },
+        stdin = true,
       }
-    end
+    end,
   },
   vue = {
     function()
@@ -34,31 +38,31 @@ local formatterConfig = {
           vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
           "--single-quote",
           "--parser",
-          "vue"
+          "vue",
         },
-        stdin = true
+        stdin = true,
       }
-    end
+    end,
   },
   rust = {
     -- Rustfmt
     function()
       return {
         exe = "rustfmt",
-        args = {"--emit=stdout"},
-        stdin = true
+        args = { "--emit=stdout" },
+        stdin = true,
       }
-    end
+    end,
   },
   swift = {
     -- Swiftlint
     function()
       return {
         exe = "swift-format",
-        args = {vim.api.nvim_buf_get_name(0)},
-        stdin = true
+        args = { vim.api.nvim_buf_get_name(0) },
+        stdin = true,
       }
-    end
+    end,
   },
   r = {
     function()
@@ -69,23 +73,23 @@ local formatterConfig = {
           "--no-restore",
           "--no-save",
           "-e",
-          '\'con <- file("stdin"); styler::style_text(readLines(con)); close(con)\'',
-          "2>/dev/null"
+          "'con <- file(\"stdin\"); styler::style_text(readLines(con)); close(con)'",
+          "2>/dev/null",
         },
-        stdin = true
+        stdin = true,
       }
-    end
+    end,
   },
   ["*"] = {
     function()
       return {
         -- remove trailing whitespace
         exe = "sed",
-        args = {"-i", "'s/[ \t]*$//'"},
-        stdin = false
+        args = { "-i", "'s/[ \t]*$//'" },
+        stdin = false,
       }
-    end
-  }
+    end,
+  },
 }
 local commonFT = {
   "css",
@@ -101,23 +105,21 @@ local commonFT = {
   "json",
   "yaml",
   "xml",
-  "svg"
+  "svg",
 }
 for _, ft in ipairs(commonFT) do
-  formatterConfig[ft] = {prettierConfig}
+  formatterConfig[ft] = { prettierConfig }
 end
 -- Setup functions
-formatter.setup(
-  {
-    logging = false,
-    filetype = formatterConfig
-  }
-)
+formatter.setup({
+  logging = false,
+  filetype = formatterConfig,
+})
 
 local augroup = vim.api.nvim_create_augroup
 local autocmd = vim.api.nvim_create_autocmd
 augroup("__formatter__", { clear = true })
 autocmd("BufWritePost", {
-	group = "__formatter__",
-	command = ":FormatWrite",
+  group = "__formatter__",
+  command = ":FormatWrite",
 })

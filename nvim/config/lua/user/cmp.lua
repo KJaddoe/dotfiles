@@ -85,27 +85,24 @@ cmp.setup({
     end,
   },
   sources = cmp.config.sources({
-      { name = "nvim_lsp_signature_help" },
-      { name = "nvim_lsp" },
-      {
-        name = "luasnip",
-        keyword_length = 2,
-        priority = 50,
-      },
-    },
+    { name = "nvim_lsp_signature_help" },
+    { name = "nvim_lsp" },
     {
-      { name = "copilot" },
+      name = "luasnip",
+      keyword_length = 2,
+      priority = 50,
     },
+  }, {
+    { name = "copilot" },
+  }, {
     {
-      {
-        name = "buffer",
-        keyword_length = 5,
-      },
-      { name = "path" },
-      { name = "emoji" },
-      { name = "calc" },
-    }
-  ),
+      name = "buffer",
+      keyword_length = 5,
+    },
+    { name = "path" },
+    { name = "emoji" },
+    { name = "calc" },
+  }),
   confirm_opts = {
     behavior = cmp.ConfirmBehavior.Select,
   },
