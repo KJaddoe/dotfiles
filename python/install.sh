@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -6,14 +6,15 @@ OS="$(uname)"
 
 # Define global Python packages list
 PYTHON_PACKAGES=(
-    black
-    rshell
-    pylint
-    jedi
-    pynvim
-    jedi_language_server
-    ansible-dev-tools
-    ansible-lint
+    "black"
+	"isort"
+    "rshell"
+    "pylint"
+    "jedi"
+    "pynvim"
+    "jedi_language_server"
+    "ansible-dev-tools"
+    "ansible-lint"
 )
 
 install_python_ubuntu() {
