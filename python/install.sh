@@ -3,11 +3,12 @@
 set -e
 
 OS="$(uname)"
+PYTHON_VERSION="3.11.9"
 
 # Define global Python packages list
 PYTHON_PACKAGES=(
     "black"
-	"isort"
+    "isort"
     "rshell"
     "pylint"
     "jedi"
@@ -17,68 +18,103 @@ PYTHON_PACKAGES=(
     "ansible-lint"
 )
 
-install_python_ubuntu() {
-    echo "Installing Python and pip on Ubuntu..."
+install_pyenv_ubuntu() {
+    echo "Installing pyenv on Ubuntu..."
+
     sudo apt update
-    sudo apt install -y python3 python3-pip
+    sudo apt install -y make build-essential libssl-dev zlib1g-dev \
+        libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+        libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+
+    if [ ! -d "$HOME/.pyenv" ]; then
+        curl https://pyenv.run | bash
+    fi
+
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
 }
 
-install_python_macos() {
-    echo "Installing Python and pip on macOS..."
+install_pyenv_macos() {
+    echo "Installing pyenv on macOS..."
+
     if ! command -v brew >/dev/null 2>&1; then
         echo "Homebrew not found! Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | sh
+        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        eval "$(/opt/homebrew/bin/brew shellenv)"
     fi
-    brew install python
+
+    brew install pyenv
+
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
+}
+
+verify_pyenv_installation() {
+    echo "Verifying pyenv installation..."
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)" >/dev/null
+    eval "$(pyenv virtualenv-init -)" >/dev/null
+
+    if ! command -v pyenv >/dev/null 2>&1; then
+        echo "pyenv installation failed or is not in PATH!"
+        exit 1
+    fi
+
+    echo "pyenv is installed: $(pyenv --version)"
+}
+
+install_python_with_pyenv() {
+    echo "Installing Python $PYTHON_VERSION via pyenv..."
+
+    if ! pyenv versions | grep -q "$PYTHON_VERSION"; then
+        pyenv install "$PYTHON_VERSION"
+    fi
+
+    pyenv global "$PYTHON_VERSION"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
+
+    echo "Using Python: $(python --version)"
 }
 
 install_python_packages() {
-    echo "Installing default Python packages..."
+    echo "Installing Python packages with pip..."
 
-    pip3 install --upgrade pip
-    pip3 install "${PYTHON_PACKAGES[@]}"
+    pip install --upgrade pip
+    pip install "${PYTHON_PACKAGES[@]}"
 }
 
 verify_installation() {
-    echo "Verifying installation..."
+    echo "Verifying Python and package installation..."
 
-    if command -v python3 >/dev/null 2>&1; then
-        echo "Python is installed: $(python3 --version)"
-    else
-        echo "Python installation failed!"
-        exit 1
-    fi
-
-    if command -v pip3 >/dev/null 2>&1; then
-        echo "pip is installed: $(pip3 --version)"
-    else
-        echo "pip installation failed!"
-        exit 1
-    fi
+    python --version
+    pip --version
 
     for package in "${PYTHON_PACKAGES[@]}"; do
-        if pip3 show "$package" >/dev/null 2>&1; then
+        if pip show "$package" >/dev/null 2>&1; then
             echo "$package is installed"
         else
             echo "$package installation failed!"
             exit 1
         fi
     done
-
-    echo "All components are installed successfully!"
 }
 
+# Detect OS and install pyenv
 case "$OS" in
     Linux)
         if grep -qi "ubuntu" /etc/os-release; then
-            install_python_ubuntu
+            install_pyenv_ubuntu
         else
             echo "Unsupported Linux distribution."
             exit 1
         fi
         ;;
     Darwin)
-        install_python_macos
+        install_pyenv_macos
         ;;
     *)
         echo "Unsupported OS: $OS"
@@ -86,7 +122,9 @@ case "$OS" in
         ;;
 esac
 
+verify_pyenv_installation
+install_python_with_pyenv
 install_python_packages
 verify_installation
 
-echo "Python, pip, and Python packages installation completed successfully!"
+echo "Python $PYTHON_VERSION and packages installed successfully using pyenv!"
