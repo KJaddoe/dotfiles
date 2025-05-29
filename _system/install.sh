@@ -11,16 +11,6 @@ install_xcode_macos() {
     fi
 }
 
-install_homebrew() {
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
-    else
-        echo "Updating Homebrew..."
-        brew update
-    fi
-}
-
 install_ansible_macos() {
     if ! command -v ansible >/dev/null 2>&1; then
         echo "Installing Ansible..."
@@ -44,12 +34,10 @@ install_ansible_ubuntu() {
 case "$OS" in
     Darwin)
         install_xcode_macos
-        install_homebrew
         install_ansible_macos
         ;;
     Linux)
         if grep -qi "ubuntu" /etc/os-release; then
-            install_homebrew
             install_ansible_ubuntu
         else
             echo "Unsupported Linux distribution."

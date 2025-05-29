@@ -22,12 +22,6 @@ install_neovim_ubuntu() {
 
 install_neovim_macos() {
     echo "Installing Neovim on macOS..."
-
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Homebrew not found! Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
-    fi
-
     brew install neovim
 
     echo "Configuring Neovim as the default editor..."

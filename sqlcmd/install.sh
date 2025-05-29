@@ -15,12 +15,6 @@ install_sqlcmd_ubuntu() {
 
 install_sqlcmd_macos() {
     echo "Installing sqlcmd on macOS..."
-
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Homebrew not found! Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
-    fi
-
     brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
     brew install sqlcmd
 }

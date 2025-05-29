@@ -15,10 +15,6 @@ install_antidote_ubuntu() {
 
 install_antidote_macos() {
     echo "Installing Antidote on macOS..."
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Homebrew not found! Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
-    fi
     brew install git curl
 }
 

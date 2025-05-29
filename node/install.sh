@@ -34,10 +34,6 @@ install_nvm_ubuntu() {
 
 install_nvm_macos() {
 	echo "Installing NVM on macOS..."
-	if ! command -v brew >/dev/null 2>&1; then
-		echo "Homebrew not found! Installing Homebrew..."
-		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
-	fi
 	brew install nvm
 	mkdir -p "$HOME/.nvm"
 	nvm install --lts

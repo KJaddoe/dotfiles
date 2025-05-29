@@ -12,10 +12,6 @@ install_fswatch_ubuntu() {
 
 install_fswatch_macos() {
     echo "Installing fswatch on macOS..."
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Homebrew not found! Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
-    fi
     brew install fswatch
 }
 

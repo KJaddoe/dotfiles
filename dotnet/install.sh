@@ -13,10 +13,6 @@ install_dotnet_ubuntu() {
 
 install_dotnet_macos() {
     echo "Installing .NET on macOS..."
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Homebrew not found! Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
-    fi
     brew install dotnet-sdk
     install_csharp_ls
 }
