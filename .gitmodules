@@ -1,5 +1,0 @@
-[submodule "vim/vim.symlink/bundle/Vundle.vim"]
-	path = vim/vim.symlink/bundle/Vundle.vim
-	url = https://github.com/VundleVim/Vundle.vim
-[submodule "dotbot"]
-	ignore = dirty
