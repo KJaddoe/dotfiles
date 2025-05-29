@@ -71,7 +71,7 @@ install_dotfiles() {
 	DOTBOT_DIR="dotbot"
 
 	DOTBOT_BIN="bin/dotbot"
-	BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	BASEDIR="${DOTFILES_ROOT}"
 
 	cd "${BASEDIR}"
 	git -C "${DOTBOT_DIR}" submodule sync --quiet --recursive
