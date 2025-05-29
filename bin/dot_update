@@ -4,7 +4,10 @@
 #
 # `dot_update` handles installation, updates, things like that. Run it
 # periodically to make sure you're on the latest and greatest.
-export DOTFILES="$HOME/.dotfiles"
+cd "$(dirname "$0")/.."
+DOTFILES_ROOT=$(pwd -P)
+
+export DOTFILES="${DOTFILES_ROOT}"
 cd "$DOTFILES" || exit 1
 
 # fixes PATH (we could be running from the crontab)
