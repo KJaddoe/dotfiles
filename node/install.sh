@@ -36,7 +36,7 @@ install_nvm_macos() {
 	echo "Installing NVM on macOS..."
 	if ! command -v brew >/dev/null 2>&1; then
 		echo "Homebrew not found! Installing Homebrew..."
-		curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | sh
+		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
 	fi
 	brew install nvm
 	mkdir -p "$HOME/.nvm"

@@ -14,7 +14,7 @@ install_xcode_macos() {
 install_homebrew() {
     if ! command -v brew >/dev/null 2>&1; then
         echo "Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | sh
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
     else
         echo "Updating Homebrew..."
         brew update

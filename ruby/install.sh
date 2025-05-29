@@ -16,7 +16,7 @@ install_ruby_macos() {
     # Check if Homebrew is installed
     if ! command -v brew >/dev/null 2>&1; then
         echo "Homebrew not found! Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | sh
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
     fi
 
     brew install ruby

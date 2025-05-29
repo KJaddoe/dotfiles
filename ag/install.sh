@@ -15,7 +15,7 @@ install_ag_macos() {
 
     if ! command -v brew >/dev/null 2>&1; then
         echo "Homebrew not found! Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | sh
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
     fi
 
     brew install the_silver_searcher

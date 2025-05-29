@@ -13,12 +13,6 @@ install_tmux_ubuntu() {
 
 install_tmux_macos() {
     echo "Installing tmux on macOS..."
-
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Homebrew not found! Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | sh
-    fi
-
     brew install tmux
 }
 

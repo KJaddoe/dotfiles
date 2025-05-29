@@ -14,7 +14,7 @@ install_java_macos() {
     echo "Installing OpenJDK on macOS..."
     if ! command -v brew >/dev/null 2>&1; then
         echo "Homebrew not found! Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | sh
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
     fi
     brew install openjdk@17  # Change this to the latest LTS version if needed
 }
