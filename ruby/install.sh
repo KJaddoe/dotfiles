@@ -4,6 +4,22 @@ set -e
 
 OS="$(uname)"
 
+setup_brew_env() {
+    if [ "$OS" = "Darwin" ]; then
+        if [ -x /opt/homebrew/bin/brew ]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"  # Apple Silicon
+        elif [ -x /usr/local/bin/brew ]; then
+            eval "$(/usr/local/bin/brew shellenv)"     # Intel
+        fi
+    elif [ "$OS" = "Linux" ]; then
+        if [ -x "$HOME/.linuxbrew/bin/brew" ]; then
+            eval "$($HOME/.linuxbrew/bin/brew shellenv)"
+        elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        fi
+    fi
+}
+
 install_ruby_ubuntu() {
     echo "Installing Ruby on Ubuntu..."
     sudo apt update
@@ -29,6 +45,7 @@ verify_installation() {
 }
 
 # Determine OS and install Ruby accordingly
+setup_brew_env
 case "$OS" in
     Linux)
         if grep -qi "ubuntu" /etc/os-release; then
