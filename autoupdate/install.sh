@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # setups the auto-update
 (
 	crontab -l | grep -v "dot_update"
