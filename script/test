@@ -3,8 +3,8 @@ set -e
 
 # link to ~ and cd to it
 cd ..
-cp -rf dotfiles ~/.dotfiles
-cd ~/.dotfiles
+cp -rf dotfiles ~/dotfiles
+cd ~/dotfiles
 
 # setup git credentials
 echo "setup git fake user/email"
