@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 
 kubectl() {
 	# shellcheck disable=SC1090,SC2039
