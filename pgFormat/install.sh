@@ -28,6 +28,7 @@ verify_installation() {
     echo "pg_format installation completed successfully!"
 }
 
+setup_brew_env
 case "$OS" in
     Linux)
         if grep -qi "ubuntu" /etc/os-release; then
