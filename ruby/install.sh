@@ -12,13 +12,6 @@ install_ruby_ubuntu() {
 
 install_ruby_macos() {
     echo "Installing Ruby on macOS..."
-
-    # Check if Homebrew is installed
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Homebrew not found! Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
-    fi
-
     brew install ruby
 }
 

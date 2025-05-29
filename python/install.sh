@@ -38,13 +38,6 @@ install_pyenv_ubuntu() {
 install_pyenv_macos() {
     echo "Installing pyenv on macOS..."
 
-    if ! command -v brew >/dev/null 2>&1; then
-        echo "Homebrew not found! Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
-        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    fi
-
     brew install pyenv
 
     export PATH="$HOME/.pyenv/bin:$PATH"
