@@ -44,14 +44,16 @@ NPM_PACKAGES=(
 install_nvm_ubuntu() {
 	echo "Installing NVM on Ubuntu..."
 	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-	source $NVIM_DIR/nvm.sh
+        export NVM_DIR="$HOME/.nvm"
+	source $NVM_DIR/nvm.sh
 	nvm install --lts
 }
 
 install_nvm_macos() {
 	echo "Installing NVM on macOS..."
 	brew install nvm
-	mkdir -p "$HOME/.nvm"
+        export NVM_DIR="$(brew --prefix nvm)"
+	source $NVM_DIR/nvm.sh
 	nvm install --lts
 }
 
