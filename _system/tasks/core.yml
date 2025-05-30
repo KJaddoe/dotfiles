@@ -57,5 +57,11 @@
   shell: which zsh
   register: bin_zsh
 
+- name: Ensure zsh path is listed in /etc/shells
+  lineinfile:
+    path: /etc/shells
+    line: "{{ bin_zsh.stdout }}"
+    state: present
+
 - name: Set zsh as default shell
   shell: chsh -s "{{ bin_zsh.stdout }}"
