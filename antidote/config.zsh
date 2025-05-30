@@ -10,7 +10,7 @@ command_exists() {
 # Set Antidote path dynamically
 if command_exists brew; then
   # If Homebrew is installed, check the install location
-  ANTIDOTE_PATH="$(brew --prefix)/share/antidote/antidote.zsh"
+  ANTIDOTE_PATH="$(brew --prefix)/opt/antidote/share/antidote/antidote.zsh"
 elif [[ -f "/usr/local/share/antidote/antidote.zsh" ]]; then
   ANTIDOTE_PATH="/usr/local/share/antidote/antidote.zsh"
 elif [[ -f "$HOME/.antidote/antidote.zsh" ]]; then
