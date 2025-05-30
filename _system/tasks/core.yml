@@ -59,4 +59,3 @@
 
 - name: Set zsh as default shell
   shell: chsh -s "{{ bin_zsh.stdout }}"
-  when: isnt_ci
