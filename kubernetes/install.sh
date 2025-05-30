@@ -21,7 +21,7 @@ setup_brew_env() {
 }
 
 install_kubernetes_ubuntu() {
-    echo "Installing Kubernetes (kubectl, kubeadm, minikube) on Ubuntu..."
+    echo "Installing Kubernetes (kubectl) on Ubuntu..."
 
     sudo apt update
     sudo apt install -y apt-transport-https ca-certificates curl
@@ -29,14 +29,14 @@ install_kubernetes_ubuntu() {
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
     sudo apt-add-repository "deb https://apt.kubernetes.io/ kubernetes-xenial main"
     sudo apt update
-    sudo apt install -y kubectl kubeadm kubelet
+    sudo apt install -y kubectl kubelet
 
-    sudo apt-mark hold kubectl kubeadm kubelet
+    sudo apt-mark hold kubectl kubelet
 }
 
 install_kubernetes_macos() {
-    echo "Installing Kubernetes (kubectl, minikube) on macOS..."
-    brew install kubectl minikube
+    echo "Installing Kubernetes (kubectl) on macOS..."
+    brew install kubectl
 }
 
 install_minikube() {
@@ -62,15 +62,6 @@ setup_kubernetes_completions() {
     fi
 }
 
-start_minikube() {
-    echo "Starting Minikube..."
-    if [ "$OS" = "Linux" ]; then
-        minikube start --driver=docker
-    elif [ "$OS" = "Darwin" ]; then
-        minikube start
-    fi
-}
-
 verify_installation() {
     echo "Verifying Kubernetes installation..."
 
@@ -78,13 +69,6 @@ verify_installation() {
         echo "kubectl is installed: $(kubectl version --client --short)"
     else
         echo "kubectl installation failed!"
-        exit 1
-    fi
-
-    if command -v kubeadm >/dev/null 2>&1; then
-        echo "kubeadm is installed: $(kubeadm version -o short)"
-    else
-        echo "kubeadm installation failed!"
         exit 1
     fi
 
@@ -119,8 +103,4 @@ esac
 
 install_minikube
 setup_kubernetes_completions
-start_minikube
 verify_installation
-
-echo "Kubernetes (kubectl, kubeadm, minikube) installation and setup completed successfully!"
-
