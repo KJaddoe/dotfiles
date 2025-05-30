@@ -39,7 +39,7 @@ install_antidote_ubuntu() {
 
 verify_installation() {
     if [ "$OS" = "Darwin" ]; then
-        if [ -f "$(brew --prefix)/opt/antidote/share/antidote/antidote.zsh" ]; then
+        if [ -f "$(brew --prefix antidote)/share/antidote/antidote.zsh" ]; then
             echo "Antidote installed successfully (brew version)."
         else
             echo "Antidote installation failed on macOS."
