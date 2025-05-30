@@ -58,6 +58,7 @@
   register: bin_zsh
 
 - name: Ensure zsh path is listed in /etc/shells
+  become: true
   lineinfile:
     path: /etc/shells
     line: "{{ bin_zsh.stdout }}"
