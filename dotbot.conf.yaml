@@ -19,6 +19,7 @@
       path: tmux/default.json
     ~/.zshrc: zsh/zshrc
     ~/.zsh_plugins.txt: antidote/zsh_plugins.txt
+    ~/.bashrc: bash/bashrc
 
 - shell:
     - [git submodule update --init --recursive, Installing submodules]
