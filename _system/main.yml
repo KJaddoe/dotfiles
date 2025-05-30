@@ -1,6 +1,6 @@
 - hosts: localhost
   vars:
-    - should_be_root: "{{ true if ansible_pkg_mgr != 'brew' else false }}"
+    should_be_root: "{{ true if ansible_pkg_mgr != 'brew' else false }}"
   vars_files:
     - vars/java.yml
     - vars/powerline.yml
