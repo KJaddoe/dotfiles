@@ -1,0 +1,14 @@
+# BEGIN ANSIBLE MANAGED BLOCK
+############################################################
+# Powerline configuration
+############################################################
+
+powerline_info=$(pip2 show powerline-status | grep Location)
+if [ -n "$powerline_info" ]; then
+    powerline_repo=${powerline_info#Location: }
+    powerline-daemon -q
+    POWERLINE_BASH_CONTINUATION=1
+    POWERLINE_BASH_SELECT=1
+    . ${powerline_repo}/powerline/bindings/bash/powerline.sh
+fi
+# END ANSIBLE MANAGED BLOCK
