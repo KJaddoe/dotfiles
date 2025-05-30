@@ -6,7 +6,7 @@
     - vars/powerline.yml
   roles:
     - role: geerlingguy.java
-    - role: mjanser.powerline
+    - role: nass600.powerline
       become: '{{ should_be_root }}'
   tasks:
     # essentials:
