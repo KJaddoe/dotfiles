@@ -6,6 +6,7 @@
     - vars/powerline.yml
   roles:
     - role: geerlingguy.java
+      when: ansible_os_family == "Debian"
     - role: nass600.powerline
       become: '{{ should_be_root }}'
   tasks:
