@@ -34,7 +34,7 @@ install_java_macos() {
 verify_installation() {
     echo "Verifying installation..."
 
-    if command -v node >/dev/null 2>&1; then
+    if command -v java >/dev/null 2>&1; then
         echo "Java OpenJDK is installed: $(java --version)"
     else
         echo "Java OpenJDK installation failed!"
@@ -49,7 +49,6 @@ case "$OS" in
     Linux)
         if grep -qi "ubuntu" /etc/os-release; then
             install_java_ubuntu
-            setup_java_ubuntu
         else
             echo "Unsupported Linux distribution."
             exit 1
@@ -57,7 +56,6 @@ case "$OS" in
         ;;
     Darwin)
         install_java_macos
-        setup_java_macos
         ;;
     *)
         echo "Unsupported OS: $OS"
