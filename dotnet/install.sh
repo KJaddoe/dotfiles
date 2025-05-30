@@ -45,6 +45,9 @@ install_csharp_ls() {
 verify_installation() {
     echo "Verifying installation..."
 
+    # Add path export to ensure that the dotnet installed tools can be found while running the script
+    export PATH="$HOME/.dotnet/tools:$PATH"
+
     if command -v dotnet >/dev/null 2>&1; then
         echo ".NET is installed: $(dotnet --version)"
     else
