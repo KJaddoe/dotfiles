@@ -49,3 +49,5 @@
 	template = ~/dotfiles/git/template.txt
 [log]
 	showSignature = false
+[pull]
+	rebase = true
