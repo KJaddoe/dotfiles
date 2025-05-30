@@ -35,8 +35,8 @@ install_kubernetes_ubuntu() {
 }
 
 install_kubernetes_macos() {
-    echo "Installing Kubernetes (kubectl, kubeadm, minikube) on macOS..."
-    brew install kubectl kubeadm minikube
+    echo "Installing Kubernetes (kubectl, minikube) on macOS..."
+    brew install kubectl minikube
 }
 
 install_minikube() {
