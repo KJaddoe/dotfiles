@@ -42,7 +42,6 @@
       - ncdu
       - tree
       - openssh
-      - smbclient
       - xsel
       - zip
       - unzip
