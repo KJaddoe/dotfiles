@@ -3,13 +3,15 @@
 set -e
 
 OS="$(uname)"
+ZSH_CUSTOM="$HOME/.zsh_plugins"
+ANTIDOTE_DIR="$ZSH_CUSTOM/antidote"
 
 setup_brew_env() {
     if [ "$OS" = "Darwin" ]; then
         if [ -x /opt/homebrew/bin/brew ]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"  # Apple Silicon
+            eval "$(/opt/homebrew/bin/brew shellenv)"
         elif [ -x /usr/local/bin/brew ]; then
-            eval "$(/usr/local/bin/brew shellenv)"     # Intel
+            eval "$(/usr/local/bin/brew shellenv)"
         fi
     elif [ "$OS" = "Linux" ]; then
         if [ -x "$HOME/.linuxbrew/bin/brew" ]; then
@@ -20,44 +22,39 @@ setup_brew_env() {
     fi
 }
 
-# Define a default directory for Zsh plugins (if you don't use Oh My Zsh)
-ZSH_CUSTOM="$HOME/.zsh_plugins"
+install_antidote_macos() {
+    echo "Installing Antidote via Homebrew on macOS..."
+    brew install antidote
+}
 
 install_antidote_ubuntu() {
-    echo "Installing Antidote on Ubuntu..."
-    sudo apt update
-    sudo apt install -y git curl
-}
-
-install_antidote_macos() {
-    echo "Installing Antidote on macOS..."
-    brew install git curl
-}
-
-install_antidote() {
-    echo "Installing Antidote plugin manager..."
-
-    if [ ! -d "$ZSH_CUSTOM/antidote" ]; then
-        git clone https://github.com/mattmc3/antidote.git "$ZSH_CUSTOM/antidote"
+    echo "Installing Antidote manually on Ubuntu..."
+    mkdir -p "$ZSH_CUSTOM"
+    if [ ! -d "$ANTIDOTE_DIR" ]; then
+        git clone https://github.com/mattmc3/antidote.git "$ANTIDOTE_DIR"
     else
-        echo "Antidote is already installed."
+        echo "Antidote already installed at $ANTIDOTE_DIR"
     fi
 }
 
 verify_installation() {
-    echo "Verifying installation..."
-
-    if command -v antidote >/dev/null 2>&1; then
-        echo "Antidote is installed: : $(antidote --version)"
+    if [ "$OS" = "Darwin" ]; then
+        if command -v antidote > /dev/null 2>&1; then
+            echo "Antidote installed successfully (brew version)."
+        else
+            echo "Antidote installation failed on macOS."
+            exit 1
+        fi
+    elif [ -f "$ANTIDOTE_DIR/antidote.zsh" ]; then
+        echo "Antidote installed successfully at $ANTIDOTE_DIR"
     else
-        echo "Antidote installation failed!"
+        echo "Antidote installation failed on Ubuntu."
         exit 1
     fi
-
-    echo "All components are installed successfully!"
 }
 
 setup_brew_env
+
 case "$OS" in
     Linux)
         if grep -qi "ubuntu" /etc/os-release; then
@@ -76,7 +73,4 @@ case "$OS" in
         ;;
 esac
 
-install_antidote
 verify_installation
-
-echo "Antidote installation and setup completed successfully!"
