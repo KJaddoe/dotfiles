@@ -38,7 +38,45 @@ setup_fzf_keybindings() {
         source ~/.fzf.zsh
     else
         echo "fzf configuration not found. Running fzf installation script..."
-        /usr/local/opt/fzf/install
+
+        if [ "$OS" = "Darwin" ]; then
+            if [ -x /opt/homebrew/bin/brew ]; then
+                HOMEBREW_PREFIX="/opt/homebrew"
+            elif [ -x /usr/local/bin/brew ]; then
+                HOMEBREW_PREFIX="/usr/local"
+            else
+                echo "Homebrew not found! Cannot run fzf install script."
+                exit 1
+            fi
+
+            FZF_INSTALL_SCRIPT="$HOMEBREW_PREFIX/opt/fzf/install"
+
+            if [ -x "$FZF_INSTALL_SCRIPT" ]; then
+                "$FZF_INSTALL_SCRIPT"
+            else
+                echo "fzf install script not found at $FZF_INSTALL_SCRIPT"
+                exit 1
+            fi
+
+        elif [ "$OS" = "Linux" ]; then
+            if [ -x /usr/share/doc/fzf/examples/install ]; then
+                /usr/share/doc/fzf/examples/install
+            else
+                if command -v fzf >/dev/null 2>&1; then
+                    fzf --install || {
+                        echo "fzf install script not available"
+                        exit 1
+                    }
+                else
+                    echo "fzf install script not found on Ubuntu"
+                    exit 1
+                fi
+            fi
+
+        else
+            echo "fzf install script setup is not supported on this OS by this script."
+            exit 1
+        fi
     fi
 }
 
