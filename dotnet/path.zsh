@@ -1,2 +1,2 @@
 #!/bin/zsh
-export PATH="$PATH:$HOME/.dotnet/tools"
+export PATH="$HOME/.dotnet/tools:$PATH"
