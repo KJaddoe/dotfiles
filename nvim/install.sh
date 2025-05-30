@@ -41,9 +41,9 @@ install_neovim_macos() {
     brew install neovim
 
     echo "Configuring Neovim as the default editor..."
-    ln -sf "$(which nvim)" /usr/local/bin/vi
-    ln -sf "$(which nvim)" /usr/local/bin/vim
-    ln -sf "$(which nvim)" /usr/local/bin/editor
+    sudo ln -sf "$(which nvim)" /usr/local/bin/vi
+    sudo ln -sf "$(which nvim)" /usr/local/bin/vim
+    sudo ln -sf "$(which nvim)" /usr/local/bin/editor
 }
 
 verify_installation() {
