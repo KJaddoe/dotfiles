@@ -1,4 +1,2 @@
-powerline_default_top_theme: powerline
-powerline_shell_vcs_branch: yes
-powerline_vim: yes
-powerline_tmux: yes
+powerline_fonts_repo: "https://github.com/powerline/fonts.git"
+powerline_fonts: true
