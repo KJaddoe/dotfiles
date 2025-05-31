@@ -9,6 +9,7 @@
     ~/.gitconfig.local: git/gitconfig.local
     ~/.npmrc: node/npmrc
     ~/.psqlrc: postgres/psqlrc
+    ~/.psqlrc.local: postgres/psqlrc.local
     ~/.p10k.zsh: powerlevel10k/p10k.zsh
     ~/.prettierrc.json: prettier/prettierrc.json
     ~/.gemrc: ruby/gemrc
