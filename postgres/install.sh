@@ -47,7 +47,6 @@ configure_postgresql() {
     if [ "$OS" = "Linux" ]; then
         sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
     elif [ "$OS" = "Darwin" ]; then
-        psql -c "ALTER USER postgres PASSWORD 'postgres';"
     fi
 
     echo "PostgreSQL setup completed with password 'postgres'."
