@@ -15,9 +15,6 @@
     ~/.gemrc: ruby/gemrc
     ~/.tern-config: tern/tern-config
     ~/.tmux.conf: tmux/tmux.conf
-    ~/.config/powerline/themes/tmux/default.json:
-      create: true
-      path: tmux/default.json
     ~/.zshrc: zsh/zshrc
     ~/.zsh_plugins.txt: antidote/zsh_plugins.txt
     ~/.bashrc: bash/bashrc
