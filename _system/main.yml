@@ -3,12 +3,9 @@
     should_be_root: "{{ true if ansible_pkg_mgr != 'brew' else false }}"
   vars_files:
     - vars/java.yml
-    - vars/powerline.yml
   roles:
     - role: geerlingguy.java
       when: ansible_os_family == "Debian"
-    - role: nass600.powerline
-      become: '{{ should_be_root }}'
   tasks:
     # essentials:
     - include_tasks: tasks/apt.yml
