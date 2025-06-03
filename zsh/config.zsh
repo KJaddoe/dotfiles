@@ -1,6 +1,7 @@
 #!/bin/zsh
 export LSCOLORS='exfxcxdxbxegedabagacad'
 export CLICOLOR=true
+export GPG_TTY=$(tty)
 
 fpath=($DOTFILES/functions $fpath)
 
