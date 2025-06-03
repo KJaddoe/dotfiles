@@ -24,7 +24,7 @@ end
 local lspconfig = require("lspconfig")
 require("lspconfig.ui.windows").default_options.border = "rounded"
 
-lspconfig.tsserver.setup({
+lspconfig.ts_ls.setup({
   capabilities = capabilities,
   on_attach = on_attach,
   settings = {
