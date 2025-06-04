@@ -218,6 +218,7 @@ require("lazy").setup({
           nix = { "nixpkgs_fmt" },
           rust = { "rustfmt" },
           sh = { "shfmt" },
+          cs = { "csharpier" },
           -- sql = { "pg_format", "sql_formatter" },
           tf = { "terraform_fmt" },
           yaml = { "prettier" },
