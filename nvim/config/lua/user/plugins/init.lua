@@ -226,16 +226,9 @@ require("lazy").setup({
           python = { "isort", "black" },
           ["_"] = { "trim_whitespace", "trim_newlines" },
         },
-        format_on_save = {
+        format_after_save = {
           lsp_fallback = true,
-          timeout_ms = 500,
         },
-      })
-      vim.api.nvim_create_autocmd("BufWritePre", {
-        pattern = "*",
-        callback = function(args)
-          require("conform").format({ bufnr = args.buf })
-        end,
       })
     end,
   },

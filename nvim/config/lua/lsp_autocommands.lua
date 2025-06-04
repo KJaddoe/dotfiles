@@ -1,37 +1,37 @@
 local ms = require("vim.lsp.protocol").Methods
 local group = vim.api.nvim_create_augroup("LSP", { clear = true })
 
--- Format code and organize imports (if supported).
+-- Format code and organize imports (if supported) (async).
 --
----@param client vim.lsp.Client Client
----@param bufnr number Buffer number
----@param timeoutms number timeout in ms
-local organize_imports = function(client, bufnr, timeoutms)
-  local params = vim.lsp.util.make_range_params()
-  params.context = { only = { "source.organizeImports" } }
-  -- TODO: PR neovim allowing to filter buf_request_sync
-  local result = vim.lsp.buf_request_sync(
-    bufnr,
-    ms.textDocument_codeAction,
-    params,
-    timeoutms
-  )
-  for cid, res in pairs(result or {}) do
-    if cid == client.id then
-      for _, r in pairs(res.result or {}) do
-        if r.edit then
-          local enc = (vim.lsp.get_client_by_id(cid) or {}).offset_encoding
-            or "utf-16"
-          vim.lsp.util.apply_workspace_edit(r.edit, enc)
-        elseif r.command and r.command.command then
-          vim.lsp.buf.execute_command(r.command)
-        end
+---@async
+---@param client vim.lsp.Client
+---@param bufnr number
+---@type fun(client: vim.lsp.Client, bufnr: number)
+local organize_imports = function(client, bufnr)
+  ---@type lsp.Handler
+  ---@diagnostic disable-next-line: unused-local
+  local handler = function(err, result, context, config)
+    if err then
+      -- ignore errors
+      return
+    end
+    for _, r in pairs(result or {}) do
+      if r.edit then
+        local enc = client.offset_encoding or "utf-16"
+        vim.lsp.util.apply_workspace_edit(r.edit, enc)
+      elseif r.command and r.command.command then
+        client:exec_cmd(r.command, { bufnr = bufnr })
       end
     end
+    vim.cmd([[noautocmd write]])
   end
-end
 
-local M = {}
+  local win = vim.api.nvim_get_current_win()
+  local params =
+    vim.lsp.util.make_range_params(win, client.offset_encoding or "utf-16")
+  params.context = { only = { "source.organizeImports" } }
+  client:request(ms.textDocument_codeAction, params, handler, bufnr)
+end
 
 -- Checks if the given buffer has any lsp clients that support the given method.
 --
@@ -45,13 +45,23 @@ end
 
 ---@param bufnr number
 ---@param method string
----@param fn function(client)
-local on_clients = function(bufnr, method, fn)
+---@param apply fun(client: vim.lsp.Client, bufnr: number)
+---@param filter? fun(client: vim.lsp.Client): boolean?
+local on_clients = function(bufnr, method, apply, filter)
   local clients = vim.lsp.get_clients({ bufnr = bufnr, method = method })
+  if not filter then
+    filter = function()
+      return true
+    end
+  end
   for _, client in ipairs(clients) do
-    fn(client)
+    if filter(client) then
+      apply(client, bufnr)
+    end
   end
 end
+
+local M = {}
 
 M.setup = function()
   vim.api.nvim_create_autocmd("LspAttach", {
@@ -60,7 +70,12 @@ M.setup = function()
       if client == nil then
         return
       end
-      if client.supports_method(ms.textDocument_codeLens) then
+      if
+        client:supports_method(
+          ms.textDocument_codeLens,
+          vim.api.nvim_get_current_buf()
+        )
+      then
         vim.lsp.inlay_hint.enable(true)
       end
     end,
@@ -71,7 +86,12 @@ M.setup = function()
       if client == nil then
         return
       end
-      if client.supports_method(ms.textDocument_codeLens) then
+      if
+        client:supports_method(
+          ms.textDocument_codeLens,
+          vim.api.nvim_get_current_buf()
+        )
+      then
         vim.lsp.codelens.clear(client.id)
       end
     end,
@@ -80,11 +100,35 @@ M.setup = function()
 
   vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     callback = function()
-      on_clients(0, ms.textDocument_codeAction, function(client)
-        if client.name ~= "lua_ls" then
-          organize_imports(client, 0, 1500)
+      ---@type fun(client: vim.lsp.Client, bufnr: number)
+      local format = function(client, bufnr)
+        if client.server_capabilities.documentFormattingProvider then
+          vim.lsp.buf.format({
+            bufnr = bufnr,
+            -- for some reason gopls started timing out on big projects recently...
+            timeout_ms = 5000,
+            id = client.id,
+          })
         end
-      end)
+      end
+      on_clients(
+        vim.api.nvim_get_current_buf(),
+        ms.textDocument_codeAction,
+        format
+      )
+    end,
+    group = group,
+  })
+
+  vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+    callback = function()
+      local bufnr = vim.api.nvim_get_current_buf()
+      ---@type fun(client: vim.lsp.Client): boolean?
+      local filter = function(client)
+        -- lua_ls freaks out when you ask it to organize imports.
+        return client.name ~= "lua_ls"
+      end
+      on_clients(bufnr, ms.textDocument_codeAction, organize_imports, filter)
     end,
     group = group,
   })
