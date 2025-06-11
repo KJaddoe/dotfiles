@@ -18,6 +18,7 @@
     ~/.zshrc: zsh/zshrc
     ~/.zsh_plugins.txt: antidote/zsh_plugins.txt
     ~/.bashrc: bash/bashrc
+    ~/.config/tmux-powerline/config.sh: tmux/tmux-powerline.config.sh
 
 - shell:
     - [git submodule update --init --recursive, Installing submodules]
