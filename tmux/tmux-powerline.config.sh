@@ -14,7 +14,7 @@ export TMUX_POWERLINE_DIR_USER_THEMES="${XDG_CONFIG_HOME:-$HOME/.config}/tmux-po
 export TMUX_POWERLINE_DIR_USER_SEGMENTS="${XDG_CONFIG_HOME:-$HOME/.config}/tmux-powerline/segments"
 
 # The initial visibility of the status bar. Can be {"on", "off", "2"}. 2 will create two status lines: one for the window list and one with status bar segments.
-export TMUX_POWERLINE_STATUS_VISIBILITY="on"
+export TMUX_POWERLINE_STATUS_VISIBILITY="2"
 # In case of visibility = 2, where to display window status and where left/right status bars.
 # 0: window status top, left/right status bottom; 1: window status bottom, left/right status top
 export TMUX_POWERLINE_WINDOW_STATUS_LINE=0
@@ -23,10 +23,10 @@ export TMUX_POWERLINE_WINDOW_STATUS_LINE=0
 export TMUX_POWERLINE_STATUS_INTERVAL="1"
 # The location of the window list. Can be {"absolute-centre, centre, left, right"}.
 # Note that "absolute-centre" is only supported on `tmux -V` >= 3.2.
-export TMUX_POWERLINE_STATUS_JUSTIFICATION="centre"
+export TMUX_POWERLINE_STATUS_JUSTIFICATION="left"
 
 # The maximum length of the left status bar.
-export TMUX_POWERLINE_STATUS_LEFT_LENGTH="60"
+export TMUX_POWERLINE_STATUS_LEFT_LENGTH="90"
 # The maximum length of the right status bar.
 export TMUX_POWERLINE_STATUS_RIGHT_LENGTH="90"
 
