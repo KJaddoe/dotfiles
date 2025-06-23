@@ -25,5 +25,3 @@ require("user.git")
 require("user.lsp")
 require("user.cmp")
 require("user.treesitter")
-
-require("user.formatting")

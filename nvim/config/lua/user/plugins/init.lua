@@ -316,7 +316,6 @@ require("lazy").setup({
       require("Comment").setup()
     end,
   },
-  { "mhartington/formatter.nvim" },
   {
     "folke/trouble.nvim",
     config = function()
