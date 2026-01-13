@@ -3,28 +3,38 @@ local cmp_capabilities = require("cmp_nvim_lsp").default_capabilities()
 local keymaps = require("lsp_keymaps")
 require("lsp_autocommands").setup()
 
+-- capabilities
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = vim.tbl_deep_extend("force", capabilities, cmp_capabilities)
 capabilities = vim.tbl_deep_extend("force", capabilities, {
   workspace = {
     didChangeWatchedFiles = {
-      dynamicRegistration = true, -- needs fswatch on linux
+      dynamicRegistration = true,
       relativePatternSupport = true,
     },
   },
 })
 
----@param client vim.lsp.Client LSP client
----@param bufnr number Buffer number
----@diagnostic disable: unused-local
+---@param client vim.lsp.Client
+---@param bufnr number
 local on_attach = function(client, bufnr)
   keymaps.on_attach(bufnr)
 end
 
-local lspconfig = require("lspconfig")
-require("lspconfig.ui.windows").default_options.border = "rounded"
+-- global floating window borders
+vim.lsp.util.open_floating_preview = (function(orig)
+  return function(contents, syntax, opts, ...)
+    opts = opts or {}
+    opts.border = opts.border or "rounded"
+    return orig(contents, syntax, opts, ...)
+  end
+end)(vim.lsp.util.open_floating_preview)
 
-lspconfig.ts_ls.setup({
+-- ======================
+-- LSP SERVER CONFIGS
+-- ======================
+
+vim.lsp.config("ts_ls", {
   capabilities = capabilities,
   on_attach = on_attach,
   settings = {
@@ -53,82 +63,63 @@ lspconfig.ts_ls.setup({
   },
 })
 
-lspconfig.yamlls.setup({
+vim.lsp.config("yamlls", {
   capabilities = capabilities,
   on_attach = on_attach,
   settings = {
     yaml = {
       schemaStore = {
-        url = "https://www.schemastore.org/api/json/catalog.json",
         enable = true,
+        url = "https://www.schemastore.org/api/json/catalog.json",
       },
     },
   },
 })
 
-lspconfig.cssls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
+for _, server in ipairs({
+  "cssls",
+  "vimls",
+  "bashls",
+  "pylsp",
+  "dockerls",
+  "jedi_language_server",
+  "clangd",
+  "zls",
+  "rust_analyzer",
+  "taplo",
+  "csharp_ls",
+}) do
+  vim.lsp.config(server, {
+    capabilities = capabilities,
+    on_attach = on_attach,
+  })
+end
 
-lspconfig.vimls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
-lspconfig.html.setup({
+vim.lsp.config("html", {
   capabilities = capabilities,
   on_attach = on_attach,
   cmd = { "html-languageserver", "--stdio" },
 })
 
-lspconfig.jsonls.setup({
+vim.lsp.config("jsonls", {
   capabilities = capabilities,
   on_attach = on_attach,
   cmd = { "json-languageserver", "--stdio" },
 })
 
-lspconfig.bashls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
-lspconfig.pylsp.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
-lspconfig.dockerls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
-lspconfig.jedi_language_server.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
-lspconfig.clangd.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
-lspconfig.zls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
-
+-- Angular
 local function get_npm_global_root()
   local handle = io.popen("npm root -g")
-  if handle then
-    local result = handle:read("*a")
-    handle:close()
-    return result:gsub("%s+$", "") -- Trim trailing whitespace/newline
+  if not handle then
+    return ""
   end
-  return nil
+  local result = handle:read("*a")
+  handle:close()
+  return result:gsub("%s+$", "")
 end
-local project_library_path = get_npm_global_root() or ""
-local cmd = {
+
+local project_library_path = get_npm_global_root()
+local angular_cmd = {
   "ngserver",
   "--stdio",
   "--tsProbeLocations",
@@ -137,51 +128,56 @@ local cmd = {
   project_library_path,
 }
 
-lspconfig.angularls.setup({
-  on_attach = on_attach,
+vim.lsp.config("angularls", {
   capabilities = capabilities,
-  cmd = cmd,
-  on_new_config = function(new_config, new_root_dir)
-    new_config.cmd = cmd
+  on_attach = on_attach,
+  cmd = angular_cmd,
+  on_new_config = function(new_config)
+    new_config.cmd = angular_cmd
   end,
 })
 
--- Make runtime files discoverable to the server
-local runtime_path = vim.split(package.path, ";", {})
-table.insert(runtime_path, "lua/?.lua")
-table.insert(runtime_path, "lua/?/init.lua")
-lspconfig.lua_ls.setup({
+-- Lua
+vim.lsp.config("lua_ls", {
   capabilities = capabilities,
   on_attach = on_attach,
   settings = {
     Lua = {
-      completion = {
-        callSnippet = "Replace",
-      },
+      completion = { callSnippet = "Replace" },
       telemetry = { enable = false },
-      hint = {
-        enable = true,
-      },
+      hint = { enable = true },
     },
   },
 })
 
-lspconfig.rust_analyzer.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
+-- ======================
+-- ENABLE SERVERS
+-- ======================
+
+vim.lsp.enable({
+  "ts_ls",
+  "yamlls",
+  "cssls",
+  "vimls",
+  "html",
+  "jsonls",
+  "bashls",
+  "pylsp",
+  "dockerls",
+  "jedi_language_server",
+  "clangd",
+  "zls",
+  "angularls",
+  "lua_ls",
+  "rust_analyzer",
+  "taplo",
+  "csharp_ls",
 })
 
-lspconfig.taplo.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
-})
+-- ======================
+-- DIAGNOSTICS
+-- ======================
 
-lspconfig.csharp_ls.setup({
-  on_attach = on_attach,
-  capabilities = capabilities,
-})
-
--- setup diagnostics
 local float_config = {
   focusable = false,
   style = "minimal",
@@ -190,10 +186,11 @@ local float_config = {
   header = "",
   prefix = "",
 }
+
 vim.diagnostic.config({
   underline = true,
   update_in_insert = false,
-  virtual_text = false, --{ spacing = 4, prefix = "●" },
+  virtual_text = false,
   severity_sort = true,
   float = float_config,
 })
@@ -202,10 +199,11 @@ vim.lsp.handlers[ms.textDocument_hover] =
   vim.lsp.with(vim.lsp.handlers.hover, float_config)
 vim.lsp.handlers[ms.textDocument_signatureHelp] =
   vim.lsp.with(vim.lsp.handlers.signature_help, float_config)
+
 vim.highlight.priorities.semantic_tokens = 95
 
--- set up diagnostic signs
+-- diagnostic signs
 for name, icon in pairs(require("user.icons").diagnostics) do
-  name = "DiagnosticSign" .. name
-  vim.fn.sign_define(name, { text = icon, texthl = name, numhl = "" })
+  local sign = "DiagnosticSign" .. name
+  vim.fn.sign_define(sign, { text = icon, texthl = sign, numhl = "" })
 end
