@@ -208,6 +208,7 @@ require("lazy").setup({
           css = { "prettier" },
           fish = { "fish_indent" },
           html = { "prettier" },
+          htmlangular = { "prettier" },
           javascript = { "prettier" },
           typescript = { "prettier" },
           javascriptreact = { "prettier" },
