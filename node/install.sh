@@ -5,19 +5,19 @@ set -e
 OS="$(uname)"
 
 setup_brew_env() {
-    if [ "$OS" = "Darwin" ]; then
-        if [ -x /opt/homebrew/bin/brew ]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"  # Apple Silicon
-        elif [ -x /usr/local/bin/brew ]; then
-            eval "$(/usr/local/bin/brew shellenv)"     # Intel
-        fi
-    elif [ "$OS" = "Linux" ]; then
-        if [ -x "$HOME/.linuxbrew/bin/brew" ]; then
-            eval "$($HOME/.linuxbrew/bin/brew shellenv)"
-        elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
-            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-        fi
-    fi
+	if [ "$OS" = "Darwin" ]; then
+		if [ -x /opt/homebrew/bin/brew ]; then
+			eval "$(/opt/homebrew/bin/brew shellenv)" # Apple Silicon
+		elif [ -x /usr/local/bin/brew ]; then
+			eval "$(/usr/local/bin/brew shellenv)" # Intel
+		fi
+	elif [ "$OS" = "Linux" ]; then
+		if [ -x "$HOME/.linuxbrew/bin/brew" ]; then
+			eval "$($HOME/.linuxbrew/bin/brew shellenv)"
+		elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+			eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+		fi
+	fi
 }
 
 NPM_PACKAGES=(
@@ -35,6 +35,7 @@ NPM_PACKAGES=(
 	"yaml-language-server"
 	"diagnostic-languageserver"
 	"@angular/language-server"
+	"@angular/language-service"
 	"emmet-ls"
 	"bash-language-server"
 	"vim-language-server"
@@ -44,7 +45,7 @@ NPM_PACKAGES=(
 install_nvm_ubuntu() {
 	echo "Installing NVM on Ubuntu..."
 	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-        export NVM_DIR="$HOME/.nvm"
+	export NVM_DIR="$HOME/.nvm"
 	source $NVM_DIR/nvm.sh
 	nvm install --lts
 }
@@ -52,7 +53,7 @@ install_nvm_ubuntu() {
 install_nvm_macos() {
 	echo "Installing NVM on macOS..."
 	brew install nvm
-        export NVM_DIR="$(brew --prefix nvm)"
+	export NVM_DIR="$(brew --prefix nvm)"
 	source $NVM_DIR/nvm.sh
 	nvm install --lts
 }
