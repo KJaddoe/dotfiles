@@ -396,4 +396,7 @@ require("lazy").setup({
       })
     end,
   },
+  {
+    "pearofducks/ansible-vim",
+  },
 })

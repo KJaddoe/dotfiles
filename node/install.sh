@@ -40,6 +40,7 @@ NPM_PACKAGES=(
 	"bash-language-server"
 	"vim-language-server"
 	"sql-formatter"
+	"@ansible/ansible-language-server"
 )
 
 install_nvm_ubuntu() {

@@ -172,6 +172,7 @@ vim.lsp.enable({
   "rust_analyzer",
   "taplo",
   "csharp_ls",
+  "ansiblels",
 })
 
 -- ======================
