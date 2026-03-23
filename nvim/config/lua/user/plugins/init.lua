@@ -189,7 +189,6 @@ require("lazy").setup({
       })
     end,
   },
-  { "famiu/bufdelete.nvim" },
   {
     "laytan/cloak.nvim",
     config = function()
