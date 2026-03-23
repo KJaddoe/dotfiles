@@ -135,6 +135,7 @@ require("lazy").setup({
           mappings = {
             i = {
               ["<CR>"] = select_one_or_multi,
+              ["<c-d>"] = "delete_buffer",
             },
           },
           prompt_prefix = "   ",
