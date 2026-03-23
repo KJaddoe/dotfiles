@@ -130,72 +130,8 @@ require("lazy").setup({
       { "nvim-telescope/telescope-github.nvim" },
     },
     config = function()
-      local actions = require("telescope.actions")
-      local action_state = require("telescope.actions.state")
-
-      local function open_selection(prompt_bufnr, open_cmd)
-        local picker = action_state.get_current_picker(prompt_bufnr)
-        local multi = picker:get_multi_selection()
-        local current = action_state.get_selected_entry()
-
-        actions.close(prompt_bufnr)
-
-        if vim.tbl_isempty(multi) then
-          multi = { current }
-        else
-          table.insert(multi, current)
-        end
-
-        for i, entry in ipairs(multi) do
-          if entry.path then
-            if i == 1 then
-              vim.cmd((open_cmd or "edit") .. " " .. entry.path)
-            else
-              if open_cmd == "split" then
-                vim.cmd("split " .. entry.path)
-              elseif open_cmd == "vsplit" then
-                vim.cmd("vsplit " .. entry.path)
-              elseif open_cmd == "tabedit" then
-                vim.cmd("tabedit " .. entry.path)
-              else
-                vim.cmd("edit " .. entry.path)
-              end
-            end
-          end
-        end
-      end
-
-      local select_one_or_multi = function(prompt_bufnr)
-        open_selection(prompt_bufnr, "edit")
-      end
-      local select_one_or_multi_split = function(prompt_bufnr)
-        open_selection(prompt_bufnr, "split")
-      end
-      local select_one_or_multi_vsplit = function(prompt_bufnr)
-        open_selection(prompt_bufnr, "vsplit")
-      end
-      local select_one_or_multi_tabedit = function(prompt_bufnr)
-        open_selection(prompt_bufnr, "tabedit")
-      end
-
       require("telescope").setup({
         defaults = {
-          mappings = {
-            i = {
-              ["<CR>"] = select_one_or_multi,
-              ["<C-x>"] = select_one_or_multi_split,
-              ["<C-v>"] = select_one_or_multi_vsplit,
-              ["<C-t>"] = select_one_or_multi_tabedit,
-              ["<c-d>"] = "delete_buffer",
-            },
-            n = {
-              ["<CR>"] = select_one_or_multi,
-              ["<C-x>"] = select_one_or_multi_split,
-              ["<C-v>"] = select_one_or_multi_vsplit,
-              ["<C-t>"] = select_one_or_multi_tabedit,
-              ["<c-d>"] = "delete_buffer",
-            },
-          },
           prompt_prefix = "   ",
           selection_caret = " ❯ ",
           entry_prefix = "   ",
