@@ -1,128 +1,100 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 set -e
 
 OS="$(uname)"
 
-setup_brew_env() {
-    if [ "$OS" = "Darwin" ]; then
-        if [ -x /opt/homebrew/bin/brew ]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"  # Apple Silicon
-        elif [ -x /usr/local/bin/brew ]; then
-            eval "$(/usr/local/bin/brew shellenv)"     # Intel
-        fi
-    elif [ "$OS" = "Linux" ]; then
-        if [ -x "$HOME/.linuxbrew/bin/brew" ]; then
-            eval "$($HOME/.linuxbrew/bin/brew shellenv)"
-        elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
-            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-        fi
-    fi
+log() {
+  echo "==> $1"
 }
 
-install_docker_ubuntu() {
-    echo "Installing Docker on Ubuntu..."
-    sudo apt update
-    sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io
+install_docker_linux() {
+  log "Installing Docker (Linux)"
+
+  sudo apt update
+  sudo apt install -y ca-certificates curl gnupg
+
+  sudo install -m 0755 -d /etc/apt/keyrings
+
+  if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+      | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  fi
+
+  echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+  sudo apt update
+
+  sudo apt install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
+
+  sudo usermod -aG docker "$USER"
+
+  log "Docker installed"
 }
 
 install_docker_macos() {
-    echo "Installing Docker on macOS..."
-    brew install --cask docker
+  log "Installing Docker (macOS)"
+
+  if ! command -v brew >/dev/null; then
+    echo "Homebrew required but not installed."
+    exit 1
+  fi
+
+  brew install --cask docker
 }
 
-install_docker_compose() {
-    echo "Installing Docker Compose..."
-    if [ "$OS" = "Linux" ]; then
-        curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-    elif [ "$OS" = "Darwin" ]; then
-        brew install docker-compose
-    fi
+setup_zsh_completions() {
+  log "Installing Zsh completions"
+
+  mkdir -p "$HOME/.docker/completions"
+
+  if command -v docker >/dev/null; then
+    docker completion zsh > "$HOME/.docker/completions/_docker"
+  fi
 }
 
-install_docker_machine() {
-    echo "Installing Docker Machine..."
-    if [ "$OS" = "Linux" ]; then
-        curl -L https://github.com/docker/machine/releases/download/v0.16.2/docker-machine-$(uname -s)-$(uname -m) > /usr/local/bin/docker-machine
-        sudo chmod +x /usr/local/bin/docker-machine
-    elif [ "$OS" = "Darwin" ]; then
-        brew install docker-machine
-    fi
+verify_install() {
+  log "Verifying Docker installation"
+
+  docker --version
+  docker compose version
+
+  echo
+  echo "Docker installed successfully."
+  echo
+  echo "⚠️  You may need to log out and log back in for docker group changes."
 }
 
-setup_docker_completions() {
-    echo "Setting up Docker, Docker Compose, and Docker Machine Zsh completions..."
+main() {
 
-    mkdir -p "$HOME/.docker/completions"
-
-    if command -v docker-compose >/dev/null 2>&1; then
-        curl -sL https://raw.githubusercontent.com/docker/compose/master/contrib/completion/zsh/_docker-compose \
-            -o "$HOME/.docker/completions/_docker-compose"
-    fi
-    if command -v docker-machine >/dev/null 2>&1; then
-        curl -sL https://raw.githubusercontent.com/docker/machine/master/contrib/completion/zsh/_docker-machine \
-            -o "$HOME/.docker/completions/_docker-machine"
-    fi
-    if command -v docker >/dev/null 2>&1; then
-        curl -sL https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker \
-            -o "$HOME/.docker/completions/_docker"
-    fi
-}
-
-verify_installation() {
-    echo "Verifying installation..."
-
-    if command -v docker >/dev/null 2>&1; then
-        echo "Docker is installed: $(docker --version)"
-    else
-        echo "Docker installation failed!"
-        exit 1
-    fi
-
-    if command -v docker-compose >/dev/null 2>&1; then
-        echo "Docker Compose is installed: $(docker-compose --version)"
-    else
-        echo "Docker Compose installation failed!"
-        exit 1
-    fi
-
-    if command -v docker-machine >/dev/null 2>&1; then
-        echo "Docker Machine is installed: $(docker-machine --version)"
-    else
-        echo "Docker Machine installation failed!"
-        exit 1
-    fi
-
-    echo "All components are installed successfully!"
-}
-
-setup_brew_env
-case "$OS" in
+  case "$OS" in
     Linux)
-        if grep -qi "ubuntu" /etc/os-release; then
-            install_docker_ubuntu
-        else
-            echo "Unsupported Linux distribution."
-            exit 1
-        fi
-        ;;
-    Darwin)
-        install_docker_macos
-        ;;
-    *)
-        echo "Unsupported OS: $OS"
+      if grep -qi ubuntu /etc/os-release; then
+        install_docker_linux
+      else
+        echo "Unsupported Linux distribution"
         exit 1
-        ;;
-esac
+      fi
+      ;;
+    Darwin)
+      install_docker_macos
+      ;;
+    *)
+      echo "Unsupported OS: $OS"
+      exit 1
+      ;;
+  esac
 
-install_docker_compose
-install_docker_machine
-setup_docker_completions
-verify_installation
+  setup_zsh_completions
+  verify_install
+}
 
-echo "Docker, Docker Compose, Docker Machine installation and setup completed successfully!"
+main
