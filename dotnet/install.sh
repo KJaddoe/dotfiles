@@ -23,7 +23,7 @@ setup_brew_env() {
 install_dotnet_ubuntu() {
 	echo "Installing .NET on Ubuntu..."
 	sudo apt update
-	sudo apt install -y dotnet-sdk-8.0
+	sudo apt install -y dotnet-sdk-10.0
 	install_csharp_ls
 	install_csharpier
 }
