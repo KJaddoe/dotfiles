@@ -1,0 +1,80 @@
+---  
+- name: Install dependencies for pyenv (Ubuntu)
+  apt:
+    name:
+      - make
+      - build-essential
+      - libssl-dev
+      - zlib1g-dev
+      - libbz2-dev
+      - libreadline-dev
+      - libsqlite3-dev
+      - curl
+      - llvm
+      - libncursesw5-dev
+      - xz-utils
+      - tk-dev
+      - libxml2-dev
+      - libxmlsec1-dev
+      - libffi-dev
+      - liblzma-dev
+    state: present
+    update_cache: yes
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install pyenv on macOS
+  homebrew:
+    name:
+      - pyenv
+      - pyenv-virtualenv
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Install pyenv on Linux (via installer)
+  shell: curl https://pyenv.run | bash
+  args:
+    creates: "{{ lookup('env', 'HOME') }}/.pyenv"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Ensure pyenv is in .zshrc
+  lineinfile:
+    path: "{{ lookup('env', 'HOME') }}/.zshrc"
+    line: '{{ item }}'
+    state: present
+  loop:
+    - 'export PATH="$HOME/.pyenv/bin:$PATH"'
+    - 'eval "$(pyenv init -)"'
+    - 'eval "$(pyenv virtualenv-init -)"'
+
+- name: Install Python version via pyenv
+  shell: |
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    pyenv install -s {{ python_version }}
+  args:
+    executable: /bin/bash
+
+- name: Set global Python version
+  shell: |
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    pyenv global {{ python_version }}
+  args:
+    executable: /bin/bash
+
+- name: Upgrade pip
+  shell: |
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    pip install --upgrade pip
+  args:
+    executable: /bin/bash
+
+- name: Install Python packages
+  shell: |
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    pip install {{ python_packages | join(' ') }}
+  args:
+    executable: /bin/bash

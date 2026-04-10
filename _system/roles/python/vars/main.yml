@@ -1,0 +1,12 @@
+python_version: "3.11.9"
+
+python_packages:
+  - black
+  - isort
+  - rshell
+  - pylint
+  - jedi
+  - pynvim
+  - jedi_language_server
+  - ansible-dev-tools
+  - ansible-lint
