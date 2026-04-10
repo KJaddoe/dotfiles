@@ -1,0 +1,24 @@
+---
+- name: Install Ghostty on macOS
+  homebrew:
+    name: ghostty
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Install Ghostty on Ubuntu using official script
+  shell: |
+    /bin/bash -c "$(curl -fsSL {{ ghostty_ubuntu_install_script }})"
+  args:
+    creates: /usr/bin/ghostty
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Verify Ghostty installation
+  command: ghostty --version
+  register: ghostty_version
+  changed_when: false
+  failed_when: ghostty_version.rc != 0
+
+- name: Show Ghostty version
+  debug:
+    msg: "Ghostty installed: {{ ghostty_version.stdout }}"
