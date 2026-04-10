@@ -1,8 +1,19 @@
+- name: Update package manager (Ubuntu)
+  become: true
+  apt:
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Update package manager (macOS)
+  homebrew:
+    update_homebrew: true
+  when: ansible_facts.os_family == "Darwin"
+
 - name: Install Ubuntu restricted extras (Ubuntu only)
   package:
     name: ubuntu-restricted-extras
     state: present
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
 
 - name: Install core packages (Ubuntu)
   package:
@@ -29,7 +40,7 @@
     - fd-find
     - net-tools
     - jq
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
 
 - name: Install core packages (macOS)
   homebrew:
@@ -51,7 +62,7 @@
       - fd
       - jq
     state: present
-  when: ansible_os_family == "Darwin"
+  when: ansible_facts.os_family == "Darwin"
 
 - name: Get the zsh path
   shell: which zsh
