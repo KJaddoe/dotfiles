@@ -1,0 +1,13 @@
+---
+- name: Install jq on Ubuntu
+  apt:
+    name: jq
+    state: present
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install jq on macOS
+  homebrew:
+    name: jq
+    state: present
+  when: ansible_os_family == "Darwin"
