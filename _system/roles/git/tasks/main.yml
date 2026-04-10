@@ -1,0 +1,52 @@
+---
+- name: Install Git (Ubuntu)
+  become: true
+  apt:
+    name: git
+    state: present
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install Git (macOS)
+  homebrew:
+    name: git
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Set GPG program for Git
+  git_config:
+    name: gpg.program
+    value: "gpg"
+    scope: global
+
+- name: Set Git user name
+  git_config:
+    name: user.name
+    value: "{{ git_user_name }}"
+    scope: global
+  when:
+    - git_user_name != ""
+
+- name: Set Git user email
+  git_config:
+    name: user.email
+    value: "{{ git_user_email }}"
+    scope: global
+  when:
+    - git_user_email != ""
+
+- name: Configure Git pager with diff-so-fancy
+  git_config:
+    name: core.pager
+    value: "diff-so-fancy | less --tabs=4 -RFX"
+    scope: global
+  when: use_diff_so_fancy
+
+- name: Verify Git installation
+  command: git --version
+  register: git_version
+  changed_when: false
+
+- name: Show Git version
+  debug:
+    msg: "{{ git_version.stdout }}"
