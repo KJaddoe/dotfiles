@@ -1,0 +1,13 @@
+---
+- name: Install fzf on Ubuntu
+  apt:
+    name: fzf
+    state: present
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install fzf on macOS
+  homebrew:
+    name: fzf
+    state: present
+  when: ansible_os_family == "Darwin"
