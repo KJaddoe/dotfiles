@@ -10,3 +10,4 @@ python_packages:
   - jedi_language_server
   - ansible-dev-tools
   - ansible-lint
+  - powerline-status
