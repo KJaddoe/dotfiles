@@ -1,0 +1,13 @@
+---
+- name: Install fswatch on Ubuntu
+  apt:
+    name: fswatch
+    state: present
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install fswatch on macOS
+  homebrew:
+    name: fswatch
+    state: present
+  when: ansible_os_family == "Darwin"
