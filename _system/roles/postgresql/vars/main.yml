@@ -1,0 +1,11 @@
+---
+postgresql_packages:
+  debian:
+    - postgresql
+    - postgresql-contrib
+  darwin:
+    - postgresql
+postgresql_dotfiles_dir: '{{ playbook_dir }}/../postgres'
+
+psqlrc_path: '{{ ansible_env.HOME }}/.psqlrc'
+psqlrc_local_path: '{{ ansible_env.HOME }}/.psqlrc.local'
