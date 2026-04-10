@@ -1,0 +1,28 @@
+---
+- name: Ensure .ssh directory exists
+  file:
+    path: "{{ ansible_env.HOME }}/.ssh"
+    state: directory
+    mode: "0700"
+
+- name: Ensure ssh config.local exists
+  file:
+    path: "{{ ansible_env.HOME }}/.ssh/config.local"
+    state: touch
+    mode: "0600"
+
+- name: Backup existing ssh config if not a symlink
+  command: mv {{ ssh_config_path }} {{ ansible_env.HOME }}/.ssh/config.local
+  args:
+    removes: "{{ ssh_config_path }}"
+  when:
+    - ssh_config_path is file
+    - ssh_config_path is not link
+  ignore_errors: true
+
+- name: Symlink SSH config from dotfiles
+  file:
+    src: "{{ ssh_config_source }}"
+    dest: "{{ ssh_config_path }}"
+    state: link
+    force: true
