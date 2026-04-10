@@ -1,0 +1,61 @@
+---
+- name: Install prerequisites (Ubuntu)
+  apt:
+    name:
+      - curl
+      - gnupg
+      - ca-certificates
+      - apt-transport-https
+    state: present
+    update_cache: yes
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Add Microsoft signing key (Ubuntu)
+  become: true
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  when: ansible_facts.os_family == "Debian"
+
+- name: Add Microsoft SQL Server repository (Ubuntu)
+  become: true
+  apt_repository:
+    repo: >-
+      deb [arch=amd64]
+      https://packages.microsoft.com/ubuntu/{{ ansible_facts.distribution_version }}/prod
+      {{ ansible_facts.distribution_release }} main
+    state: present
+    filename: microsoft-prod
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install sqlcmd tools (Ubuntu)
+  become: true
+  environment:
+    ACCEPT_EULA: 'Y'
+  apt:
+    name:
+      - mssql-tools18
+      - unixodbc-dev
+    state: present
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Add sqlcmd to PATH (Ubuntu)
+  lineinfile:
+    path: '{{ ansible_env.HOME }}/.bashrc'
+    line: 'export PATH="$PATH:/opt/mssql-tools/bin"'
+    state: present
+  when: ansible_facts.os_family == "Debian"
+
+- name: Tap Microsoft MSSQL repo (macOS)
+  homebrew_tap:
+    name: microsoft/mssql-release
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Install sqlcmd (macOS)
+  homebrew:
+    name: sqlcmd
+    state: present
+  when: ansible_facts.os_family == "Darwin" 
