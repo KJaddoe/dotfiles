@@ -1,0 +1,56 @@
+---
+- name: Install Node build dependencies (Ubuntu)
+  become: true
+  apt:
+    name:
+      - curl
+      - ca-certificates
+      - build-essential
+      - libssl-dev
+    state: present
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install NVM (Linux/macOS)
+  shell: |
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+  args:
+    creates: "{{ ansible_env.HOME }}/.nvm"
+
+- name: Set NVM environment variables
+  set_fact:
+    nvm_dir: "{{ ansible_env.HOME }}/.nvm"
+
+- name: Install specific Node.js version via NVM
+  shell: |
+    export NVM_DIR="{{ nvm_dir }}"
+    . "$NVM_DIR/nvm.sh"
+
+    nvm install {{ node_version }}
+    nvm use {{ node_version }}
+    nvm alias default {{ node_version }}
+  args:
+    executable: /bin/bash
+
+- name: Install global npm packages
+  shell: |
+    export NVM_DIR="{{ nvm_dir }}"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+    npm install -g {{ npm_global_packages | join(' ') }}
+  args:
+    executable: /bin/bash
+
+- name: Verify Node installation
+  shell: |
+    export NVM_DIR="{{ nvm_dir }}"
+    . "$NVM_DIR/nvm.sh"
+
+    node -v
+    npm -v
+    nvm --version
+  register: node_verify
+  changed_when: false
+
+- debug:
+    var: node_verify.stdout_lines

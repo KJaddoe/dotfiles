@@ -1,0 +1,24 @@
+---
+node_version: "22"
+
+npm_global_packages:
+  - eslint
+  - eslint_d
+  - prettier
+  - typescript
+  - tern
+  - diff-so-fancy
+  - "@angular/cli"
+  - tree-sitter-cli
+  - typescript-language-server
+  - vscode-langservers-extracted
+  - dockerfile-language-server-nodejs
+  - yaml-language-server
+  - diagnostic-languageserver
+  - "@angular/language-server"
+  - "@angular/language-service"
+  - emmet-ls
+  - bash-language-server
+  - vim-language-server
+  - sql-formatter
+  - "@ansible/ansible-language-server"
