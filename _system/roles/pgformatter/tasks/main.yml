@@ -1,0 +1,13 @@
+---
+- name: Install pgformatter on Ubuntu
+  apt:
+    name: pgformatter
+    state: present
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install pgformatter on macOS
+  homebrew:
+    name: pgformatter
+    state: present
+  when: ansible_os_family == "Darwin"
