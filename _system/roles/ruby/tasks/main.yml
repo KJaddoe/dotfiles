@@ -1,0 +1,108 @@
+---
+- name: Install rbenv dependencies (Ubuntu)
+  apt:
+    name:
+      - git
+      - curl
+      - build-essential
+      - libssl-dev
+      - libreadline-dev
+      - zlib1g-dev
+      - libyaml-dev
+      - libgdbm-dev
+      - libncurses5-dev
+      - libffi-dev
+      - libdb-dev
+    state: present
+    update_cache: yes
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install rbenv dependencies (macOS)
+  homebrew:
+    name:
+      - rbenv
+      - ruby-build
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Clone rbenv (Ubuntu)
+  git:
+    repo: https://github.com/rbenv/rbenv.git
+    dest: "{{ ansible_env.HOME }}/.rbenv"
+    update: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install ruby-build plugin (Ubuntu)
+  git:
+    repo: https://github.com/rbenv/ruby-build.git
+    dest: "{{ ansible_env.HOME }}/.rbenv/plugins/ruby-build"
+    update: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Ensure rbenv init in shell
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    line: "{{ item }}"
+    state: present
+  loop:
+    - 'export PATH="$HOME/.rbenv/bin:$PATH"'
+    - 'eval "$(rbenv init -)"'
+
+- name: Install Ruby version
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+    rbenv install -s {{ ruby_version }}
+  args:
+    executable: /bin/bash
+
+- name: Set global Ruby version
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+    rbenv global {{ ruby_version }}
+  args:
+    executable: /bin/bash
+
+- name: Rehash rbenv
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+    rbenv rehash
+  args:
+    executable: /bin/bash
+
+- name: Install global Ruby gems
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+    gem install {{ ruby_global_gems | join(' ') }}
+  args:
+    executable: /bin/bash
+
+- name: Ensure ruby dotfiles directory exists
+  file:
+    path: "{{ ruby_dotfiles_dir }}"
+    state: directory
+  delegate_to: localhost
+  run_once: true
+
+- name: Symlink .gemrc
+  file:
+    src: "{{ ruby_dotfiles_dir }}/gemrc"
+    dest: "{{ gemrc_path }}"
+    state: link
+    force: true
+
+- name: Verify Ruby installation
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+    ruby -v
+  register: ruby_version_output
+  changed_when: false
+
+- name: Show Ruby version
+  debug:
+    msg: "Ruby installed: {{ ruby_version_output.stdout }}"

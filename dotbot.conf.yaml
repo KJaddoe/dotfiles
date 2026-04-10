@@ -12,7 +12,6 @@
     ~/.psqlrc.local: postgres/psqlrc.local
     ~/.p10k.zsh: powerlevel10k/p10k.zsh
     ~/.prettierrc.json: prettier/prettierrc.json
-    ~/.gemrc: ruby/gemrc
     ~/.tern-config: tern/tern-config
     ~/.tmux.conf: tmux/tmux.conf
     ~/.zshrc: zsh/zshrc
