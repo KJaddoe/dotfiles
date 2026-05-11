@@ -1,16 +1,34 @@
 - hosts: localhost
-  become: true
   vars:
     should_be_root: "{{ true if ansible_pkg_mgr != 'brew' else false }}"
-  vars_files:
-    - vars/java.yml
   roles:
-    - role: geerlingguy.java
-      when: ansible_os_family == "Debian"
-  tasks:
-    # essentials:
-    - include_tasks: tasks/apt.yml
-    - include_tasks: tasks/core.yml
+    # essentials
+    - role: common
+    - role: git
+    - role: gnupg
+    - role: ssh
+
+    # languages
+    - role: python
+    - role: node
+    - role: java
+    - role: ruby
 
     # tools
+    - role: docker
+    - role: gh
+    - role: jq
+    - role: shfmt
+    - role: fzf
+    - role: fswatch
+
+    # databases
+    - role: postgresql
+    - role: pgformatter
+    - role: sqlcmd
+
+    # terminal
+    - role: ghostty
+  tasks:
     - include_tasks: tasks/android.yml
+      when: ansible_facts.os_family == "Debian"
