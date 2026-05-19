@@ -18,3 +18,4 @@
 !.vscode/extensions.json
 dump.rdb
 main.tfvars
+.claude
