@@ -1,2 +1,27 @@
 #!/bin/zsh
-alias pubkey="more ~/.ssh/id_rsa.pub | pbcopy | echo '=> Public key copied to pasteboard.'"
+pubkey() {
+	local key="${1:-ed25519}"
+	local file
+	for candidate in ~/.ssh/${key}.pub ~/.ssh/id_${key}.pub; do
+		if [[ -f $candidate ]]; then
+			file=$candidate
+			break
+		fi
+	done
+	if [[ -z $file ]]; then
+		echo "pubkey: no key found matching '$key' (~/.ssh/${key}.pub or ~/.ssh/id_${key}.pub)" >&2
+		return 1
+	fi
+	pbcopy < "$file"
+	echo "=> Copied $file to pasteboard."
+}
+
+_pubkey() {
+	local -a keys
+	local file
+	for file in ~/.ssh/*.pub(N); do
+		keys+=("${${file:t:r}#id_}")
+	done
+	_describe 'ssh key' keys
+}
+compdef _pubkey pubkey
