@@ -6,8 +6,12 @@ kubectl() {
 	command kubectl "$@"
 }
 
-alias kx='kubectx'
-alias kn='kubens'
+if command -v kubectx >/dev/null 2>&1; then
+	alias kx='kubectx'
+fi
+if command -v kubens >/dev/null 2>&1; then
+	alias kn='kubens'
+fi
 
 alias k='kubectl'
 alias sk='kubectl -n kube-system'
