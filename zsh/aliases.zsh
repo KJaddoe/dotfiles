@@ -17,7 +17,9 @@ alias less="less -r"
 alias cdr='cd "$(git rev-parse --show-toplevel)"'
 
 # quick hack to make watch work with aliases
-alias watch='watch -c -d -t '
+if command -v watch >/dev/null 2>&1; then
+	alias watch='watch -c -d -t '
+fi
 
 # open, pbcopy and pbpaste on linux
 if [ "$(uname -s)" != "Darwin" ]; then
