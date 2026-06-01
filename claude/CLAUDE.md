@@ -32,8 +32,8 @@ When I say "reorganize memory":
 
 ## Global Memory
 
-Project MEMORY.md and this index are auto-injected before each tool call via PreToolUse hook
-(~/.claude/hooks/pre-tool-memory.sh). Load specific topic files only when relevant.
+Project MEMORY.md, this index, and general.md are auto-injected before each tool call via
+PreToolUse hook (~/.claude/hooks/pre-tool-memory.sh). Load other topic files only when relevant.
 
 Topic files:
 - ~/.claude/memory/general.md — cross-project conventions and preferences

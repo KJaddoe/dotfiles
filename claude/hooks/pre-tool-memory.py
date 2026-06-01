@@ -29,6 +29,7 @@ def main():
     home = Path.home()
     memory_file = home / '.claude' / 'projects' / mapped / 'memory' / 'MEMORY.md'
     global_idx = home / '.claude' / 'memory' / 'memory.md'
+    global_general = home / '.claude' / 'memory' / 'general.md'
 
     parts = []
 
@@ -40,6 +41,10 @@ def main():
 
     if global_idx.exists():
         parts.append("=== Global Memory Index ===\n" + global_idx.read_text())
+
+    if global_general.exists():
+        lines = global_general.read_text().splitlines()[:200]
+        parts.append("=== Global Memory: general.md ===\n" + '\n'.join(lines))
 
     context = '\n\n'.join(parts)
 
