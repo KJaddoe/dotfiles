@@ -30,6 +30,9 @@
     ~/.claude/memory:
       path: claude/memory
       create: true
+    ~/.claude/keybindings.json:
+      path: claude/keybindings.json
+      create: true
 
 - shell:
     - [git submodule update --init --recursive, Installing submodules]
