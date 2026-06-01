@@ -44,5 +44,14 @@
   },
   "theme": "auto",
   "editorMode": "vim",
-  "tui": "fullscreen"
+  "tui": "fullscreen",
+  "permissions": {
+    "allow": [
+      "Bash(gh project item-list *)",
+      "Bash(gh project field-list *)",
+      "Bash(gh project list *)",
+      "Bash(gh label list *)",
+      "Bash(git grep *)"
+    ]
+  }
 }
