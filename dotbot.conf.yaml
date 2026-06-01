@@ -18,6 +18,18 @@
     ~/.zsh_plugins.txt: antidote/zsh_plugins.txt
     ~/.bashrc: bash/bashrc
     ~/.config/tmux-powerline/config.sh: tmux/tmux-powerline.config.sh
+    ~/.claude/settings.json:
+      path: claude/settings.json
+      create: true
+    ~/.claude/CLAUDE.md:
+      path: claude/CLAUDE.md
+      create: true
+    ~/.claude/hooks:
+      path: claude/hooks
+      create: true
+    ~/.claude/memory:
+      path: claude/memory
+      create: true
 
 - shell:
     - [git submodule update --init --recursive, Installing submodules]
