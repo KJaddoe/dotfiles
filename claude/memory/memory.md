@@ -5,7 +5,7 @@ Read this file at session start. Load specific topic files only when relevant.
 | File | Description | Last updated |
 |------|-------------|--------------|
 | `general.md` | Cross-project conventions and preferences (commit/PR/branch/review rules, code style) | 2026-06-01 |
-| `tools/gh-pending-pr-reviews.md` | gh + GraphQL workflow for incrementally building a pending PR review (REST alone doesn't work) | 2026-05-27 |
+| `tools/gh-pending-pr-reviews.md` | Pointer — promoted to the `pending-pr-review` skill (`claude/skills/`) | 2026-06-01 |
 
 ## Cross-Memory Sync Rule
 
