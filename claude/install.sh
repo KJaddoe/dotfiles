@@ -23,7 +23,16 @@ claude plugin marketplace add obra/superpowers-marketplace || true
 echo "Installing plugins..."
 claude plugin install csharp-lsp@claude-plugins-official || true
 claude plugin install typescript-lsp@claude-plugins-official || true
+claude plugin install pyright-lsp@claude-plugins-official || true
+claude plugin install ruby-lsp@claude-plugins-official || true
+claude plugin install jdtls-lsp@claude-plugins-official || true
 claude plugin install frontend-design@claude-plugins-official || true
+claude plugin install context7@claude-plugins-official || true
+claude plugin install feature-dev@claude-plugins-official || true
+claude plugin install playwright@claude-plugins-official || true
+claude plugin install chrome-devtools-mcp@claude-plugins-official || true
+claude plugin install claude-md-management@claude-plugins-official || true
+claude plugin install security-guidance@claude-plugins-official || true
 claude plugin install superpowers@superpowers-marketplace || true
 
 echo "Claude Code setup complete."
