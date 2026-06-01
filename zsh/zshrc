@@ -20,10 +20,11 @@ export VEDITOR='code'
 export ZSH_TMUX_AUTOSTART=true
 
 autoload -Uz compinit
-for dump in ~/.zcompdump(N.mh+24); do
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
   compinit
-done
-compinit -C
+else
+  compinit -C
+fi
 
 # all of our zsh files
 typeset -U config_files
