@@ -1,0 +1,127 @@
+tap "microsoft/mssql-release"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.14"
+# Display directories as trees (with optional color/HTML output)
+brew "tree"
+# Automate deployment, configuration, and upgrading
+brew "ansible"
+# Plugin manager for zsh, inspired by antigen and antibody
+brew "antidote"
+# Bourne-Again SHell, a UNIX command interpreter
+brew "bash"
+# Get a file from an HTTP, HTTPS or FTP server
+brew "curl"
+# Isolated development environments using Docker
+brew "docker-compose"
+# Create Docker hosts locally and on cloud providers
+brew "docker-machine"
+# Simple, fast and user-friendly alternative to find
+brew "fd"
+# Monitor a directory for changes and run a shell command
+brew "fswatch"
+# Command-line fuzzy finder written in Go
+brew "fzf"
+# GitHub command-line tool
+brew "gh"
+# Distributed revision control system
+brew "git"
+# GNU Privacy Guard (OpenPGP)
+brew "gnupg"
+# Improved top (interactive process viewer)
+brew "htop"
+# Lightweight and flexible command-line JSON processor
+brew "jq"
+# Kubernetes command-line interface
+brew "kubernetes-cli"
+# Run a Kubernetes cluster locally
+brew "minikube"
+# NCurses Disk Usage
+brew "ncdu"
+# Ambitious Vim-fork focused on extensibility and agility
+brew "neovim"
+# Manage multiple Node.js versions
+brew "nvm"
+# Development kit for the Java programming language
+brew "openjdk@17"
+# OpenBSD freely-licensed SSH connectivity tools
+brew "openssh"
+# PostgreSQL syntax beautifier
+brew "pgformatter"
+# Execute binaries from Python packages in isolated environments
+brew "pipx"
+# Object-relational database system
+brew "postgresql@14", restart_service: :changed
+# Python version management
+brew "pyenv"
+# Pyenv plugin to manage virtualenv
+brew "pyenv-virtualenv"
+# Search tool like grep and The Silver Searcher
+brew "ripgrep"
+# Powerful, clean, object-oriented scripting language
+brew "ruby"
+# Autoformat shell script source code
+brew "shfmt"
+# SOcket CAT: netcat on steroids
+brew "socat"
+# Microsoft SQL Server command-line interface
+brew "sqlcmd"
+# Opinionated Lua code formatter
+brew "stylua"
+# Code-search similar to ack
+brew "the_silver_searcher"
+# Terminal multiplexer
+brew "tmux"
+# Extraction utility for .zip compressed archives
+brew "unzip"
+# Vi 'workalike' with many additional features
+brew "vim"
+# Internet file retriever
+brew "wget"
+# Command-line program for getting and setting the contents of the X selection
+brew "xsel"
+# Compression and file packaging/archive utility
+brew "zip"
+# UNIX shell (command interpreter)
+brew "zsh"
+# App to build and share containerised applications and microservices
+cask "docker-desktop"
+cask "font-meslo-lg-nerd-font"
+# Terminal emulator that uses platform-native UI and GPU acceleration
+cask "ghostty"
+vscode "anthropic.claude-code"
+vscode "ms-azuretools.vscode-containers"
+vscode "ms-azuretools.vscode-docker"
+vscode "ms-dotnettools.csdevkit"
+vscode "ms-dotnettools.csharp"
+vscode "ms-dotnettools.vscode-dotnet-runtime"
+vscode "ms-kubernetes-tools.vscode-kubernetes-tools"
+vscode "ms-mssql.data-workspace-vscode"
+vscode "ms-mssql.mssql"
+vscode "ms-mssql.sql-bindings-vscode"
+vscode "ms-mssql.sql-database-projects-vscode"
+vscode "ms-vscode-remote.remote-containers"
+vscode "redhat.vscode-xml"
+vscode "redhat.vscode-yaml"
+vscode "yzhang.markdown-all-in-one"
+npm "@angular/cli"
+npm "@angular/language-server"
+npm "@angular/language-service"
+npm "@ansible/ansible-language-server"
+npm "bash-language-server"
+npm "corepack"
+npm "diagnostic-languageserver"
+npm "diff-so-fancy"
+npm "dockerfile-language-server-nodejs"
+npm "emmet-ls"
+npm "eslint_d"
+npm "eslint"
+npm "markdown"
+npm "prettier"
+npm "sql-formatter"
+npm "tern"
+npm "tree-sitter-cli"
+npm "typescript-language-server"
+npm "typescript"
+npm "vim-language-server"
+npm "vscode-langservers-extracted"
+npm "yaml-language-server"
