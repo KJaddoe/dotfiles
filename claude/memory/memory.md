@@ -6,6 +6,7 @@ Read this file at session start. Load specific topic files only when relevant.
 |------|-------------|--------------|
 | `general.md` | Cross-project conventions and preferences (commit/PR/branch/review rules, code style) | 2026-06-01 |
 | `tools/gh-pending-pr-reviews.md` | Pointer — promoted to the `pending-pr-review` skill (`claude/skills/`) | 2026-06-01 |
+| `tools/docker-sql-server.md` | Local Docker SQL Server: backups live in `~/Projects/Docker/SQL_Server/backups/` (mounted `/var/opt/mssql/backup`); restore to original DB name; suggest DROP when done | 2026-06-07 |
 
 ## Cross-Memory Sync Rule
 
