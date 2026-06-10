@@ -83,6 +83,8 @@ brew "wget"
 brew "xsel"
 # Compression and file packaging/archive utility
 brew "zip"
+# Shell extension to navigate your filesystem faster
+brew "zoxide"
 # UNIX shell (command interpreter)
 brew "zsh"
 # App to build and share containerised applications and microservices
