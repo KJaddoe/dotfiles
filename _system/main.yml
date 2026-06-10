@@ -9,9 +9,10 @@
     - role: ssh
 
     # languages
-    - role: python
-    - role: node
+    - role: mise
     - role: java
+    - role: node
+    - role: python
     - role: ruby
 
     # tools
