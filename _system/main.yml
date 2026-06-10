@@ -20,6 +20,7 @@
     - role: jq
     - role: shfmt
     - role: fzf
+    - role: zoxide
     - role: fswatch
 
     # databases

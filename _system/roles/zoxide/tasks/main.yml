@@ -1,0 +1,23 @@
+---
+- name: Install zoxide on Ubuntu
+  apt:
+    name: zoxide
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install zoxide on macOS
+  homebrew:
+    name: zoxide
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Verify zoxide installation
+  command: zoxide --version
+  register: zoxide_version
+  changed_when: false
+
+- name: Show zoxide version
+  debug:
+    msg: "{{ zoxide_version.stdout_lines[0] }}"
