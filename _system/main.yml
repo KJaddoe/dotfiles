@@ -10,6 +10,7 @@
 
     # languages
     - role: mise
+    - role: uv
     - role: java
     - role: node
     - role: python

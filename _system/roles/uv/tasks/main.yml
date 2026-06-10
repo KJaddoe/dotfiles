@@ -1,0 +1,27 @@
+---
+- name: Install uv (macOS)
+  homebrew:
+    name: uv
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Get installed uv from mise (Ubuntu)
+  command: mise ls --installed uv
+  register: mise_uv_installed
+  changed_when: false
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install uv via mise (Ubuntu)
+  command: mise use -g uv@latest
+  when:
+    - ansible_facts.os_family == "Debian"
+    - "'uv' not in mise_uv_installed.stdout"
+
+- name: Verify uv installation
+  command: mise exec -- uv --version
+  register: uv_version
+  changed_when: false
+
+- name: Show uv version
+  debug:
+    msg: "{{ uv_version.stdout }}"

@@ -1,80 +1,30 @@
 ---
-- name: Install dependencies for pyenv (Ubuntu)
-  apt:
-    name:
-      - make
-      - build-essential
-      - libssl-dev
-      - zlib1g-dev
-      - libbz2-dev
-      - libreadline-dev
-      - libsqlite3-dev
-      - curl
-      - llvm
-      - libncursesw5-dev
-      - xz-utils
-      - tk-dev
-      - libxml2-dev
-      - libxmlsec1-dev
-      - libffi-dev
-      - liblzma-dev
-    state: present
-    update_cache: yes
-  become: true
-  when: ansible_facts.os_family == "Debian"
+- name: Get current global Python from mise
+  command: mise current python
+  register: mise_python_current
+  changed_when: false
+  failed_when: false
 
-- name: Install pyenv on macOS
-  homebrew:
-    name:
-      - pyenv
-      - pyenv-virtualenv
-    state: present
-  when: ansible_facts.os_family == "Darwin"
+- name: Install and pin Python {{ python_version }} via mise
+  command: mise use -g python@{{ python_version }}
+  when: mise_python_current.stdout | trim != python_version
 
-- name: Install pyenv on Linux (via installer)
-  shell: curl https://pyenv.run | bash
-  args:
-    creates: '{{ ansible_env.HOME }}/.pyenv'
-  when: ansible_facts.os_family == "Debian"
+- name: Install Neovim Python provider packages
+  command: mise exec -- python -m pip install --upgrade {{ python_provider_packages | join(' ') }}
+  register: pip_provider
+  changed_when: "'Successfully installed' in pip_provider.stdout"
 
-# - name: Ensure pyenv is in .zshrc
-#   lineinfile:
-#     path: '{{ ansible_env.HOME }}/.zshrc'
-#     line: '{{ item }}'
-#     state: present
-#   loop:
-#     - 'export PATH="$HOME/.pyenv/bin:$PATH"'
-#     - 'eval "$(pyenv init -)"'
-#     - 'eval "$(pyenv virtualenv-init -)"'
+- name: Install Python CLI tools via uv
+  command: mise exec -- uv tool install {{ item }}
+  loop: "{{ uv_tools }}"
+  register: uv_tool_install
+  changed_when: "'Installed' in uv_tool_install.stderr"
 
-- name: Install Python version via pyenv
-  shell: |
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    eval "$(pyenv init -)"
-    pyenv install -s {{ python_version }}
-  args:
-    executable: /bin/bash
+- name: Verify Python installation
+  command: mise exec -- python --version
+  register: python_verify
+  changed_when: false
 
-- name: Set global Python version
-  shell: |
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    eval "$(pyenv init -)"
-    pyenv global {{ python_version }}
-  args:
-    executable: /bin/bash
-
-- name: Upgrade pip
-  shell: |
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    eval "$(pyenv init -)"
-    pip install --upgrade pip
-  args:
-    executable: /bin/bash
-
-- name: Install Python packages
-  shell: |
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    eval "$(pyenv init -)"
-    pip install {{ python_packages | join(' ') }}
-  args:
-    executable: /bin/bash
+- name: Show Python version
+  debug:
+    msg: "{{ python_verify.stdout }}"
