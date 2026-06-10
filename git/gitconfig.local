@@ -24,18 +24,21 @@
 	autocrlf = input
 	whitespace = trailing-space,space-before-tab
 	precomposeunicode = true
+	pager = delta
 [apply]
 	whitespace = nowarn
 [help]
 	autocorrect = 1
 [merge]
 	tool = diffmerge
+	conflictStyle = diff3
 [mergetool "diffmerge"]
 	cmd = diffmerge --merge --result=$MERGED $LOCAL $BASE $REMOTE
 	trustExitCode = true
 	keepBackup = false
 [diff]
 	tool = diffmerge
+	colorMoved = zebra
 [difftool]
 	prompt = false
 [grep]
@@ -53,3 +56,15 @@
 	rebase = true
 [init]
 	defaultBranch = main
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	line-numbers = true
+	side-by-side = true
+[rerere]
+	enabled = true
+[branch]
+	sort = -committerdate
+[column]
+	ui = auto

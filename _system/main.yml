@@ -17,6 +17,7 @@
     # tools
     - role: docker
     - role: gh
+    - role: delta
     - role: jq
     - role: shfmt
     - role: fzf
