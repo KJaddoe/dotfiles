@@ -1,13 +1,13 @@
-python_version: "3.11.9"
+python_version: "3.11.15"
 
-python_packages:
+uv_tools:
   - black
   - isort
-  - rshell
   - pylint
-  - jedi
-  - pynvim
-  - jedi_language_server
-  - ansible-dev-tools
+  - rshell
+  - jedi-language-server
   - ansible-lint
-  - powerline-status
+  - ansible-dev-tools
+
+python_provider_packages:
+  - pynvim
