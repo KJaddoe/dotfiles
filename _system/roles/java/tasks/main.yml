@@ -1,47 +1,18 @@
 ---
-- name: Install OpenJDK (Ubuntu)
-  become: true
-  apt:
-    name: "openjdk-{{ java_version }}-jdk"
-    state: present
-    update_cache: yes
-  when: ansible_facts.os_family == "Debian"
-
-- name: Install OpenJDK (macOS via Homebrew)
-  homebrew:
-    name: "openjdk@{{ java_version }}"
-    state: present
-  when: ansible_facts.os_family == "Darwin"
-
-- name: Detect Homebrew prefix (macOS)
-  shell: |
-    if [ -x /opt/homebrew/bin/brew ]; then
-      echo /opt/homebrew
-    elif [ -x /usr/local/bin/brew ]; then
-      echo /usr/local
-    fi
-  register: brew_prefix_result
+- name: Get installed Java versions from mise
+  command: mise ls --installed java
+  register: mise_java_installed
   changed_when: false
-  when: ansible_facts.os_family == "Darwin"
 
-- name: Set brew prefix fact
-  set_fact:
-    brew_prefix: "{{ brew_prefix_result.stdout }}"
-  when: ansible_facts.os_family == "Darwin"
-
-- name: Symlink OpenJDK into macOS Java directory
-  become: true
-  file:
-    src: "{{ brew_prefix }}/opt/openjdk@{{ java_version }}/libexec/openjdk.jdk"
-    dest: /Library/Java/JavaVirtualMachines/openjdk.jdk
-    state: link
-  when: ansible_facts.os_family == "Darwin"
+- name: Install and pin Java {{ java_version }} via mise
+  command: mise use -g java@temurin-{{ java_version }}
+  when: ('temurin-' ~ java_version) not in mise_java_installed.stdout
 
 - name: Verify Java installation
-  command: java --version
+  command: mise exec -- java -version
   register: java_version_output
   changed_when: false
 
 - name: Show Java version
   debug:
-    msg: "{{ java_version_output.stdout }}"
+    msg: "{{ java_version_output.stderr_lines[0] }}"
