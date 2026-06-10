@@ -10,6 +10,14 @@ alias l="ls -lAh"
 alias la="ls -A"
 alias ll="ls -l"
 
+if command -v eza >/dev/null 2>&1; then
+	alias ls='eza'
+	alias l='eza -lah --git'
+	alias la='eza -a'
+	alias ll='eza -l --git'
+	alias lt='eza --tree --level=2'
+fi
+
 alias grep="grep --color=auto"
 alias duf="du -sh * | sort -hr"
 alias less="less -r"

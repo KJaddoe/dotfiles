@@ -22,6 +22,7 @@
     - role: shfmt
     - role: fzf
     - role: zoxide
+    - role: eza
     - role: fswatch
 
     # databases
