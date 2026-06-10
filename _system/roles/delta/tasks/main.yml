@@ -1,0 +1,23 @@
+---
+- name: Install git-delta on Ubuntu
+  apt:
+    name: git-delta
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install git-delta on macOS
+  homebrew:
+    name: git-delta
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Verify git-delta installation
+  command: delta --version
+  register: delta_version
+  changed_when: false
+
+- name: Show git-delta version
+  debug:
+    msg: "{{ delta_version.stdout_lines[0] }}"
