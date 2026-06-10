@@ -18,6 +18,10 @@ if command -v eza >/dev/null 2>&1; then
 	alias lt='eza --tree --level=2'
 fi
 
+if command -v bat >/dev/null 2>&1; then
+	alias cat='bat --paging=never'
+fi
+
 alias grep="grep --color=auto"
 alias duf="du -sh * | sort -hr"
 alias less="less -r"

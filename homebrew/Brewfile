@@ -9,6 +9,8 @@ brew "ansible"
 brew "antidote"
 # Bourne-Again SHell, a UNIX command interpreter
 brew "bash"
+# Clone of cat(1) with syntax highlighting and Git integration
+brew "bat"
 # Get a file from an HTTP, HTTPS or FTP server
 brew "curl"
 # Isolated development environments using Docker

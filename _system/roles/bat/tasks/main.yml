@@ -1,0 +1,31 @@
+---
+- name: Install bat on Ubuntu
+  apt:
+    name: bat
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Symlink batcat to bat on Ubuntu
+  file:
+    src: /usr/bin/batcat
+    dest: /usr/local/bin/bat
+    state: link
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install bat on macOS
+  homebrew:
+    name: bat
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Verify bat installation
+  command: bat --version
+  register: bat_version
+  changed_when: false
+
+- name: Show bat version
+  debug:
+    msg: "{{ bat_version.stdout_lines[0] }}"

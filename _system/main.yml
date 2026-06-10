@@ -23,6 +23,7 @@
     - role: fzf
     - role: zoxide
     - role: eza
+    - role: bat
     - role: fswatch
 
     # databases
