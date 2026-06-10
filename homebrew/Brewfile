@@ -41,6 +41,8 @@ brew "jq"
 brew "kubernetes-cli"
 # Run a Kubernetes cluster locally
 brew "minikube"
+# Polyglot runtime manager (asdf rust clone)
+brew "mise"
 # NCurses Disk Usage
 brew "ncdu"
 # Ambitious Vim-fork focused on extensibility and agility
