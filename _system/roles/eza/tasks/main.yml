@@ -1,0 +1,23 @@
+---
+- name: Install eza on Ubuntu
+  apt:
+    name: eza
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install eza on macOS
+  homebrew:
+    name: eza
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Verify eza installation
+  command: eza --version
+  register: eza_version
+  changed_when: false
+
+- name: Show eza version
+  debug:
+    msg: "{{ eza_version.stdout_lines[0] }}"
