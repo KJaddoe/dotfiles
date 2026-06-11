@@ -16,10 +16,14 @@ compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimate
 - Sequencing: full mise migration first, RN Android second. Java migrated early = JDK-17 provider.
 
 ## Done (committed on master, one commit per tool)
+- `Remove classic vim and brew ruby` — user runs neovim, not classic vim. brew `vim` was the ONLY
+  consumer of brew `ruby` (formula declares ruby as build/test dep, but the vim *binary* hard-links
+  `libruby.3.4.dylib` via `+ruby` — `otool -L` is ground truth, `brew deps` under-reports it).
+  Removed both → ruby now 100% on mise. Autoremoved `lua` 5.4 (a vim `+lua` dep). Neovim UNAFFECTED:
+  it links `luajit` (still installed) + vendored LuaJIT, never brew `lua`/`ruby`.
 - `Remove nvm/pyenv/openjdk@17/pipx from Brewfile` — dropped those 4 lines; `brew uninstall`ed them
   (+pyenv-virtualenv; rbenv/ruby-build were never brew-installed on this machine). Also removed pipx
-  (superseded by uv). KEPT `brew "ruby"` — vim depends on it (`brew uses --installed ruby`→vim).
-  Autoremove cleared 19 transitive orphans (~1.7GB). All 4 runtimes re-verified → mise installs.
+  (superseded by uv). Autoremove cleared 19 transitive orphans (~1.7GB). Runtimes re-verified → mise.
 - `Migrate ruby to mise` — `ruby@3.3.0` via mise (compiles via ruby-build; kept apt build-deps on
   ubuntu, swapped mac brew rbenv/ruby-build → openssl@3/readline/libyaml). gems bundler rake rubocop
   solargraph via `mise exec -- gem install`. Kept `.gemrc` symlink + `ruby/aliases.zsh`. Removed
