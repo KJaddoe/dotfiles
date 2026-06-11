@@ -16,6 +16,14 @@ compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimate
 - Sequencing: full mise migration first, RN Android second. Java migrated early = JDK-17 provider.
 
 ## Done (committed on master, one commit per tool)
+- `Remove nvm/pyenv/openjdk@17/pipx from Brewfile` — dropped those 4 lines; `brew uninstall`ed them
+  (+pyenv-virtualenv; rbenv/ruby-build were never brew-installed on this machine). Also removed pipx
+  (superseded by uv). KEPT `brew "ruby"` — vim depends on it (`brew uses --installed ruby`→vim).
+  Autoremove cleared 19 transitive orphans (~1.7GB). All 4 runtimes re-verified → mise installs.
+- `Migrate ruby to mise` — `ruby@3.3.0` via mise (compiles via ruby-build; kept apt build-deps on
+  ubuntu, swapped mac brew rbenv/ruby-build → openssl@3/readline/libyaml). gems bundler rake rubocop
+  solargraph via `mise exec -- gem install`. Kept `.gemrc` symlink + `ruby/aliases.zsh`. Removed
+  `ruby/path.zsh` (rbenv lazy-load). Used `mise current` guard. Verified: `which ruby`→mise install.
 - `Add mise` — role `_system/roles/mise` (brew on mac, apt-repo+GPG on ubuntu like `gh`), hook
   `mise/init.zsh` (`eval "$(mise activate zsh)"`, auto-sourced by zshrc `*/*.zsh` glob), Brewfile.
 - `Migrate java to mise` — `java@temurin-17` (resolves 17.0.19). mise sets JAVA_HOME automatically
@@ -39,21 +47,18 @@ compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimate
   `ANSIBLE_ROLES_PATH=.../_system/roles ansible-playbook`. Verify in real shell with `zsh -ic '...'`.
 
 ## Remaining (next session)
-1. **ruby → mise** (task #5): rewrite `_system/roles/ruby` to `mise use -g ruby@3.3.0` + `gem install`
-   globals (bundler rake rubocop solargraph), keep `.gemrc` symlink, remove the rbenv lazy-load
-   functions in `ruby/path.zsh`. Lowest value (iOS-only here). Use the `mise current` guard pattern.
-2. **Hook/Brewfile cleanup** (task #6): remove nvm/pyenv/rbenv/ruby-build/openjdk@17 from Brewfile;
-   `brew uninstall` them only after all runtimes verified. rollback = git revert.
-3. **Android CLI + watchman** (task #7): convert Linux-only `_system/tasks/android.yml` into
+1. **Android CLI + watchman** (task #7): convert Linux-only `_system/tasks/android.yml` into
    cross-platform `_system/roles/android` (download commandlinetools-{mac,linux} to
    `~/Android/cmdline-tools/latest`, sdkmanager: platform-tools, platforms;android-35,
    build-tools;35.0.0, ndk;25.1.8937393, cmdline-tools;latest, then `yes | sdkmanager --licenses`).
    Add `_system/roles/watchman` + `brew "watchman"`. Fix `android/config.zsh` bug (`$OS`→`$OS_TYPE`).
    NDK is ~1GB (long download).
-4. **RN device verify** (task #8): pin client-rn-app to java17/node20 (`mise.toml`); `npm install`;
+2. **RN device verify** (task #8): pin client-rn-app to java17/node20 (`mise.toml`); `npm install`;
    connect phone (USB debugging); `adb devices`; `npx react-native run-android`. Needs the phone.
 
 ## State safety
-Shell is working: java/node/python on mise, ruby still on rbenv (untouched), dotnet untouched.
-Old managers (nvm/pyenv/rbenv) still installed; their hooks for node/python removed, rbenv hook
-still present. mise wins PATH precedence even when an old hook is still loaded.
+Shell working: java/node/python/ruby all on mise, dotnet untouched. Old managers
+(nvm/pyenv/pyenv-virtualenv/openjdk@17/pipx) fully uninstalled + dropped from Brewfile; all their
+shell hooks removed. rbenv/ruby-build were never brew-installed here. `brew "ruby"` intentionally
+kept (vim dep). Leftover cosmetic: p10k prompt still lists pyenv/nvm/rbenv segments (no-op when
+binaries absent) — harmless, trim later if desired.
