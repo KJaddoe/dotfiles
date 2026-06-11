@@ -46,8 +46,13 @@ compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimate
   `ruby/path.zsh` (rbenv lazy-load). Used `mise current` guard. Verified: `which ruby`→mise install.
 - `Add mise` — role `_system/roles/mise` (brew on mac, apt-repo+GPG on ubuntu like `gh`), hook
   `mise/init.zsh` (`eval "$(mise activate zsh)"`, auto-sourced by zshrc `*/*.zsh` glob), Brewfile.
-- `Migrate java to mise` — `java@temurin-17` (resolves 17.0.19). mise sets JAVA_HOME automatically
-  (Gradle picks it up). Dropped brew openjdk + /Library/Java symlink.
+- `Migrate java to mise` — `java@temurin-17` (resolves 17.0.19). mise exports JAVA_HOME + puts java
+  on PATH automatically (Gradle picks it up). Dropped brew openjdk + /Library/Java symlink.
+- `Remove obsolete java/path.zsh` — the java migration MISSED deleting its old `java/path.zsh` (unlike
+  node/python/ruby which deleted theirs in-commit). That hook ran `/usr/libexec/java_home -v 17` at
+  shell init; once the brew-openjdk cleanup removed the last macOS-registered JDK it errored loudly
+  ("Unable to locate a Java Runtime") on every new shell + tripped p10k instant-prompt's console-output
+  warning. Fix = delete the file (mise already provides JAVA_HOME). java/ dir now empty.
 - `Migrate node to mise` — `node@22`, npm globals reinstalled under mise node. Removed `node/path.zsh`.
 - `Migrate python to mise and uv` — `python@3.11.15` (see gotcha), uv role added. uv tools:
   black isort pylint rshell jedi-language-server ansible-lint ansible-dev-tools. pynvim pip-installed
