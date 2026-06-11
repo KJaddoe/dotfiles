@@ -5,3 +5,5 @@ for topic_folder in $DOTFILES/*; do
 		fpath=($topic_folder $fpath)
 	fi
 done
+
+[ -d "$HOME/.docker/completions" ] && fpath=($HOME/.docker/completions $fpath)
