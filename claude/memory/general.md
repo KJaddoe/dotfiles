@@ -17,6 +17,17 @@
 
 - 2026-05-27 — When asked to review a PR ("review", "add comments", "leave feedback"), build a *pending* GitHub review with inline comments + `suggestion` blocks and walk through findings one at a time. Present each draft comment for sign-off *before* attaching it to the pending review (do not bulk-attach), and only call `…/events` to submit once the user explicitly approves. Don't edit working-tree files as the "fix" path — the deliverable is review comments, not local commits, unless the user later asks to push fixes. Why: user said in one session both "Don't publish anything publically untill we've gone through everything" and "we'll do the review step by step before adding all your suggestions" — after I edited a file directly and after I bulk-created a pending review with all findings at once. How to apply: use the `pending-pr-review` skill (invocable as `/pending-pr-review`) for the GraphQL-based technical workflow that lets you append comments incrementally to one pending review.
 
+## Cross-Platform Parity (dotfiles)
+
+- 2026-06-11 — The dotfiles target BOTH macOS and Ubuntu/Linux. When changing the environment, keep
+  mac/linux parity and never introduce a mac-only assumption without a Linux path. Why: the user
+  twice flagged it in one session ("will this work on linux?", "make sure neovim is also installed on
+  linux") after I proposed `EDITOR='nvim'` while neovim was only in the mac Brewfile. How to apply:
+  for any tool a shell hook references, ensure it's provisioned on both OSes (ansible role: `homebrew`
+  on Darwin + `apt`/PPA on Debian, gated by `ansible_facts.os_family`); guard filesystem/PATH bits
+  that may be absent (`[ -d ... ]`, `mkdir -p`); prefer adding the Linux install over a runtime
+  fallback when the user wants the tool everywhere.
+
 ## Code & Writing Style
 
 - 2026-06-01 — Don't add explanatory/descriptive comments to code or config files. Keep only what's functionally required (e.g. shebangs) and match the surrounding file's existing comment density, which is near-zero. Why: the user explicitly rejected added comments in a zsh dotfile and expects this as a standing preference. How to apply: write code without narration comments unless the user asks for them — the same terse style applies to commit messages (see Commits & PRs).
