@@ -24,8 +24,14 @@ compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimate
   (brew on mac; apt has no pkg → debug note on Debian) + `brew "watchman"`. Fixed `android/config.zsh`:
   `$OS`→`$OS_TYPE` AND scoped the WSL adb-socket override to real WSL (`grep -qi microsoft /proc/version`)
   so it no longer clobbers ADB_SERVER_SOCKET on native Linux. Installed+verified: adb 1.0.41,
-  sdkmanager 12.0, ~/Android=2.9GB. GOTCHA: a stray OLD cmdline-tools sat at `~/Android/cmdline-tools/`
-  root (bin/lib/NOTICE from 2025-05) — harmless, latest/ is what PATH uses; not yet cleaned.
+  sdkmanager 12.0. Final SDK packages: platform-tools, platforms;android-35, build-tools;35.0.0,
+  ndk;25.1.8937393 (4, NOT 5).
+- `Drop redundant cmdline-tools;latest from android SDK packages` — keeping `cmdline-tools;latest`
+  in the sdkmanager list made it install a 2nd copy into `cmdline-tools/latest-2` (latest/ was already
+  occupied by our manual bootstrap). GOTCHA for any rebuild: bootstrap cmdline-tools into `latest/`
+  manually XOR let sdkmanager manage it — not both. Cleaned ~/Android: removed `latest-2` AND the
+  pre-existing 2025-05 stray root files (bin/lib/NOTICE.txt/source.properties). Re-ran role →
+  idempotent (changed=0), only `latest/` remains.
 - `Remove classic vim and brew ruby` — user runs neovim, not classic vim. brew `vim` was the ONLY
   consumer of brew `ruby` (formula declares ruby as build/test dep, but the vim *binary* hard-links
   `libruby.3.4.dylib` via `+ruby` — `otool -L` is ground truth, `brew deps` under-reports it).
@@ -63,8 +69,6 @@ compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimate
 ## Remaining (next session)
 1. **RN device verify** (task #8): pin client-rn-app to java17/node20 (`mise.toml`); `npm install`;
    connect phone (USB debugging); `adb devices`; `npx react-native run-android`. Needs the phone.
-   Optional cleanup: remove the stray `~/Android/cmdline-tools/{bin,lib,NOTICE.txt,source.properties}`
-   root-level leftover (old extraction; not created by this work — confirm with user first).
 
 ## State safety
 Shell working: java/node/python/ruby all on mise, dotnet untouched. Old managers
