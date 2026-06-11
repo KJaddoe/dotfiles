@@ -47,22 +47,12 @@ brew "mise"
 brew "ncdu"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
-# Manage multiple Node.js versions
-brew "nvm"
-# Development kit for the Java programming language
-brew "openjdk@17"
 # OpenBSD freely-licensed SSH connectivity tools
 brew "openssh"
 # PostgreSQL syntax beautifier
 brew "pgformatter"
-# Execute binaries from Python packages in isolated environments
-brew "pipx"
 # Object-relational database system
 brew "postgresql@14", restart_service: :changed
-# Python version management
-brew "pyenv"
-# Pyenv plugin to manage virtualenv
-brew "pyenv-virtualenv"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
 # Powerful, clean, object-oriented scripting language
