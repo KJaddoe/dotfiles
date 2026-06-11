@@ -16,6 +16,16 @@ compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimate
 - Sequencing: full mise migration first, RN Android second. Java migrated early = JDK-17 provider.
 
 ## Done (committed on master, one commit per tool)
+- `Add cross-platform android SDK + watchman roles` — new `_system/roles/android` (replaces
+  Linux-only `_system/tasks/android.yml`): downloads cmdline-tools (mac/linux via os_family),
+  moves to `cmdline-tools/latest`, `yes | sdkmanager --licenses`, installs platform-tools,
+  platforms;android-35, build-tools;35.0.0, ndk;25.1.8937393, cmdline-tools;latest. Runs sdkmanager
+  via `mise exec --` (gives it mise's java17 — no JAVA_HOME plumbing). New `_system/roles/watchman`
+  (brew on mac; apt has no pkg → debug note on Debian) + `brew "watchman"`. Fixed `android/config.zsh`:
+  `$OS`→`$OS_TYPE` AND scoped the WSL adb-socket override to real WSL (`grep -qi microsoft /proc/version`)
+  so it no longer clobbers ADB_SERVER_SOCKET on native Linux. Installed+verified: adb 1.0.41,
+  sdkmanager 12.0, ~/Android=2.9GB. GOTCHA: a stray OLD cmdline-tools sat at `~/Android/cmdline-tools/`
+  root (bin/lib/NOTICE from 2025-05) — harmless, latest/ is what PATH uses; not yet cleaned.
 - `Remove classic vim and brew ruby` — user runs neovim, not classic vim. brew `vim` was the ONLY
   consumer of brew `ruby` (formula declares ruby as build/test dep, but the vim *binary* hard-links
   `libruby.3.4.dylib` via `+ruby` — `otool -L` is ground truth, `brew deps` under-reports it).
@@ -51,14 +61,10 @@ compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimate
   `ANSIBLE_ROLES_PATH=.../_system/roles ansible-playbook`. Verify in real shell with `zsh -ic '...'`.
 
 ## Remaining (next session)
-1. **Android CLI + watchman** (task #7): convert Linux-only `_system/tasks/android.yml` into
-   cross-platform `_system/roles/android` (download commandlinetools-{mac,linux} to
-   `~/Android/cmdline-tools/latest`, sdkmanager: platform-tools, platforms;android-35,
-   build-tools;35.0.0, ndk;25.1.8937393, cmdline-tools;latest, then `yes | sdkmanager --licenses`).
-   Add `_system/roles/watchman` + `brew "watchman"`. Fix `android/config.zsh` bug (`$OS`→`$OS_TYPE`).
-   NDK is ~1GB (long download).
-2. **RN device verify** (task #8): pin client-rn-app to java17/node20 (`mise.toml`); `npm install`;
+1. **RN device verify** (task #8): pin client-rn-app to java17/node20 (`mise.toml`); `npm install`;
    connect phone (USB debugging); `adb devices`; `npx react-native run-android`. Needs the phone.
+   Optional cleanup: remove the stray `~/Android/cmdline-tools/{bin,lib,NOTICE.txt,source.properties}`
+   root-level leftover (old extraction; not created by this work — confirm with user first).
 
 ## State safety
 Shell working: java/node/python/ruby all on mise, dotnet untouched. Old managers
