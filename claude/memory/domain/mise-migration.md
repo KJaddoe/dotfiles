@@ -7,8 +7,8 @@ Consolidate node/python/ruby/java off four separate managers (NVM/pyenv/rbenv/fi
 onto **mise** — one fast Rust binary, per-project pinning, asdf-compatible escape hatch (low
 lock-in). Python *runtime* on mise, Python *global tooling* on **uv**. dotnet stays as-is.
 Then enable React Native Android dev WITHOUT Android Studio (CLI only, run on a USB phone) to
-unblock `/Users/karanjaddoe/Projects/client/client-rn-app` (RN 0.73.8, JDK 17, Gradle 8.3,
-compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimated+vision-camera).
+unblock a client RN app (RN 0.73.8, JDK 17, Gradle 8.3, compileSdk/buildTools 35.0.0,
+NDK 25.1.8937393, Hermes, native modules reanimated+vision-camera).
 
 ## Decisions (from the user)
 - Migrate all four runtimes to mise; dotnet untouched (weakest fit, fine on its own install.sh+brew).
@@ -16,19 +16,18 @@ compileSdk/buildTools 35.0.0, NDK 25.1.8937393, Hermes, native modules reanimate
 - Sequencing: full mise migration first, RN Android second. Java migrated early = JDK-17 provider.
 
 ## Done (committed on master, one commit per tool)
-- `RN device verify` (task #8 — FINAL, migration complete) — pinned client-rn-app via project
+- `RN device verify` (task #8 — FINAL, migration complete) — pinned the client RN app via project
   `mise.toml` (`java=temurin-17`, `node=20` → installed 20.20.2; engines wanted node>=18, plan said 20).
-  `mise exec -- npm install` (1033 pkgs). `npx react-native run-android` built+deployed to a physical
-  Android phone (Android 11) over USB — BUILD SUCCESSFUL, JS bundle loaded, app rendered, no crashes.
+  `mise exec -- npm install` (~1033 pkgs). `npx react-native run-android` built+deployed to a physical
+  Android 11 phone over USB — BUILD SUCCESSFUL, JS bundle loaded, app rendered, no crashes.
   Proves the CLI-only (no Android Studio) RN Android toolchain works on the mise env. GOTCHAS:
   (1) phone first showed `unauthorized` → tap "Allow USB debugging" on device.
-  (2) app has productFlavors (development/staging/production) so plain `installDebug` is AMBIGUOUS →
-      must pass `--mode developmentDebug`.
-  (3) `applicationIdSuffix .client.development` means RN CLI auto-launch targets the wrong package
-      (`com.example.app/.MainActivity` → "Activity does not exist"); the install still succeeds —
-      launch manually: `adb shell monkey -p com.example.app.client.development.debug -c
-      android.intent.category.LAUNCHER 1`.
-  Project `mise.toml` is UNTRACKED in the client-rn-app repo — left for the user to commit/gitignore.
+  (2) app has productFlavors (e.g. development/staging/production) so plain `installDebug` is AMBIGUOUS →
+      must pass `--mode <flavor>Debug`.
+  (3) when a flavor sets `applicationIdSuffix`, RN CLI auto-launch targets the base package and fails
+      ("Activity does not exist") even though install succeeds — launch manually with the suffixed id:
+      `adb shell monkey -p <applicationId> -c android.intent.category.LAUNCHER 1`.
+  The project `mise.toml` is UNTRACKED in the client repo — left for the user to commit/gitignore.
 - `Add cross-platform android SDK + watchman roles` — new `_system/roles/android` (replaces
   Linux-only `_system/tasks/android.yml`): downloads cmdline-tools (mac/linux via os_family),
   moves to `cmdline-tools/latest`, `yes | sdkmanager --licenses`, installs platform-tools,
