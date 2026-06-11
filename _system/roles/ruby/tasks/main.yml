@@ -1,5 +1,5 @@
 ---
-- name: Install rbenv dependencies (Ubuntu)
+- name: Install Ruby build dependencies (Ubuntu)
   apt:
     name:
       - git
@@ -18,68 +18,29 @@
   become: true
   when: ansible_facts.os_family == "Debian"
 
-- name: Install rbenv dependencies (macOS)
+- name: Install Ruby build dependencies (macOS)
   homebrew:
     name:
-      - rbenv
-      - ruby-build
+      - openssl@3
+      - readline
+      - libyaml
     state: present
   when: ansible_facts.os_family == "Darwin"
 
-- name: Clone rbenv (Ubuntu)
-  git:
-    repo: https://github.com/rbenv/rbenv.git
-    dest: "{{ ansible_env.HOME }}/.rbenv"
-    update: yes
-  when: ansible_facts.os_family == "Debian"
+- name: Get current global Ruby from mise
+  command: mise current ruby
+  register: mise_ruby_current
+  changed_when: false
+  failed_when: false
 
-- name: Install ruby-build plugin (Ubuntu)
-  git:
-    repo: https://github.com/rbenv/ruby-build.git
-    dest: "{{ ansible_env.HOME }}/.rbenv/plugins/ruby-build"
-    update: yes
-  when: ansible_facts.os_family == "Debian"
-
-- name: Ensure rbenv init in shell
-  lineinfile:
-    path: "{{ ansible_env.HOME }}/.zshrc"
-    line: "{{ item }}"
-    state: present
-  loop:
-    - 'export PATH="$HOME/.rbenv/bin:$PATH"'
-    - 'eval "$(rbenv init -)"'
-
-- name: Install Ruby version
-  shell: |
-    export PATH="$HOME/.rbenv/bin:$PATH"
-    eval "$(rbenv init -)"
-    rbenv install -s {{ ruby_version }}
-  args:
-    executable: /bin/bash
-
-- name: Set global Ruby version
-  shell: |
-    export PATH="$HOME/.rbenv/bin:$PATH"
-    eval "$(rbenv init -)"
-    rbenv global {{ ruby_version }}
-  args:
-    executable: /bin/bash
-
-- name: Rehash rbenv
-  shell: |
-    export PATH="$HOME/.rbenv/bin:$PATH"
-    eval "$(rbenv init -)"
-    rbenv rehash
-  args:
-    executable: /bin/bash
+- name: Install and pin Ruby {{ ruby_version }} via mise
+  command: mise use -g ruby@{{ ruby_version }}
+  when: mise_ruby_current.stdout | trim != ruby_version
 
 - name: Install global Ruby gems
-  shell: |
-    export PATH="$HOME/.rbenv/bin:$PATH"
-    eval "$(rbenv init -)"
-    gem install {{ ruby_global_gems | join(' ') }}
-  args:
-    executable: /bin/bash
+  command: mise exec -- gem install {{ ruby_global_gems | join(' ') }}
+  register: gem_install
+  changed_when: "'Successfully installed' in gem_install.stdout"
 
 - name: Ensure ruby dotfiles directory exists
   file:
@@ -96,13 +57,10 @@
     force: true
 
 - name: Verify Ruby installation
-  shell: |
-    export PATH="$HOME/.rbenv/bin:$PATH"
-    eval "$(rbenv init -)"
-    ruby -v
+  command: mise exec -- ruby -v
   register: ruby_version_output
   changed_when: false
 
 - name: Show Ruby version
   debug:
-    msg: "Ruby installed: {{ ruby_version_output.stdout }}"
+    msg: "{{ ruby_version_output.stdout }}"
