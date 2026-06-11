@@ -24,31 +24,32 @@ export ZSH_TMUX_AUTOCONNECT=false
 typeset -U config_files
 config_files=($DOTFILES/*/*.zsh)
 
+# defer compdef calls from plugins/aliases until compinit has defined it
+typeset -ga _deferred_compdefs
+compdef() { _deferred_compdefs+=("${(j: :)@}") }
+
 # load the path files
 for file in ${(M)config_files:#*/path.zsh}; do
   source "$file"
 done
 
-# load config/init files (everything but path, completion and aliases) so fpath
-# is fully built before compinit runs
-for file in ${${${config_files:#*/path.zsh}:#*/completion.zsh}:#*/aliases.zsh}; do
+# load everything but the path and completion files (builds fpath, loads plugins)
+for file in ${${config_files:#*/path.zsh}:#*/completion.zsh}; do
   source "$file"
 done
 
-# run compinit once, now that fpath is complete
+# run compinit once, now that fpath is complete, then replay deferred compdefs
+unfunction compdef
 autoload -Uz compinit
 if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
   compinit
 else
   compinit -C
 fi
+for _cd in $_deferred_compdefs; do compdef ${=_cd}; done
+unset _deferred_compdefs _cd
 
-# load aliases after compinit (some register completions via compdef)
-for file in ${(M)config_files:#*/aliases.zsh}; do
-  source "$file"
-done
-
-# load every completion last
+# load every completion after autocomplete loads
 for file in ${(M)config_files:#*/completion.zsh}; do
   source "$file"
 done
