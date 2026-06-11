@@ -17,6 +17,19 @@
 
 - 2026-05-27 — When asked to review a PR ("review", "add comments", "leave feedback"), build a *pending* GitHub review with inline comments + `suggestion` blocks and walk through findings one at a time. Present each draft comment for sign-off *before* attaching it to the pending review (do not bulk-attach), and only call `…/events` to submit once the user explicitly approves. Don't edit working-tree files as the "fix" path — the deliverable is review comments, not local commits, unless the user later asks to push fixes. Why: user said in one session both "Don't publish anything publically untill we've gone through everything" and "we'll do the review step by step before adding all your suggestions" — after I edited a file directly and after I bulk-created a pending review with all findings at once. How to apply: use the `pending-pr-review` skill (invocable as `/pending-pr-review`) for the GraphQL-based technical workflow that lets you append comments incrementally to one pending review.
 
+## Confidentiality in tracked memory
+
+- 2026-06-11 — NEVER write client/customer names, private repo names, app/package ids, device
+  identifiers, or other identifying project details into the git-tracked memory under
+  `dotfiles/claude/memory/` (or any committed dotfiles file). The dotfiles repo is **public on
+  GitHub** (`KJaddoe/dotfiles`). Why: I recorded a client app's repo path, name, package id and
+  device model in `domain/mise-migration.md` and it was pushed publicly; the user had me redact it
+  and force-push a scrubbed history. How to apply: keep tracked memory generic ("a client RN app",
+  "the project") — describe the *technique/gotcha*, not *whose* project. Put any genuinely needed
+  client-specific notes in an untracked/gitignored location, not the public repo. When unsure whether
+  a detail is identifying, leave it out. Scrub recipe if it recurs: `git filter-repo --replace-text`
+  + force-push (the repo stays public by the user's choice).
+
 ## Cross-Platform Parity (dotfiles)
 
 - 2026-06-11 — The dotfiles target BOTH macOS and Ubuntu/Linux. When changing the environment, keep
