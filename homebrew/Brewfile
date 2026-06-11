@@ -55,8 +55,6 @@ brew "pgformatter"
 brew "postgresql@14", restart_service: :changed
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
-# Powerful, clean, object-oriented scripting language
-brew "ruby"
 # Autoformat shell script source code
 brew "shfmt"
 # SOcket CAT: netcat on steroids
@@ -73,8 +71,6 @@ brew "tmux"
 brew "unzip"
 # Extremely fast Python package installer and resolver, written in Rust
 brew "uv"
-# Vi 'workalike' with many additional features
-brew "vim"
 # Internet file retriever
 brew "wget"
 # Command-line program for getting and setting the contents of the X selection
