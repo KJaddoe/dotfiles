@@ -1,0 +1,39 @@
+---
+- name: Install neovim (macOS)
+  homebrew:
+    name: neovim
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Install neovim PPA prerequisites (Ubuntu)
+  become: true
+  apt:
+    name:
+      - software-properties-common
+    state: present
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Add neovim stable PPA (Ubuntu)
+  become: true
+  apt_repository:
+    repo: ppa:neovim-ppa/stable
+    state: present
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install neovim (Ubuntu)
+  become: true
+  apt:
+    name: neovim
+    state: present
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Verify neovim installation
+  command: nvim --version
+  register: nvim_version
+  changed_when: false
+
+- name: Show neovim version
+  debug:
+    msg: "{{ nvim_version.stdout_lines[0] }}"

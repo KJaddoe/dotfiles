@@ -27,6 +27,7 @@
     - role: eza
     - role: bat
     - role: fswatch
+    - role: neovim
 
     # databases
     - role: postgresql
