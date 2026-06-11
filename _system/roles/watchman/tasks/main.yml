@@ -1,0 +1,13 @@
+---
+- name: Install watchman on macOS
+  homebrew:
+    name: watchman
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Note watchman on Ubuntu
+  debug:
+    msg: >-
+      watchman has no apt package; install from source if React Native
+      file-watching is needed (https://facebook.github.io/watchman/docs/install).
+  when: ansible_facts.os_family == "Debian"

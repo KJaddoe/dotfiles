@@ -1,0 +1,44 @@
+---
+- name: Create the Android SDK directory
+  file:
+    path: "{{ android_home }}/cmdline-tools"
+    state: directory
+
+- name: Check whether the command-line tools are installed
+  stat:
+    path: "{{ android_home }}/cmdline-tools/latest/bin/sdkmanager"
+  register: sdkmanager_bin
+
+- name: Install Android command-line tools
+  when: not sdkmanager_bin.stat.exists
+  block:
+    - name: Download and extract command-line tools
+      unarchive:
+        src: >-
+          https://dl.google.com/android/repository/commandlinetools-{{ android_cmdline_tools_platform }}-{{ android_cmdline_tools_build }}_latest.zip
+        dest: "{{ android_home }}/cmdline-tools"
+        remote_src: yes
+
+    - name: Move command-line tools into the latest channel
+      command: mv "{{ android_home }}/cmdline-tools/cmdline-tools" "{{ android_home }}/cmdline-tools/latest"
+      args:
+        creates: "{{ android_home }}/cmdline-tools/latest"
+
+- name: Accept Android SDK licenses
+  shell: yes | mise exec -- "{{ android_home }}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="{{ android_home }}" --licenses
+  register: sdk_licenses
+  changed_when: "'Accepting' in sdk_licenses.stdout"
+
+- name: Install Android SDK packages
+  command: mise exec -- "{{ android_home }}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="{{ android_home }}" {{ android_sdk_packages | map('quote') | join(' ') }}
+  register: sdk_packages
+  changed_when: "'Installing' in sdk_packages.stdout or 'Unzipping' in sdk_packages.stdout"
+
+- name: Verify sdkmanager
+  command: mise exec -- "{{ android_home }}/cmdline-tools/latest/bin/sdkmanager" --version
+  register: sdkmanager_version
+  changed_when: false
+
+- name: Show installed SDK manager version
+  debug:
+    msg: "Android sdkmanager {{ sdkmanager_version.stdout_lines[-1] }}"

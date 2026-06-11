@@ -71,6 +71,8 @@ brew "tmux"
 brew "unzip"
 # Extremely fast Python package installer and resolver, written in Rust
 brew "uv"
+# Watch files and take action when they change
+brew "watchman"
 # Internet file retriever
 brew "wget"
 # Command-line program for getting and setting the contents of the X selection

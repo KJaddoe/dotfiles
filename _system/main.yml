@@ -35,6 +35,7 @@
 
     # terminal
     - role: ghostty
-  tasks:
-    - include_tasks: tasks/android.yml
-      when: ansible_facts.os_family == "Debian"
+
+    # mobile / react native
+    - role: watchman
+    - role: android

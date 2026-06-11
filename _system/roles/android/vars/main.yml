@@ -1,0 +1,12 @@
+android_home: "{{ ansible_env.HOME }}/Android"
+
+android_cmdline_tools_build: "11076708"
+
+android_cmdline_tools_platform: "{{ 'mac' if ansible_facts.os_family == 'Darwin' else 'linux' }}"
+
+android_sdk_packages:
+  - "platform-tools"
+  - "platforms;android-35"
+  - "build-tools;35.0.0"
+  - "ndk;25.1.8937393"
+  - "cmdline-tools;latest"
