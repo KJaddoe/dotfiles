@@ -8,7 +8,7 @@ Read this file at session start. Load specific topic files only when relevant.
 | `tools/gh-pending-pr-reviews.md` | Pointer — promoted to the `pending-pr-review` skill (`claude/skills/`) | 2026-06-01 |
 | `tools/zsh-startup.md` | zsh startup perf: single-compinit architecture in `zsh/zshrc` (fpath→compinit→aliases→completion order), ng-completion caching. Cut ~2.1s→~0.35s. | 2026-06-11 |
 | `tools/docker-sql-server.md` | Local Docker SQL Server: backups live in `~/Projects/Docker/SQL_Server/backups/` (mounted `/var/opt/mssql/backup`); restore to original DB name; suggest DROP when done | 2026-06-07 |
-| `domain/mise-migration.md` | In-progress: migrating node/python/ruby/java to mise (+uv for python tooling), then CLI-only RN Android. Done: mise/java/node/python/ruby + Brewfile cleanup + Android SDK/watchman roles. Remaining: RN device verify (needs phone). Resume point + gotchas inside. | 2026-06-11 |
+| `domain/mise-migration.md` | COMPLETE: migrated node/python/ruby/java to mise (+uv), Brewfile cleanup, Android SDK/watchman roles, neovim role, RN Android verified CLI-only on a physical phone. Gotchas/resume notes retained. | 2026-06-11 |
 
 ## Cross-Memory Sync Rule
 
