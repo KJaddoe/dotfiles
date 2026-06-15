@@ -19,6 +19,7 @@
 	ui = true
 [core]
 	excludesfile = ~/.gitignore
+	attributesfile = ~/.gitattributes
 	editor = nvim
 	compression = -1
 	autocrlf = input
@@ -50,12 +51,14 @@
 	fetchJobs = 4
 [commit]
 	template = ~/dotfiles/git/template.txt
+	verbose = true
 [log]
 	showSignature = false
 [pull]
 	rebase = true
 [init]
 	defaultBranch = main
+	templateDir = ~/dotfiles/git/template
 [interactive]
 	diffFilter = delta --color-only
 [delta]
