@@ -28,6 +28,7 @@
     - role: bat
     - role: fswatch
     - role: neovim
+    - role: powershell
 
     # databases
     - role: postgresql

@@ -22,6 +22,10 @@ if command -v bat >/dev/null 2>&1; then
 	alias cat='bat --paging=never'
 fi
 
+if command -v pwsh >/dev/null 2>&1; then
+	alias pslint='pwsh -NoProfile -Command Invoke-ScriptAnalyzer -Path'
+fi
+
 alias grep="grep --color=auto"
 alias duf="du -sh * | sort -hr"
 alias less="less -r"
