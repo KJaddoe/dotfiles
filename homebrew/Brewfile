@@ -63,8 +63,6 @@ brew "socat"
 brew "sqlcmd"
 # Opinionated Lua code formatter
 brew "stylua"
-# Code-search similar to ack
-brew "the_silver_searcher"
 # Terminal multiplexer
 brew "tmux"
 # Extraction utility for .zip compressed archives

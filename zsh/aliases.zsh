@@ -16,6 +16,7 @@ if command -v eza >/dev/null 2>&1; then
 	alias la='eza -a'
 	alias ll='eza -l --git'
 	alias lt='eza --tree --level=2'
+	alias tree='eza --tree'
 fi
 
 if command -v bat >/dev/null 2>&1; then
@@ -26,7 +27,27 @@ if command -v pwsh >/dev/null 2>&1; then
 	alias pslint='pwsh -NoProfile -Command Invoke-ScriptAnalyzer -Path'
 fi
 
-alias grep="grep --color=auto"
+if command -v rg >/dev/null 2>&1; then
+	alias grep='rg --hidden --no-ignore --glob "!.git"'
+else
+	alias grep="grep --color=auto"
+fi
+
+if command -v fd >/dev/null 2>&1; then
+	alias find='fd --hidden --no-ignore --exclude .git'
+elif command -v fdfind >/dev/null 2>&1; then
+	alias fd='fdfind'
+	alias find='fdfind --hidden --no-ignore --exclude .git'
+fi
+
+if command -v htop >/dev/null 2>&1; then
+	alias top='htop'
+fi
+
+if command -v ncdu >/dev/null 2>&1; then
+	alias dud='ncdu --color dark'
+fi
+
 alias duf="du -sh * | sort -hr"
 alias less="less -r"
 
