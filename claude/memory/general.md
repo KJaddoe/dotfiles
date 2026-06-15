@@ -41,6 +41,16 @@
   that may be absent (`[ -d ... ]`, `mkdir -p`); prefer adding the Linux install over a runtime
   fallback when the user wants the tool everywhere.
 
+## Dotfiles wiring conventions
+
+- 2026-06-15 — When adding a git config file to the dotfiles, symlink it into `$HOME` via a `link:`
+  entry in `dotbot.conf.yaml` (e.g. `~/.gitattributes: git/gitattributes`, mirroring `~/.gitignore`)
+  and point the git setting at the home path (`core.attributesfile = ~/.gitattributes`). Why: the
+  user corrected me when I pointed `attributesfile` directly at the in-repo path
+  (`~/dotfiles/git/gitattributes`) — they prefer the symlink-into-home pattern used by `gitignore`.
+  How to apply: prefer the dotbot symlink + `~/.foo` reference over an in-repo path, even though a few
+  older settings (e.g. `commit.template`) still reference the repo path directly.
+
 ## Code & Writing Style
 
 - 2026-06-01 — Don't add explanatory/descriptive comments to code or config files. Keep only what's functionally required (e.g. shebangs) and match the surrounding file's existing comment density, which is near-zero. Why: the user explicitly rejected added comments in a zsh dotfile and expects this as a standing preference. How to apply: write code without narration comments unless the user asks for them — the same terse style applies to commit messages (see Commits & PRs).

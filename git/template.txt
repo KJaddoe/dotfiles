@@ -1,6 +1,7 @@
 
 
+# Subject (first line above): imperative mood, ~50 chars. The diff shows what; explain why below.
+
 # Why is this change being made?
 
-
-# Provide links to any relevant tickets, URLs or other resources
+# Links: tickets, URLs, related resources
