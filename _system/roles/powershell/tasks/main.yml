@@ -1,0 +1,54 @@
+---
+- name: Install prerequisites (Ubuntu)
+  apt:
+    name:
+      - curl
+      - gnupg
+      - ca-certificates
+      - apt-transport-https
+    state: present
+    update_cache: yes
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Add Microsoft signing key (Ubuntu)
+  become: true
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  when: ansible_facts.os_family == "Debian"
+
+- name: Add Microsoft prod repository (Ubuntu)
+  become: true
+  apt_repository:
+    repo: >-
+      deb [arch=amd64]
+      https://packages.microsoft.com/ubuntu/{{ ansible_facts.distribution_version }}/prod
+      {{ ansible_facts.distribution_release }} main
+    state: present
+    filename: microsoft-prod
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install PowerShell (Ubuntu)
+  become: true
+  apt:
+    name: powershell
+    state: present
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install PowerShell (macOS)
+  homebrew:
+    name: powershell
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Check for PSScriptAnalyzer
+  command: pwsh -NoProfile -Command "if (Get-Module -ListAvailable PSScriptAnalyzer) { exit 0 } else { exit 1 }"
+  register: psscriptanalyzer_check
+  changed_when: false
+  failed_when: false
+
+- name: Install PSScriptAnalyzer
+  command: pwsh -NoProfile -Command "Install-Module PSScriptAnalyzer -Scope CurrentUser -Force -Repository PSGallery"
+  when: psscriptanalyzer_check.rc != 0
