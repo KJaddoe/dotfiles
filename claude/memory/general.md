@@ -7,7 +7,7 @@
 
 ## Branches
 
-- 2026-05-21 — When starting work on a GitHub issue, always create a linked issue-branch via `gh issue develop <number> --repo <owner>/<repo> --base <base> --checkout` and let GitHub auto-generate the branch name (do not pass `--name`). Why: keeps the branch ↔ issue link visible in the GitHub UI and matches the user's standing workflow. Never use a bare `git checkout -b <name>` for issue work.
+- 2026-05-21 (reaffirmed 2026-06-17) — When starting work on a GitHub issue, always create a linked issue-branch via `gh issue develop <number> --repo <owner>/<repo> --base <base> --checkout` and let GitHub auto-generate the branch name. NEVER pass `--name` or use a custom branch name for issue-linked branches — the user explicitly never wants custom names, always the default GitHub naming. Why: keeps the branch ↔ issue link clean and matches the user's standing workflow; reaffirmed after a project-level note had drifted to recommending `--name <slug>`. Never use a bare `git checkout -b <name>` for issue work either.
 
 ## Acting under the user's identity
 
@@ -50,6 +50,18 @@
   (`~/dotfiles/git/gitattributes`) — they prefer the symlink-into-home pattern used by `gitignore`.
   How to apply: prefer the dotbot symlink + `~/.foo` reference over an in-repo path, even though a few
   older settings (e.g. `commit.template`) still reference the repo path directly.
+
+## Generated specs & docs
+
+- 2026-06-18 — By DEFAULT, do NOT commit generated planning artifacts (brainstorming/design specs,
+  implementation plans, scratch design docs) into the project's git repo. Write them to an
+  untracked location outside the repo — default to the local Claude session dir for that project
+  (`~/.claude/projects/<mapped-path>/specs/`). This overrides the brainstorming skill's default of
+  writing to `docs/superpowers/specs/` and committing. Why: the user explicitly asked for this
+  ("write it up, but I don't want the spec doc in the repo") and then to make it a standing default.
+  How to apply: when a skill (e.g. `superpowers:brainstorming`) says to save+commit a spec, instead
+  save it to the untracked session-dir location and skip the commit; still do the spec self-review +
+  user-review-gate steps. Only put a spec in the repo if the user asks for it that time.
 
 ## Code & Writing Style
 
