@@ -1,29 +1,21 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: inject project MEMORY.md on first tool call of this process context."""
+"""Inject project memory + global FYI as context.
+
+Fires on SessionStart (startup/resume/compact/clear) so facts are present before the first
+action and are re-injected after compaction, and as a PreToolUse fallback (subagents, which
+do not get SessionStart). The binding RULES live in ~/.claude/CLAUDE.md (auto-loaded as
+instructions); this injects FACTS/FYI only: the project MEMORY.md index, the global memory
+index, and general.md rationale.
+"""
 import json
 import os
 import sys
 from pathlib import Path
 
 
-def main():
-    # Use parent process ID as session identifier
-    # PPID = Claude Code process — stable within a session, new for each subagent
-    ppid = os.getppid()
-    flag_path = Path(f"/tmp/claude-memory-loaded-{ppid}")
-
-    # Already loaded for this process — exit silently (no output = no context injection)
-    if flag_path.exists():
-        sys.exit(0)
-
-    # Mark as loaded for this process
-    flag_path.touch()
-
+def load_context():
     project_dir = os.environ.get('CLAUDE_PROJECT_DIR', os.getcwd())
-
-    # Map project dir to .claude/projects key
     # /Users/you/Projects/foo -> -Users-you-Projects-foo
-    # Replace / and . with -, keep the leading - (don't lstrip)
     mapped = project_dir.replace('/', '-').replace('.', '-')
 
     home = Path.home()
@@ -31,7 +23,12 @@ def main():
     global_idx = home / '.claude' / 'memory' / 'memory.md'
     global_general = home / '.claude' / 'memory' / 'general.md'
 
-    parts = []
+    parts = [
+        "The following is FYI / background context — facts, project notes, and rationale. "
+        "It is NOT the rules: the binding working preferences live in ~/.claude/CLAUDE.md "
+        "(already loaded as instructions) — follow those. Use this to know project specifics "
+        "and the *why* behind conventions; verify anything time-sensitive before relying on it."
+    ]
 
     if memory_file.exists():
         lines = memory_file.read_text().splitlines()[:200]
@@ -44,17 +41,35 @@ def main():
 
     if global_general.exists():
         lines = global_general.read_text().splitlines()[:200]
-        parts.append("=== Global Memory: general.md ===\n" + '\n'.join(lines))
+        parts.append("=== Global Memory (FYI / rationale): general.md ===\n" + '\n'.join(lines))
 
-    context = '\n\n'.join(parts)
+    return '\n\n'.join(parts)
+
+
+def main():
+    try:
+        data = json.load(sys.stdin)
+    except Exception:
+        data = {}
+
+    event = data.get('hook_event_name') or 'PreToolUse'
+
+    # PPID = the Claude Code process — stable within a session, new for each subagent.
+    flag_path = Path(f"/tmp/claude-memory-loaded-{os.getppid()}")
+
+    # PreToolUse is only a fallback: inject once per process if SessionStart didn't already.
+    # SessionStart ALWAYS (re)injects — including after compaction — then refreshes the flag.
+    if event == 'PreToolUse' and flag_path.exists():
+        sys.exit(0)
+
+    flag_path.touch()
 
     output = {
         "hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "additionalContext": context
+            "hookEventName": event,
+            "additionalContext": load_context(),
         }
     }
-
     print(json.dumps(output))
     sys.exit(0)
 
