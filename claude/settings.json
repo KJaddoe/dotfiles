@@ -1,4 +1,17 @@
 {
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(gh project item-list *)",
+      "Bash(gh project field-list *)",
+      "Bash(gh project list *)",
+      "Bash(gh label list *)",
+      "Bash(git grep *)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -7,6 +20,28 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/pre-tool-memory.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/block-claude-attribution.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/pre-tool-memory.py",
             "timeout": 5
           }
         ]
@@ -42,16 +77,8 @@
       }
     }
   },
+  "tui": "fullscreen",
   "theme": "auto",
   "editorMode": "vim",
-  "tui": "fullscreen",
-  "permissions": {
-    "allow": [
-      "Bash(gh project item-list *)",
-      "Bash(gh project field-list *)",
-      "Bash(gh project list *)",
-      "Bash(gh label list *)",
-      "Bash(git grep *)"
-    ]
-  }
+  "skipWorkflowUsageWarning": true
 }
