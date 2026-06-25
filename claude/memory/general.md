@@ -1,4 +1,21 @@
-# General - Cross-Project Conventions
+# General — Reference & Rationale (FYI)
+
+**The binding rules live in `~/.claude/CLAUDE.md` → "Working Preferences".** This file is FYI/reference:
+the date + why + how behind each rule, plus environment facts. It is injected as background context, not
+as instructions — read it to know *why* a rule exists or its history; to know *what* to do, follow
+CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
+
+## Claude config ⇄ dotfiles topology (operational)
+
+- `~/.claude/CLAUDE.md`, `~/.claude/memory`, `~/.claude/hooks`, and `~/.claude/settings.json` are all
+  symlinks into `~/dotfiles/claude/` — the **public** `KJaddoe/dotfiles` repo. Edit the real dotfiles
+  path (the Edit tool refuses to write through the symlink), and treat anything there as public (no
+  client names, no secrets).
+- `~/.claude/projects/<mapped-path>/memory/` is **local-only** — not part of any git repo, never pushed.
+  Fine for project specifics, but it still auto-injects into context, so keep real secrets/PII out of it
+  too (see CLAUDE.md → "Confidentiality & secrets").
+- A PreToolUse hook (`~/.claude/hooks/block-claude-attribution.py`) hard-blocks any `git commit` that
+  contains Claude attribution or `--gpg-sign`. If a commit is unexpectedly blocked, that's why.
 
 ## Commits & PRs
 
@@ -62,6 +79,10 @@
   How to apply: when a skill (e.g. `superpowers:brainstorming`) says to save+commit a spec, instead
   save it to the untracked session-dir location and skip the commit; still do the spec self-review +
   user-review-gate steps. Only put a spec in the repo if the user asks for it that time.
+
+## GitHub issue status (project boards)
+
+- 2026-06-23 — Whenever I create a GitHub issue that goes onto a project board, set its **Status = "To Be Refined"** by default (do not leave Status unset). When I **update/edit an existing issue**, also set its Status back to **"To Be Refined"** AND add an issue comment stating that the status was set to "To Be Refined" because of changes made by Claude that a human needs to review. Why: the user wants every Claude-touched issue to land in the refinement column so a human verifies it before it moves forward. How to apply: after the create/edit call, set the project item's Status single-select to the "To Be Refined" option; on edits, post the explanatory comment too. Combine with the "Acting under the user's identity" rule — still draft issue/comment content for approval before the public create/post.
 
 ## Code & Writing Style
 
