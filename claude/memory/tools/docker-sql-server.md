@@ -1,7 +1,7 @@
 # Tool: Docker SQL Server (local restores)
 
-Local SQL Server runs in Docker: dir `~/Projects/Docker/SQL_Server` (compose.yml), container `mssql-db`, `sa` / `!StrongPassword123`, port 1433. Query:
-`docker exec mssql-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '!StrongPassword123' -C -N -d <db> -W -s "~" -Q "..."`
+Local SQL Server runs in Docker: dir `~/Projects/Docker/SQL_Server` (compose.yml), container `mssql-db`, `sa` (password in compose.yml), port 1433. Query:
+`docker exec mssql-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PW" -C -N -d <db> -W -s "~" -Q "..."` (password in compose.yml)
 
 ## Backups always live in the mounted backups folder
 - 2026-06-07 — **All `.bak` files must live in `~/Projects/Docker/SQL_Server/backups/`**, which is bind-mounted into the container at `/var/opt/mssql/backup` (line in compose.yml: `- ./backups:/var/opt/mssql/backup`). Why: a `.bak` outside a mounted path is invisible to the container and cannot be restored without first copying it in. Keeping them here also survives container recreates (the bind mount persists).
