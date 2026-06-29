@@ -83,8 +83,8 @@
   when: ansible_facts.os_family == "Debian"
 
 - name: Install Docker Desktop (macOS)
-  homebrew:
-    name: --cask docker
+  homebrew_cask:
+    name: docker-desktop
     state: present
   when: ansible_facts.os_family == "Darwin"
 
