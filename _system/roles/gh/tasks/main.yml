@@ -5,6 +5,7 @@
     name:
       - curl
       - ca-certificates
+      - python3-debian
     state: present
     update_cache: yes
   when: ansible_facts.os_family == "Debian"
@@ -19,12 +20,15 @@
 
 - name: Add GitHub CLI repository (Ubuntu)
   become: true
-  apt_repository:
-    repo: >-
-      deb [arch={{ ansible_architecture }} signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg]
-      https://cli.github.com/packages stable main
+  deb822_repository:
+    name: github-cli
+    types: deb
+    uris: https://cli.github.com/packages
+    suites: stable
+    components: main
+    architectures: "{{ ansible_architecture }}"
+    signed_by: /usr/share/keyrings/githubcli-archive-keyring.gpg
     state: present
-    filename: github-cli
   when: ansible_facts.os_family == "Debian"
 
 - name: Install GitHub CLI (Ubuntu)
