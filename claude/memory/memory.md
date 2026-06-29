@@ -9,6 +9,7 @@ Read this file at session start. Load specific topic files only when relevant.
 | `tools/zsh-startup.md` | zsh startup perf: single-compinit architecture in `zsh/zshrc` (fpath→compinit→aliases→completion order), ng-completion caching. Cut ~2.1s→~0.35s. | 2026-06-11 |
 | `tools/docker-sql-server.md` | Local Docker SQL Server: backups live in `~/Projects/Docker/SQL_Server/backups/` (mounted `/var/opt/mssql/backup`); restore to original DB name; suggest DROP when done | 2026-06-07 |
 | `tools/macos-doc-conversion.md` | docx/md/pdf conversion: `textutil` drops images → use headless Chrome `--print-to-pdf` (abs `file://` paths) or `brew install pandoc`; md→pdf via python-markdown; extract docx images with `unzip word/media/*` | 2026-06-17 |
+| `tools/docs-pointer-template.md` | `claude/templates/docs-pointer/` — repo `CLAUDE.md`→`docs/` pointer template (index + precedence). Trialled in this repo. Promote to a skill if copied to ~3+ repos. | 2026-06-29 |
 | `domain/mise-migration.md` | COMPLETE: migrated node/python/ruby/java to mise (+uv), Brewfile cleanup, Android SDK/watchman roles, neovim role, RN Android verified CLI-only on a physical phone. Gotchas/resume notes retained. | 2026-06-11 |
 
 ## Cross-Memory Sync Rule
