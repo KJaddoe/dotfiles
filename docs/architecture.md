@@ -45,6 +45,36 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
 ## Conventions worth knowing
 
 - **mac/Linux parity** — every change must work on both; never add a mac-only assumption without
-  a Linux path. Ansible keys off `ansible_pkg_mgr` (`brew` vs not).
-- Adding a tool is usually two edits: a topic folder (config, linked via `dotbot.conf.yaml`) and
-  an `_system/roles/<tool>/` role added to `_system/main.yml` (install).
+  a Linux path. Ansible keys off `ansible_pkg_mgr` (`brew` vs not) / `ansible_facts.os_family`.
+
+## Adding a tool
+
+Most tools take two edits: a topic folder (config, linked via `dotbot.conf.yaml`) and a
+`_system/roles/<tool>/` role added to `_system/main.yml` (install). A role is structured
+mac/Linux-parallel, branching on `ansible_facts.os_family`:
+
+- **macOS** — `homebrew:` / `homebrew_cask:` / `homebrew_tap:`.
+- **Debian/Ubuntu** — `apt:`. For a package in the base repos that's the whole story; for a
+  vendor apt repo, follow the keyring + deb822 recipe below.
+
+Config files a tool reads stay in dotbot, not the role (see ADR 0001) — `ssh` is the only role
+that symlinks, because its link carries dir-mode + backup logic dotbot can't express.
+
+### Vendor apt repository recipe
+
+`apt_key` and `apt_repository` are **deprecated** (removed in ansible-core 2.25) — don't use
+them. Per role, on Debian:
+
+1. Install prerequisites including **`python3-debian`** (required by `deb822_repository`).
+2. Ensure the keyring dir: `file: path=/etc/apt/keyrings state=directory mode=0755`.
+3. Fetch the signing key with `get_url` into a keyring file (never the global trusted keyring).
+   New roles use `/etc/apt/keyrings/<tool>.asc`; some older roles use `/usr/share/keyrings/` —
+   either works, prefer `/etc/apt/keyrings` for new ones.
+4. Add the repo with `deb822_repository:` — `name`, `types: deb`, `uris`, `suites`, `components`,
+   `architectures`, and `signed_by:` set to the keyring path (it also accepts a key URL, but we
+   keep the explicit `get_url` step for consistency and so the key is testable on disk).
+
+Models to copy: `gh` / `mise` (keyring + deb822), `docker` (dearmored `.gpg` key), `powershell`
+& `sqlcmd` (shared Microsoft repo). For an Ubuntu **PPA**, `deb822_repository` can't take the
+`ppa:` shorthand — use `command: add-apt-repository -y ppa:<owner>/<name>` (see `neovim`), which
+needs `software-properties-common` and handles the key itself.
