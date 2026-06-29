@@ -5,7 +5,7 @@ single config file shows. Keep entries scoped; link to the real files rather tha
 
 | File | Contents | Read when |
 |------|----------|-----------|
-| `architecture.md` | The two halves (dotbot symlinks + `_system` Ansible), topic-folder conventions, zsh load order | Working in an unfamiliar area of the repo |
+| `architecture.md` | The two halves (dotbot symlinks + `_system` Ansible), topic-folder conventions, zsh load order, and the recipe for adding a tool / vendor apt repo | Working in an unfamiliar area, or adding a tool/role |
 | `decisions/` | ADRs — one file per setup decision, newest wins | Changing or questioning a design choice |
 
 Precedence: config wins over docs. Treat anything here as possibly stale; verify before relying.
