@@ -24,8 +24,6 @@ brew "minikube"
 brew "ncdu"
 # OpenBSD freely-licensed SSH connectivity tools
 brew "openssh"
-# Object-relational database system
-brew "postgresql@14", restart_service: :changed
 # Opinionated Lua code formatter
 brew "stylua"
 # Terminal multiplexer
@@ -40,11 +38,7 @@ brew "xsel"
 brew "zip"
 # UNIX shell (command interpreter)
 brew "zsh"
-# App to build and share containerised applications and microservices
-cask "docker-desktop"
 cask "font-meslo-lg-nerd-font"
-# Terminal emulator that uses platform-native UI and GPU acceleration
-cask "ghostty"
 vscode "anthropic.claude-code"
 vscode "ms-azuretools.vscode-containers"
 vscode "ms-azuretools.vscode-docker"
