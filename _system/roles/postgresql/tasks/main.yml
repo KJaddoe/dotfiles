@@ -27,27 +27,6 @@
   command: brew services start postgresql
   when: ansible_facts.os_family == "Darwin"
 
-- name: Ensure postgres dotfiles directory exists
-  file:
-    path: '{{ postgresql_dotfiles_dir }}'
-    state: directory
-  delegate_to: localhost
-  run_once: true
-
-- name: Symlink .psqlrc
-  file:
-    src: '{{ postgresql_dotfiles_dir }}/psqlrc'
-    dest: '{{ psqlrc_path }}'
-    state: link
-    force: true
-
-- name: Symlink .psqlrc.local
-  file:
-    src: '{{ postgresql_dotfiles_dir }}/psqlrc.local'
-    dest: '{{ psqlrc_local_path }}'
-    state: link
-    force: true
-
 - name: Verify psql installation
   command: psql --version
   register: psql_version
