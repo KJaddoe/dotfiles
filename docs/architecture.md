@@ -23,11 +23,13 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   - `*/path.zsh` loads **first** (set up `$PATH`), `*/completion.zsh` loads **last**.
   - `bin/*` is added to `$PATH`.
   - `*/install.sh` (executable) runs at bootstrap and `dot_update`.
-- **`dotbot.conf.yaml`** — the symlink manifest: maps in-repo paths to `~/.foo` targets. Add a
-  new linked config here, and point the tool's setting at the `~/.foo` home path (not the
-  in-repo path), mirroring `~/.gitignore`.
+- **`dotbot.conf.yaml`** — the symlink manifest and **sole owner of plain config symlinks**:
+  maps in-repo paths to `~/.foo` targets. Add a new linked config here, and point the tool's
+  setting at the `~/.foo` home path (not the in-repo path), mirroring `~/.gitignore`.
 - **`_system/`** — Ansible: `main.yml` (role list), `roles/<tool>/`, `requirements.yml`,
-  `hosts.ini`. `should_be_root` is true except under Homebrew (macOS).
+  `hosts.ini`. `should_be_root` is true except under Homebrew (macOS). Roles provision software;
+  they do **not** symlink plain configs (that's dotbot's job — see ADR 0001). The exception is
+  `ssh`, whose link carries dir-mode + backup logic dotbot can't express.
 - **`claude/`** — global Claude Code config, symlinked into `~/.claude/` (`settings.json`,
   `CLAUDE.md`, `hooks/`, `memory/`, `skills/`, `keybindings.json`). The repo-root `CLAUDE.md`
   (this trial) is separate: it is repo-level project instructions, not the global config.
