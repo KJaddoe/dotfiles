@@ -53,13 +53,6 @@
     update_cache: yes
   when: ansible_facts.os_family == "Debian"
 
-- name: Add sqlcmd to PATH (Ubuntu)
-  lineinfile:
-    path: '{{ ansible_env.HOME }}/.bashrc'
-    line: 'export PATH="$PATH:/opt/mssql-tools/bin"'
-    state: present
-  when: ansible_facts.os_family == "Debian"
-
 - name: Tap Microsoft MSSQL repo (macOS)
   homebrew_tap:
     name: microsoft/mssql-release
