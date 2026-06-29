@@ -42,20 +42,6 @@
   register: gem_install
   changed_when: "'Successfully installed' in gem_install.stdout"
 
-- name: Ensure ruby dotfiles directory exists
-  file:
-    path: "{{ ruby_dotfiles_dir }}"
-    state: directory
-  delegate_to: localhost
-  run_once: true
-
-- name: Symlink .gemrc
-  file:
-    src: "{{ ruby_dotfiles_dir }}/gemrc"
-    dest: "{{ gemrc_path }}"
-    state: link
-    force: true
-
 - name: Verify Ruby installation
   command: mise exec -- ruby -v
   register: ruby_version_output

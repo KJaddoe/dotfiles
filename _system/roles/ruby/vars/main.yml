@@ -5,7 +5,3 @@ ruby_global_gems:
   - rake
   - rubocop
   - solargraph
-
-ruby_dotfiles_dir: "{{ playbook_dir }}/../ruby"
-
-gemrc_path: "{{ ansible_env.HOME }}/.gemrc"
