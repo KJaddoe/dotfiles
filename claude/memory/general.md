@@ -34,6 +34,14 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 
 - 2026-05-27 — When asked to review a PR ("review", "add comments", "leave feedback"), build a *pending* GitHub review with inline comments + `suggestion` blocks and walk through findings one at a time. Present each draft comment for sign-off *before* attaching it to the pending review (do not bulk-attach), and only call `…/events` to submit once the user explicitly approves. Don't edit working-tree files as the "fix" path — the deliverable is review comments, not local commits, unless the user later asks to push fixes. Why: user said in one session both "Don't publish anything publically untill we've gone through everything" and "we'll do the review step by step before adding all your suggestions" — after I edited a file directly and after I bulk-created a pending review with all findings at once. How to apply: use the `pending-pr-review` skill (invocable as `/pending-pr-review`) for the GraphQL-based technical workflow that lets you append comments incrementally to one pending review.
 
+## Plan execution
+
+- 2026-07-02 — When executing an implementation plan, default to inline execution (executing-plans) over subagent-driven. Why: the user said "I generally prefer Inline over subagent-driven" after picking inline for both the shared-grid and query-param-directive builds. How to apply: when the writing-plans skill offers the execution choice, lead with / assume inline unless the user asks for subagent-driven. Binding copy in CLAUDE.md → Working method.
+
+## Styling (SCSS)
+
+- 2026-07-02 — Write component SCSS with nesting that mirrors the DOM hierarchy (child selectors nested inside their parent's block, `&` for states/variants), not flat top-level selectors. Why: the user asked for this twice — once for the shared data-grid SCSS and again for the contacts-overview SCSS — so it's a standing preference, not a one-off. How to apply: before finishing any `.scss`, structure selectors to follow the template's element tree. Binding copy in CLAUDE.md → Stack-specific.
+
 ## Confidentiality in tracked memory
 
 - 2026-06-11 — NEVER write client/customer names, private repo names, app/package ids, device
