@@ -46,6 +46,8 @@ for these rules as FYI reference only; the binding text is HERE.
   brainstorming skill's commit-to-repo default. Only commit a spec if asked that time.
 - Put scratch files in the session scratchpad dir; namespace any `/tmp` scripts per-project. Never
   overwrite or `rm` a temp file you didn't create this session without asking.
+- In Markdown, align table columns — pad every cell with trailing spaces so the pipes line up and the
+  raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
 
 ### Confidentiality & secrets
 - NEVER write client/customer names, private repo names, app/package ids, device ids, or other
