@@ -13,6 +13,8 @@ for these rules as FYI reference only; the binding text is HERE.
 - Before a destructive or hard-to-reverse operation (DB restore/overwrite, bulk file delete, git history
   rewrite, a migration against a shared/production DB), state the plan, VERIFY the target and inputs first
   (confirm you have the right backup/file/DB), and get explicit confirmation — even for purely local actions.
+- When executing an implementation plan, DEFAULT to inline execution (executing-plans skill) over
+  subagent-driven; only go subagent-driven if the user asks for it.
 
 ### Git & GitHub
 - NEVER add Claude attribution to anything: no "Co-Authored-By: Claude", no "Generated with Claude
@@ -71,6 +73,9 @@ for these rules as FYI reference only; the binding text is HERE.
   keep the spec), organize by feature, use signals + `inject()` + `input()`/`output()`, follow the current
   Angular style guide, lean on Material/built-in layout over custom CSS, and give every component/service
   a real test. Match the conventions of the existing Angular projects in the workspace.
+- Write SCSS with nesting that mirrors the component's DOM hierarchy — nest child selectors inside their
+  parent's block following the real element tree, use `&` for states/variants, and don't write flat
+  top-level selectors for elements that are actually nested.
 
 Per-project rules (e.g. "run the app from Rider, not `dotnet run`"; framework/styling conventions) belong
 in a `CLAUDE.md` at that project's root, not in this global file.
