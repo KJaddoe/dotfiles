@@ -1,0 +1,31 @@
+# ADR 0002: Local model for Claude Code via Ollama (no proxy)
+
+- Status: accepted
+- Date: 2026-07-03
+
+## Context
+
+We use the licensed Anthropic model in Claude Code. We also want a fully local,
+offline/privacy fallback — nothing leaving the machine, no API key — accepting lower
+quality. Claude Code speaks Anthropic's `/v1/messages`; historically routing it to a
+local model needed a translation proxy (LiteLLM / router / shim).
+
+## Decision
+
+No proxy. Ollama now exposes a native Anthropic-compatible endpoint on
+`http://localhost:11434`, so we point Claude Code straight at it. Install is an Ansible
+role (`_system/roles/ollama/`, brew on macOS / official script on Ubuntu) that pulls
+local coding models. A `claude/local.zsh` wrapper defines `claude-local`, which sets the
+Ollama env vars + disables non-essential traffic and `exec`s Claude Code in a subshell.
+The default `claude` command is unchanged and stays on the Anthropic API.
+
+Local model tags only (no `:cloud` — those are Ollama-hosted and defeat the privacy goal).
+
+## Consequences
+
+- A local fallback with no code change to Claude Code itself; toggle is a separate command.
+- Quality/speed are bounded by local hardware and model — this is a fallback, not a peer of
+  the licensed model, especially for tool-heavy agentic work.
+- Two model tags to keep in sync between `_system/roles/ollama/vars/main.yml` and
+  `claude/local.zsh` (both default to `qwen2.5-coder`).
+- If Ollama drops or changes the native Anthropic endpoint, this reverts to needing a proxy.

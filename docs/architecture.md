@@ -33,6 +33,9 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
 - **`claude/`** — global Claude Code config, symlinked into `~/.claude/` (`settings.json`,
   `CLAUDE.md`, `hooks/`, `memory/`, `skills/`, `keybindings.json`). The repo-root `CLAUDE.md`
   (this trial) is separate: it is repo-level project instructions, not the global config.
+  `claude/local.zsh` defines `claude-local`, a wrapper that runs Claude Code against a local
+  Ollama model (offline/privacy fallback); Ollama itself is installed by `_system/roles/ollama/`.
+  See ADR 0002.
 
 ## Cross-repo / external relations
 
