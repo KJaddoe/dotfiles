@@ -1,7 +1,7 @@
 ---
 ollama_ubuntu_install_script: "https://ollama.com/install.sh"
-ollama_model: "qwen2.5-coder:7b"
+ollama_model: "qwen2.5-coder:3b"
 ollama_small_model: "qwen2.5-coder:3b"
 ollama_num_ctx: 32768
-ollama_cc_model: "qwen2.5-coder-cc:7b"
+ollama_cc_model: "qwen2.5-coder-cc:3b"
 ollama_cc_small_model: "qwen2.5-coder-cc:3b"
