@@ -23,7 +23,7 @@ _claude_local_ensure_ollama() {
 claude-local() {
   (
     # Local model tags (keep in sync with _system/roles/ollama/vars/main.yml).
-    : ${CLAUDE_LOCAL_MODEL:=qwen2.5-coder-cc:7b}
+    : ${CLAUDE_LOCAL_MODEL:=qwen2.5-coder-cc:3b}
     : ${CLAUDE_LOCAL_SMALL_MODEL:=qwen2.5-coder-cc:3b}
     _claude_local_ensure_ollama || exit 1
     export ANTHROPIC_BASE_URL=http://localhost:11434
