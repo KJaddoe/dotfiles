@@ -8,7 +8,7 @@ _claude_local_ensure_ollama() {
     if command -v brew >/dev/null 2>&1; then
       brew services start ollama >/dev/null 2>&1
     elif command -v systemctl >/dev/null 2>&1; then
-      systemctl --user start ollama 2>/dev/null || systemctl start ollama 2>/dev/null
+      systemctl start ollama 2>/dev/null
     fi
     local i
     for i in {1..30}; do
@@ -30,7 +30,6 @@ claude-local() {
     export ANTHROPIC_AUTH_TOKEN=ollama
     export ANTHROPIC_API_KEY=""
     export ANTHROPIC_MODEL="$CLAUDE_LOCAL_MODEL"
-    export ANTHROPIC_SMALL_FAST_MODEL="$CLAUDE_LOCAL_SMALL_MODEL"
     export ANTHROPIC_DEFAULT_HAIKU_MODEL="$CLAUDE_LOCAL_SMALL_MODEL"
     export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
     exec claude "$@"
