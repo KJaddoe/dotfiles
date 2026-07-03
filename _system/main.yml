@@ -18,6 +18,7 @@
 
     # tools
     - role: docker
+    - role: ollama
     - role: gh
     - role: delta
     - role: jq
