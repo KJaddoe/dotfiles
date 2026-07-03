@@ -19,6 +19,11 @@ local coding models. A `claude/local.zsh` wrapper defines `claude-local`, which 
 Ollama env vars + disables non-essential traffic and `exec`s Claude Code in a subshell.
 The default `claude` command is unchanged and stays on the Anthropic API.
 
+Ollama defaults to a 4096-token context, too small for Claude Code's system prompt and
+tool definitions; we bake `num_ctx 32768` into derived model variants
+(`qwen2.5-coder-cc:14b` / `:3b`) via Modelfiles so they load with a usable window on any
+platform without service-level env changes. The wrapper targets these variants.
+
 Local model tags only (no `:cloud` — those are Ollama-hosted and defeat the privacy goal).
 
 ## Consequences
@@ -26,6 +31,8 @@ Local model tags only (no `:cloud` — those are Ollama-hosted and defeat the pr
 - A local fallback with no code change to Claude Code itself; toggle is a separate command.
 - Quality/speed are bounded by local hardware and model — this is a fallback, not a peer of
   the licensed model, especially for tool-heavy agentic work.
-- Two model tags to keep in sync between `_system/roles/ollama/vars/main.yml` and
-  `claude/local.zsh` (both default to `qwen2.5-coder`).
+- The context-tuned model tags are defined in `_system/roles/ollama/vars/main.yml` and must
+  stay in sync with the wrapper defaults in `claude/local.zsh` (both `qwen2.5-coder-cc`).
+- The 32k window raises 14b memory use to ~15 GB (fits 24 GB); change `ollama_num_ctx` to trade
+  context for memory.
 - If Ollama drops or changes the native Anthropic endpoint, this reverts to needing a proxy.

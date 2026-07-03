@@ -45,6 +45,28 @@
     - "{{ ollama_small_model }}"
   when: item not in ollama_list.stdout
 
+- name: Write Modelfiles for context-tuned variants
+  copy:
+    dest: "{{ ansible_env.HOME }}/.ollama/Modelfile.{{ item.file }}"
+    content: |
+      FROM {{ item.base }}
+      PARAMETER num_ctx {{ ollama_num_ctx }}
+    mode: "0644"
+  loop:
+    - { base: "{{ ollama_model }}", tag: "{{ ollama_cc_model }}", file: "cc-main" }
+    - { base: "{{ ollama_small_model }}", tag: "{{ ollama_cc_small_model }}", file: "cc-small" }
+  loop_control:
+    label: "{{ item.tag }}"
+
+- name: Create context-tuned Ollama models
+  command: "ollama create {{ item.tag }} -f {{ ansible_env.HOME }}/.ollama/Modelfile.{{ item.file }}"
+  loop:
+    - { base: "{{ ollama_model }}", tag: "{{ ollama_cc_model }}", file: "cc-main" }
+    - { base: "{{ ollama_small_model }}", tag: "{{ ollama_cc_small_model }}", file: "cc-small" }
+  loop_control:
+    label: "{{ item.tag }}"
+  when: item.tag not in ollama_list.stdout
+
 - name: Verify Ollama installation
   command: ollama --version
   register: ollama_version
