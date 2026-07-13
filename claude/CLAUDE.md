@@ -41,15 +41,55 @@ for these rules as FYI reference only; the binding text is HERE.
   Status back to "To Be Refined" AND post a comment noting Claude made changes a human must review.
 
 ### Code & artifacts
-- Don't add explanatory/descriptive comments to code or config; keep only what's functionally required
-  and match the file's existing (near-zero) comment density. Same terseness for commit messages.
+- Document every function, class, and method with a structured doc-comment covering its purpose, params,
+  and return value, in the language's convention (JSDoc/TSDoc, C# XML `///`, Python docstrings) and
+  matching the project's existing doc style. Do NOT add inline narration comments explaining what a
+  single line does — keep line-level code self-explanatory. Config files stay comment-free (only what's
+  functionally required, e.g. shebangs); commit messages stay terse.
 - By DEFAULT don't commit generated planning artifacts (specs, design docs, implementation plans). Write
   them to the untracked session dir `~/.claude/projects/<mapped-path>/specs/` — this overrides the
   brainstorming skill's commit-to-repo default. Only commit a spec if asked that time.
 - Put scratch files in the session scratchpad dir; namespace any `/tmp` scripts per-project. Never
   overwrite or `rm` a temp file you didn't create this session without asking.
+- When asked to build something "to test" / "to try out" / "for me to test", it's a LOCAL scratch
+  (working tree or stash) — do NOT commit it. Commit only what the user explicitly named as a
+  deliverable, and don't bundle unrequested refactors into that commit. "Commit X and build Y to test"
+  means: commit X; build Y locally; nothing more.
 - In Markdown, align table columns — pad every cell with trailing spaces so the pipes line up and the
   raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
+
+### Code quality (all languages)
+- Format code whenever possible: use the project's configured formatter (its config/scripts); if the
+  project defines none, use a locally available formatter for the language. Only format code you actually
+  touched — never mass-reformat untouched lines or files (it buries the real change in noise).
+- Lint every change: run the project's linter, or a locally available one for the language when the
+  project defines none. If the project has NO linting set up, notify me and propose linter options rather
+  than silently skipping.
+- Drive lint messages as close to zero as possible — fix as many warnings as you can. Fix the root cause;
+  don't silence warnings with blanket disables (`eslint-disable`, `#pragma warning disable`, `any` casts).
+  If a suppression is genuinely unavoidable, justify it.
+- Write tests for code whenever possible. If the project has NO test setup, notify me and propose testing
+  options rather than skipping.
+- Definition of done: before claiming work complete, format + lint + tests must all pass, and report the
+  actual results honestly — say so if anything fails or was skipped. Evidence before assertions. When the
+  suite is large/slow, run the changed-scope (affected) tests rather than the whole suite every time, and
+  state which scope was run; run the full suite when it's cheap or before a merge/release.
+- When introducing a formatter/linter/test setup, commit its config so it's reproducible across machines,
+  keeping macOS/Linux parity.
+- Follow the codebase's existing conventions: read the surrounding code before writing, mirror its
+  patterns, naming, and already-chosen libraries, and reuse existing helpers. Don't add a new dependency
+  or introduce a parallel way of doing something that already exists without sign-off.
+- Never hardcode secrets (credentials, tokens, API keys) in source — use env vars, config, or a secret
+  store. (The dotfiles repo is public; a leaked secret in a commit is hard to undo.)
+- Leave the tree clean: delete dead code, commented-out code, and debug artifacts you introduced (stray
+  logging, `debugger`/`console.log`, throwaway TODOs) rather than shipping them — git keeps the history.
+- Guard external input: validate/sanitize it, use parameterized queries (never string-concatenated SQL),
+  and escape output.
+- Don't swallow errors: no empty `catch` blocks or silent fallbacks — surface or handle a failure
+  meaningfully, log with context, and prefer failing loud/early over hiding it.
+- Scripts and automation (ansible roles, dotbot, migrations, env/version pinning) must be idempotent and
+  safe to re-run: guard on actual state rather than assumptions, and expect a re-run to be a no-op
+  (`changed=0`).
 
 ### Confidentiality & secrets
 - NEVER write client/customer names, private repo names, app/package ids, device ids, or other
@@ -75,7 +115,17 @@ for these rules as FYI reference only; the binding text is HERE.
   a real test. Match the conventions of the existing Angular projects in the workspace.
 - Write SCSS with nesting that mirrors the component's DOM hierarchy — nest child selectors inside their
   parent's block following the real element tree, use `&` for states/variants, and don't write flat
-  top-level selectors for elements that are actually nested.
+  top-level selectors for elements that are actually nested. When one style would otherwise be
+  duplicated across two DOM branches, don't flatten it to a shared top-level class — factor it into a
+  grouped selector that lists both parent chains and nests the shared declarations
+  (`.wrapperA, .wrapperB { .inner { .child { … } } }`), keeping each branch's unique styles in its own
+  nested block.
+- Don't hang styles off a class on every element. Style via semantic elements (`section`, `h2`,
+  `ul`/`li`, `small`, `dl`/`dt`/`dd`) and element/attribute selectors (e.g. `[role="alert"]`) nested
+  under `:host` or a single scoping ancestor; reach for a class only when no clean
+  element/structural/attribute selector can target the node. Drop unused/redundant classes. (Component
+  style encapsulation already scopes these; projected `<ng-template>` content keeps the declaring
+  component's encapsulation, so element selectors under `:host` still reach it.)
 
 Per-project rules (e.g. "run the app from Rider, not `dotnet run`"; framework/styling conventions) belong
 in a `CLAUDE.md` at that project's root, not in this global file.
