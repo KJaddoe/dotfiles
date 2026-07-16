@@ -1,6 +1,5 @@
 local ms = require("vim.lsp.protocol").Methods
 local cmp_capabilities = require("cmp_nvim_lsp").default_capabilities()
-local keymaps = require("lsp_keymaps")
 require("lsp_autocommands").setup()
 
 -- capabilities
@@ -14,12 +13,6 @@ capabilities = vim.tbl_deep_extend("force", capabilities, {
     },
   },
 })
-
----@param client vim.lsp.Client
----@param bufnr number
-local on_attach = function(client, bufnr)
-  keymaps.on_attach(bufnr)
-end
 
 -- global floating window borders
 vim.lsp.util.open_floating_preview = (function(orig)
@@ -36,7 +29,6 @@ end)(vim.lsp.util.open_floating_preview)
 
 vim.lsp.config("ts_ls", {
   capabilities = capabilities,
-  on_attach = on_attach,
   settings = {
     javascript = {
       inlayHints = {
@@ -65,7 +57,6 @@ vim.lsp.config("ts_ls", {
 
 vim.lsp.config("yamlls", {
   capabilities = capabilities,
-  on_attach = on_attach,
   settings = {
     yaml = {
       schemaStore = {
@@ -93,13 +84,11 @@ for _, server in ipairs({
 }) do
   vim.lsp.config(server, {
     capabilities = capabilities,
-    on_attach = on_attach,
   })
 end
 
 vim.lsp.config("jsonls", {
   capabilities = capabilities,
-  on_attach = on_attach,
   settings = {
     json = {
       schemas = require("schemastore").json.schemas(),
@@ -131,7 +120,6 @@ local angular_cmd = {
 
 vim.lsp.config("angularls", {
   capabilities = capabilities,
-  on_attach = on_attach,
   cmd = angular_cmd,
   on_new_config = function(new_config)
     new_config.cmd = angular_cmd
@@ -141,7 +129,6 @@ vim.lsp.config("angularls", {
 -- Lua
 vim.lsp.config("lua_ls", {
   capabilities = capabilities,
-  on_attach = on_attach,
   settings = {
     Lua = {
       completion = { callSnippet = "Replace" },
