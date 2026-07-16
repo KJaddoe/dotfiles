@@ -195,6 +195,21 @@ require("lazy").setup({
   { "neovim/nvim-lspconfig" },
   { "b0o/schemastore.nvim", lazy = true },
   {
+    dir = vim.fn.stdpath("config") .. "/neotest-filetype-fix",
+    name = "neotest-filetype-fix",
+    lazy = false,
+  },
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-neotest/nvim-nio",
+      "nvim-lua/plenary.nvim",
+      "antoinemadec/FixCursorHold.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-neotest/neotest-jest",
+    },
+  },
+  {
     "stevearc/conform.nvim",
     opts = {},
     config = function()
