@@ -209,6 +209,21 @@ require("lazy").setup({
       "nvim-neotest/neotest-jest",
     },
   },
+  {
+    "joeveiga/ng.nvim",
+    config = function()
+      local ng = require("ng")
+      local opts = { noremap = true, silent = true }
+      vim.keymap.set("n", "<leader>ot", ng.goto_template_for_component, opts)
+      vim.keymap.set(
+        "n",
+        "<leader>oc",
+        ng.goto_component_with_template_file,
+        opts
+      )
+      vim.keymap.set("n", "<leader>oT", ng.get_template_tcb, opts)
+    end,
+  },
   { "mfussenegger/nvim-dap" },
   {
     "rcarriga/nvim-dap-ui",

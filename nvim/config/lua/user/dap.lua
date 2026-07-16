@@ -5,15 +5,17 @@ local dapui = require("dapui")
 local js_debug_path =
   vim.fn.expand("~/.local/share/js-debug/src/dapDebugServer.js")
 
-dap.adapters["pwa-node"] = {
-  type = "server",
-  host = "localhost",
-  port = "${port}",
-  executable = {
-    command = "node",
-    args = { js_debug_path, "${port}" },
-  },
-}
+for _, adapter in ipairs({ "pwa-node", "pwa-chrome" }) do
+  dap.adapters[adapter] = {
+    type = "server",
+    host = "localhost",
+    port = "${port}",
+    executable = {
+      command = "node",
+      args = { js_debug_path, "${port}" },
+    },
+  }
+end
 
 for _, language in ipairs({ "typescript", "javascript" }) do
   dap.configurations[language] = {
@@ -44,6 +46,14 @@ for _, language in ipairs({ "typescript", "javascript" }) do
       cwd = "${workspaceFolder}",
       sourceMaps = true,
       skipFiles = { "<node_internals>/**" },
+    },
+    {
+      type = "pwa-chrome",
+      request = "launch",
+      name = "Launch Chrome against localhost:4200 (ng serve)",
+      url = "http://localhost:4200",
+      webRoot = "${workspaceFolder}",
+      sourceMaps = true,
     },
   }
 end
