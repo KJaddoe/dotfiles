@@ -78,13 +78,22 @@ for _, server in ipairs({
   "rust_analyzer",
   "taplo",
   "csharp_ls",
-  "html",
   "eslint",
 }) do
   vim.lsp.config(server, {
     capabilities = capabilities,
   })
 end
+
+vim.lsp.config("html", {
+  capabilities = capabilities,
+  filetypes = { "html", "templ", "htmlangular" },
+})
+
+vim.lsp.config("emmet_ls", {
+  capabilities = capabilities,
+  filetypes = { "html", "htmlangular", "css", "scss" },
+})
 
 vim.lsp.config("jsonls", {
   capabilities = capabilities,
@@ -147,6 +156,7 @@ vim.lsp.enable({
   "cssls",
   "vimls",
   "html",
+  "emmet_ls",
   "jsonls",
   "bashls",
   "dockerls",
