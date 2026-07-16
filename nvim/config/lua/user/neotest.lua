@@ -10,9 +10,8 @@ neotest.setup({
       jestCommand = "npm test --",
       env = { CI = true },
       --- Resolve the working directory for a test run.
-      ---@param path string Path of the file under test
       ---@return string cwd Project root to run jest from
-      cwd = function(path)
+      cwd = function()
         return vim.fn.getcwd()
       end,
     }),

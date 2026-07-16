@@ -9,8 +9,7 @@ local group = vim.api.nvim_create_augroup("LSP", { clear = true })
 ---@type fun(client: vim.lsp.Client, bufnr: number)
 local organize_imports = function(client, bufnr)
   ---@type lsp.Handler
-  ---@diagnostic disable-next-line: unused-local
-  local handler = function(err, result, context, config)
+  local handler = function(err, result, _context, _config)
     if err then
       -- ignore errors
       return
@@ -50,7 +49,7 @@ end
 local on_clients = function(bufnr, method, apply, filter)
   local clients = vim.lsp.get_clients({ bufnr = bufnr, method = method })
   if not filter then
-    filter = function()
+    filter = function(_client)
       return true
     end
   end
