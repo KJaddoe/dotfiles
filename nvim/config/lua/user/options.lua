@@ -51,6 +51,16 @@ vim.filetype.add({
   extension = {
     tape = "vhs",
   },
+  pattern = {
+    -- the runtime only detects *.component.html as htmlangular, but Angular
+    -- 20+ scaffolds templates without the .component suffix; treat any html
+    -- file inside an Angular workspace as an Angular template
+    [".*%.html"] = function(path, _bufnr)
+      if vim.fs.root(path, "angular.json") then
+        return "htmlangular"
+      end
+    end,
+  },
 })
 
 -- vim.cmd([[
