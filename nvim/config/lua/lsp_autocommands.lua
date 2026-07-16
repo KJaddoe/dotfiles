@@ -70,6 +70,15 @@ M.setup = function()
       if client == nil then
         return
       end
+      -- buffer-local keymaps for any client that offers navigation; keymaps
+      -- used to be wired per-server via on_attach, which silently skipped
+      -- buffers whose server was configured elsewhere or failed to start
+      if
+        client:supports_method(ms.textDocument_definition, args.buf)
+        or client:supports_method(ms.textDocument_hover, args.buf)
+      then
+        require("lsp_keymaps").on_attach(args.buf)
+      end
       if
         client:supports_method(
           ms.textDocument_codeLens,
