@@ -2,12 +2,6 @@ require("treesitter-context").setup({
   multiline_threshold = 1,
 })
 
--- nvim-treesitter master's lockfile pins an angular revision that upstream
--- force-pushed away; pin a revision that still exists (v0.9.2)
-local parser_configs = require("nvim-treesitter.parsers").get_parser_configs()
-parser_configs.angular.install_info.revision =
-  "38a8014ed5452cd6b7cf1399c00177a1f5374256"
-
 require("nvim-treesitter.configs").setup({
   highlight = {
     enable = true,
