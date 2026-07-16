@@ -102,3 +102,12 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 
 - 2026-06-01 — Don't add explanatory/descriptive comments to code or config files. Keep only what's functionally required (e.g. shebangs) and match the surrounding file's existing comment density, which is near-zero. Why: the user explicitly rejected added comments in a zsh dotfile and expects this as a standing preference. How to apply: write code without narration comments unless the user asks for them — the same terse style applies to commit messages (see Commits & PRs).
 - 2026-07-13 — REFINED (function commenting): the user now wants a structured doc-comment (purpose + params + returns) on EVERY function, class, and method — JSDoc/TSDoc, C# XML `///`, or Python docstrings, matching the project's existing doc style. The 2026-06-01 rule still governs INLINE narration comments (explaining what a single line does) and config files — those stay comment-free. Net policy: API-level doc-comments YES, line-level narration NO. Why: the user asked to make function/class documentation a standing coding rule while keeping code self-explanatory line-by-line. Binding copy in CLAUDE.md → Code & artifacts.
+
+## Terminal Tooling Preference
+
+- 2026-07-16 — In the terminal the user prefers plain CLI commands over TUI wrappers: git/gh/kubectl
+  directly, NOT lazygit, k9s, gh-dash or similar full-screen terminal UIs. Richer interfaces are
+  welcome inside nvim (plugins) — the shell stays command-driven. Why: stated directly when TUI tools
+  were recommended ("In the terminal I prefer to just use commands for everything"). How to apply:
+  don't suggest or install standalone TUIs; put interactive tooling in nvim or keep it as commands.
+  Binding copy in CLAUDE.md → Working method.

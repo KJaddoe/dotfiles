@@ -15,6 +15,8 @@ for these rules as FYI reference only; the binding text is HERE.
   (confirm you have the right backup/file/DB), and get explicit confirmation — even for purely local actions.
 - When executing an implementation plan, DEFAULT to inline execution (executing-plans skill) over
   subagent-driven; only go subagent-driven if the user asks for it.
+- Terminal tooling: the shell stays command-driven — plain `git`/`gh`/`kubectl` etc. Don't propose or
+  install standalone TUIs (lazygit, k9s, gh-dash, …); interactive/visual tooling belongs in nvim.
 
 ### Git & GitHub
 - NEVER add Claude attribution to anything: no "Co-Authored-By: Claude", no "Generated with Claude
