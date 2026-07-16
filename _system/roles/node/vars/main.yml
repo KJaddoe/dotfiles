@@ -9,6 +9,7 @@ npm_global_packages:
   - tern
   - diff-so-fancy
   - "@angular/cli"
+  - "@nestjs/cli"
   - tree-sitter-cli
   - typescript-language-server
   - vscode-langservers-extracted
