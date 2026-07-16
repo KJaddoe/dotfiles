@@ -53,6 +53,112 @@
     dest: "{{ ansible_env.HOME }}/.local/share/js-debug"
     state: link
 
+- name: Install language tooling (macOS)
+  homebrew:
+    name:
+      - lua-language-server
+      - selene
+      - taplo
+      - zls
+      - rust-analyzer
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Create lua-language-server versioned install directory (Ubuntu)
+  file:
+    path: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}"
+    state: directory
+    mode: "0755"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Download lua-language-server tarball (Ubuntu)
+  get_url:
+    url: "https://github.com/LuaLS/lua-language-server/releases/download/{{ neovim_lua_ls_version }}/lua-language-server-{{ neovim_lua_ls_version }}-linux-x64.tar.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}/lua-language-server.tar.gz"
+    mode: "0644"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Extract lua-language-server (Ubuntu)
+  command:
+    cmd: tar -xzf lua-language-server.tar.gz
+    chdir: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}"
+    creates: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}/bin/lua-language-server"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Symlink lua-language-server into PATH (Ubuntu)
+  file:
+    src: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}/bin/lua-language-server"
+    dest: "{{ ansible_env.HOME }}/.local/bin/lua-language-server"
+    state: link
+  when: ansible_facts.os_family == "Debian"
+
+- name: Download selene archive (Ubuntu)
+  get_url:
+    url: "https://github.com/Kampfkarren/selene/releases/download/{{ neovim_selene_version }}/selene-{{ neovim_selene_version }}-linux.zip"
+    dest: "{{ ansible_env.HOME }}/.local/share/selene-{{ neovim_selene_version }}.zip"
+    mode: "0644"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Extract selene into PATH (Ubuntu)
+  command:
+    cmd: "unzip -o {{ ansible_env.HOME }}/.local/share/selene-{{ neovim_selene_version }}.zip -d {{ ansible_env.HOME }}/.local/bin"
+    creates: "{{ ansible_env.HOME }}/.local/bin/selene"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Download taplo archive (Ubuntu)
+  get_url:
+    url: "https://github.com/tamasfe/taplo/releases/download/{{ neovim_taplo_version }}/taplo-linux-x86_64.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/taplo-{{ neovim_taplo_version }}.gz"
+    mode: "0644"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Extract taplo into PATH (Ubuntu)
+  shell:
+    cmd: "gunzip -c {{ ansible_env.HOME }}/.local/share/taplo-{{ neovim_taplo_version }}.gz > {{ ansible_env.HOME }}/.local/bin/taplo && chmod +x {{ ansible_env.HOME }}/.local/bin/taplo"
+    creates: "{{ ansible_env.HOME }}/.local/bin/taplo"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Download rust-analyzer archive (Ubuntu)
+  get_url:
+    url: "https://github.com/rust-lang/rust-analyzer/releases/download/{{ neovim_rust_analyzer_version }}/rust-analyzer-x86_64-unknown-linux-gnu.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/rust-analyzer-{{ neovim_rust_analyzer_version }}.gz"
+    mode: "0644"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Extract rust-analyzer into PATH (Ubuntu)
+  shell:
+    cmd: "gunzip -c {{ ansible_env.HOME }}/.local/share/rust-analyzer-{{ neovim_rust_analyzer_version }}.gz > {{ ansible_env.HOME }}/.local/bin/rust-analyzer && chmod +x {{ ansible_env.HOME }}/.local/bin/rust-analyzer"
+    creates: "{{ ansible_env.HOME }}/.local/bin/rust-analyzer"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Create zls versioned install directory (Ubuntu)
+  file:
+    path: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}"
+    state: directory
+    mode: "0755"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Download zls archive (Ubuntu)
+  get_url:
+    url: "https://github.com/zigtools/zls/releases/download/{{ neovim_zls_version }}/zls-x86_64-linux.tar.xz"
+    dest: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}/zls.tar.xz"
+    mode: "0644"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Extract zls (Ubuntu)
+  command:
+    cmd: tar -xJf zls.tar.xz
+    chdir: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}"
+    creates: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}/zls"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Symlink zls into PATH (Ubuntu)
+  file:
+    src: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}/zls"
+    dest: "{{ ansible_env.HOME }}/.local/bin/zls"
+    state: link
+  when: ansible_facts.os_family == "Debian"
+
 - name: Verify neovim installation
   command: nvim --version
   register: nvim_version
