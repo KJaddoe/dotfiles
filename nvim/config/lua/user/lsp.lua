@@ -89,6 +89,7 @@ for _, server in ipairs({
   "taplo",
   "csharp_ls",
   "html",
+  "eslint",
 }) do
   vim.lsp.config(server, {
     capabilities = capabilities,
@@ -99,6 +100,12 @@ end
 vim.lsp.config("jsonls", {
   capabilities = capabilities,
   on_attach = on_attach,
+  settings = {
+    json = {
+      schemas = require("schemastore").json.schemas(),
+      validate = { enable = true },
+    },
+  },
 })
 
 -- Angular
@@ -167,6 +174,7 @@ vim.lsp.enable({
   "taplo",
   "csharp_ls",
   "ansiblels",
+  "eslint",
 })
 
 -- ======================

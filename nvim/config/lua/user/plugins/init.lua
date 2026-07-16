@@ -193,6 +193,7 @@ require("lazy").setup({
 
   -- Coding --
   { "neovim/nvim-lspconfig" },
+  { "b0o/schemastore.nvim", lazy = true },
   {
     "stevearc/conform.nvim",
     opts = {},
