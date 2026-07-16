@@ -29,6 +29,30 @@
     update_cache: yes
   when: ansible_facts.os_family == "Debian"
 
+- name: Create js-debug versioned install directory
+  file:
+    path: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}"
+    state: directory
+    mode: "0755"
+
+- name: Download js-debug DAP adapter tarball
+  get_url:
+    url: "https://github.com/microsoft/vscode-js-debug/releases/download/v{{ neovim_js_debug_version }}/js-debug-dap-v{{ neovim_js_debug_version }}.tar.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}/js-debug-dap.tar.gz"
+    mode: "0644"
+
+- name: Extract js-debug DAP adapter
+  command:
+    cmd: tar -xzf js-debug-dap.tar.gz
+    chdir: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}"
+    creates: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}/js-debug"
+
+- name: Symlink js-debug to the pinned version
+  file:
+    src: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}/js-debug"
+    dest: "{{ ansible_env.HOME }}/.local/share/js-debug"
+    state: link
+
 - name: Verify neovim installation
   command: nvim --version
   register: nvim_version
