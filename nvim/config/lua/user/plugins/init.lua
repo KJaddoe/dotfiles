@@ -302,7 +302,6 @@ require("lazy").setup({
     end,
   },
   { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
-  { "nvim-treesitter/nvim-treesitter-angular" },
   { "nvim-treesitter/nvim-treesitter-textobjects" },
   { "nvim-treesitter/nvim-treesitter-context" },
   { "RRethy/nvim-treesitter-endwise" },
