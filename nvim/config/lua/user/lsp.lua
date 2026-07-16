@@ -88,6 +88,7 @@ for _, server in ipairs({
   "rust_analyzer",
   "taplo",
   "csharp_ls",
+  "html",
 }) do
   vim.lsp.config(server, {
     capabilities = capabilities,
@@ -95,16 +96,9 @@ for _, server in ipairs({
   })
 end
 
-vim.lsp.config("html", {
-  capabilities = capabilities,
-  on_attach = on_attach,
-  cmd = { "html-languageserver", "--stdio" },
-})
-
 vim.lsp.config("jsonls", {
   capabilities = capabilities,
   on_attach = on_attach,
-  cmd = { "json-languageserver", "--stdio" },
 })
 
 -- Angular
