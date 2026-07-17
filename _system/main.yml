@@ -16,6 +16,7 @@
     - role: python
     - role: ruby
     - role: dotnet
+      tags: dotnet
 
     # tools
     - role: docker
@@ -29,6 +30,7 @@
     - role: bat
     - role: fswatch
     - role: neovim
+      tags: neovim
     - role: powershell
 
     # databases
