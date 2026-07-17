@@ -77,7 +77,7 @@ for _, server in ipairs({
   "zls",
   "rust_analyzer",
   "taplo",
-  "csharp_ls",
+  "roslyn_ls",
   "eslint",
 }) do
   vim.lsp.config(server, {
@@ -167,7 +167,7 @@ vim.lsp.enable({
   "lua_ls",
   "rust_analyzer",
   "taplo",
-  "csharp_ls",
+  "roslyn_ls",
   "ansiblels",
   "eslint",
 })
