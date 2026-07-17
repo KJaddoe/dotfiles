@@ -253,6 +253,28 @@ require("lazy").setup({
     ft = { "sql", "mysql", "plsql" },
   },
   {
+    "mistweaverco/kulala.nvim",
+    ft = { "http", "rest" },
+    opts = {
+      global_keymaps = false,
+    },
+    config = function(_, opts)
+      require("kulala").setup(opts)
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "http",
+        callback = function(args)
+          local kulala = require("kulala")
+          local kopts = { noremap = true, silent = true, buffer = args.buf }
+          vim.keymap.set("n", "<CR>", kulala.run, kopts)
+          vim.keymap.set("n", "[r", kulala.jump_prev, kopts)
+          vim.keymap.set("n", "]r", kulala.jump_next, kopts)
+          vim.keymap.set("n", "<leader>ki", kulala.inspect, kopts)
+          vim.keymap.set("n", "<leader>kc", kulala.copy, kopts)
+        end,
+      })
+    end,
+  },
+  {
     "stevearc/conform.nvim",
     opts = {},
     config = function()
