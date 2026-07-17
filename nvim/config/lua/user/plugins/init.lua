@@ -303,7 +303,7 @@ require("lazy").setup({
           ["_"] = { "trim_whitespace", "trim_newlines" },
         },
         format_after_save = {
-          lsp_fallback = true,
+          lsp_format = "fallback",
         },
       })
     end,
