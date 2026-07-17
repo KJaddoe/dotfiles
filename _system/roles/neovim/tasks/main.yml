@@ -245,11 +245,6 @@
     dest: "{{ ansible_env.HOME }}/.local/bin/netcoredbg"
     mode: "0755"
 
-- name: Install roslyn language server (dotnet tool)
-  command:
-    cmd: dotnet tool install -g roslyn-language-server --prerelease --source https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json
-    creates: "{{ ansible_env.HOME }}/.dotnet/tools/roslyn-language-server"
-
 - name: Verify neovim installation
   command: nvim --version
   register: nvim_version

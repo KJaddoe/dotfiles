@@ -37,3 +37,10 @@
     creates: "{{ ansible_env.HOME }}/.dotnet/tools/csharpier"
   environment:
     DOTNET_ROOT: "{{ dotnet_install_dir }}"
+
+- name: Install roslyn language server (dotnet global tool)
+  command:
+    cmd: "{{ dotnet_install_dir }}/dotnet tool install -g roslyn-language-server --prerelease --source https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json"
+    creates: "{{ ansible_env.HOME }}/.dotnet/tools/roslyn-language-server"
+  environment:
+    DOTNET_ROOT: "{{ dotnet_install_dir }}"
