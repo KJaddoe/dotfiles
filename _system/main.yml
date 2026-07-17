@@ -3,44 +3,42 @@
     should_be_root: "{{ true if ansible_pkg_mgr != 'brew' else false }}"
   roles:
     # essentials
-    - role: common
-    - role: git
-    - role: gnupg
-    - role: ssh
+    - { role: common, tags: common }
+    - { role: git, tags: git }
+    - { role: gnupg, tags: gnupg }
+    - { role: ssh, tags: ssh }
 
     # languages
-    - role: mise
-    - role: uv
-    - role: java
-    - role: node
-    - role: python
-    - role: ruby
-    - role: dotnet
-      tags: dotnet
+    - { role: mise, tags: mise }
+    - { role: uv, tags: uv }
+    - { role: java, tags: java }
+    - { role: node, tags: node }
+    - { role: python, tags: python }
+    - { role: ruby, tags: ruby }
+    - { role: dotnet, tags: dotnet }
 
     # tools
-    - role: docker
-    - role: gh
-    - role: delta
-    - role: jq
-    - role: shfmt
-    - role: fzf
-    - role: zoxide
-    - role: eza
-    - role: bat
-    - role: fswatch
-    - role: neovim
-      tags: neovim
-    - role: powershell
+    - { role: docker, tags: docker }
+    - { role: gh, tags: gh }
+    - { role: delta, tags: delta }
+    - { role: jq, tags: jq }
+    - { role: shfmt, tags: shfmt }
+    - { role: fzf, tags: fzf }
+    - { role: zoxide, tags: zoxide }
+    - { role: eza, tags: eza }
+    - { role: bat, tags: bat }
+    - { role: fswatch, tags: fswatch }
+    - { role: neovim, tags: neovim }
+    - { role: powershell, tags: powershell }
 
     # databases
-    - role: postgresql
-    - role: pgformatter
-    - role: sqlcmd
+    - { role: postgresql, tags: postgresql }
+    - { role: pgformatter, tags: pgformatter }
+    - { role: sqlcmd, tags: sqlcmd }
 
     # terminal
-    - role: ghostty
+    - { role: ghostty, tags: ghostty }
 
     # mobile / react native
-    - role: watchman
-    - role: android
+    - { role: watchman, tags: watchman }
+    - { role: android, tags: android }
