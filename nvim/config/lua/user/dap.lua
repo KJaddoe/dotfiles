@@ -58,6 +58,38 @@ for _, language in ipairs({ "typescript", "javascript" }) do
   }
 end
 
+-- netcoredbg (.NET), installed by the neovim ansible role
+dap.adapters.coreclr = {
+  type = "executable",
+  command = "netcoredbg",
+  args = { "--interpreter=vscode" },
+}
+
+dap.configurations.cs = {
+  {
+    type = "coreclr",
+    request = "launch",
+    name = "Launch .NET assembly",
+    --- Prompt for the assembly to debug, starting from the conventional
+    --- build output location.
+    ---@return string program Path to the dll to launch
+    program = function()
+      return vim.fn.input(
+        "Path to dll: ",
+        vim.fn.getcwd() .. "/bin/Debug/",
+        "file"
+      )
+    end,
+    cwd = "${workspaceFolder}",
+  },
+  {
+    type = "coreclr",
+    request = "attach",
+    name = "Attach to process",
+    processId = require("dap.utils").pick_process,
+  },
+}
+
 dapui.setup()
 
 dap.listeners.after.event_initialized["dapui_config"] = function()

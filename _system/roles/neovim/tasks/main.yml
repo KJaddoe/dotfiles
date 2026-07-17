@@ -159,6 +159,92 @@
     state: link
   when: ansible_facts.os_family == "Debian"
 
+- name: Create netcoredbg versioned install directory
+  file:
+    path: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}"
+    state: directory
+    mode: "0755"
+
+- name: Download netcoredbg archive (macOS)
+  get_url:
+    url: "https://github.com/Samsung/netcoredbg/releases/download/{{ neovim_netcoredbg_version }}/netcoredbg-osx-arm64.zip"
+    dest: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg.zip"
+    mode: "0644"
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Extract netcoredbg (macOS)
+  command:
+    cmd: unzip -o netcoredbg.zip
+    chdir: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}"
+    creates: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg"
+  when: ansible_facts.os_family == "Darwin"
+
+# SIP-enabled macOS blocks a debugger from controlling its target unless the
+# debugger binary is codesigned with the get-task-allow debugging entitlement;
+# without it netcoredbg launches the debuggee but can never stop or hit a
+# breakpoint. Samsung ships an adhoc signature with no entitlements, so re-sign.
+- name: Write netcoredbg debugging entitlements (macOS)
+  copy:
+    dest: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg.entitlements"
+    mode: "0644"
+    content: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+          <key>com.apple.security.get-task-allow</key>
+          <true/>
+          <key>com.apple.security.cs.debugger</key>
+          <true/>
+          <key>com.apple.security.cs.disable-library-validation</key>
+          <true/>
+          <key>com.apple.security.cs.allow-jit</key>
+          <true/>
+          <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+          <true/>
+      </dict>
+      </plist>
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Check netcoredbg codesign entitlements (macOS)
+  command: codesign -d --entitlements - "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg"
+  register: neovim_netcoredbg_entitlements
+  changed_when: false
+  failed_when: false
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Codesign netcoredbg with debugging entitlement (macOS)
+  command:
+    cmd: codesign --sign - --force --entitlements "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg.entitlements" "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg"
+  changed_when: true
+  when:
+    - ansible_facts.os_family == "Darwin"
+    - "'get-task-allow' not in (neovim_netcoredbg_entitlements.stdout | default('')) + (neovim_netcoredbg_entitlements.stderr | default(''))"
+
+- name: Download netcoredbg archive (Ubuntu)
+  get_url:
+    url: "https://github.com/Samsung/netcoredbg/releases/download/{{ neovim_netcoredbg_version }}/netcoredbg-linux-amd64.tar.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg.tar.gz"
+    mode: "0644"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Extract netcoredbg (Ubuntu)
+  command:
+    cmd: tar -xzf netcoredbg.tar.gz
+    chdir: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}"
+    creates: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg"
+  when: ansible_facts.os_family == "Debian"
+
+# a symlink breaks netcoredbg: it resolves libdbgshim relative to the
+# invoked path, so a wrapper that execs the real binary is required
+- name: Install netcoredbg wrapper into PATH
+  copy:
+    content: |
+      #!/bin/sh
+      exec "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg" "$@"
+    dest: "{{ ansible_env.HOME }}/.local/bin/netcoredbg"
+    mode: "0755"
+
 - name: Install roslyn language server (dotnet tool)
   command:
     cmd: dotnet tool install -g roslyn-language-server --prerelease --source https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json
