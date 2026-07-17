@@ -1,0 +1,12 @@
+---
+# Single canonical .NET location — a user-owned dir (no sudo to install/manage),
+# matching DOTNET_ROOT in dotnet/path.zsh so every consumer (shell, nvim, Rider,
+# VS Code) resolves the same install.
+dotnet_install_dir: "{{ ansible_env.HOME }}/.dotnet"
+# SDK channel builds every target framework; the runtime channels below add the
+# older runtimes needed to run/debug pre-net10 projects natively.
+dotnet_sdk_channel: "10.0"
+dotnet_runtime_channels:
+  - "6.0"
+  - "8.0"
+  - "9.0"

@@ -15,6 +15,7 @@
     - role: node
     - role: python
     - role: ruby
+    - role: dotnet
 
     # tools
     - role: docker
