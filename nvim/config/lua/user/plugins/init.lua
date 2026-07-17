@@ -235,6 +235,23 @@ require("lazy").setup({
     "rcarriga/nvim-dap-ui",
     dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
   },
+  { "tpope/vim-dadbod" },
+  {
+    "kristijanhusak/vim-dadbod-ui",
+    dependencies = { "tpope/vim-dadbod" },
+    config = function()
+      vim.g.db_ui_use_nerd_fonts = 1
+      vim.keymap.set("n", "<leader>od", "<cmd>DBUIToggle<CR>", {
+        noremap = true,
+        silent = true,
+      })
+    end,
+  },
+  {
+    "kristijanhusak/vim-dadbod-completion",
+    dependencies = { "tpope/vim-dadbod" },
+    ft = { "sql", "mysql", "plsql" },
+  },
   {
     "stevearc/conform.nvim",
     opts = {},
