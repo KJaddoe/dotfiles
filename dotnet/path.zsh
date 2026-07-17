@@ -1,4 +1,4 @@
 #!/bin/zsh
 #
-export DOTNET_ROOT='/usr/local/share/dotnet'
-export PATH="$HOME/.dotnet/tools:$PATH"
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH"

@@ -1,0 +1,39 @@
+---
+- name: Download dotnet-install script
+  get_url:
+    url: https://dot.net/v1/dotnet-install.sh
+    dest: "{{ ansible_env.HOME }}/.local/share/dotnet-install.sh"
+    mode: "0755"
+
+- name: Ensure dotnet install directory exists
+  file:
+    path: "{{ dotnet_install_dir }}"
+    state: directory
+    mode: "0755"
+
+# --install-dir installs the host of the machine's native architecture (arm64 on
+# Apple Silicon), so the whole toolchain is arch-consistent with netcoredbg.
+- name: Install .NET SDK (channel {{ dotnet_sdk_channel }})
+  command: >
+    {{ ansible_env.HOME }}/.local/share/dotnet-install.sh
+    --channel {{ dotnet_sdk_channel }}
+    --install-dir {{ dotnet_install_dir }}
+  register: dotnet_sdk
+  changed_when: "'is already installed' not in dotnet_sdk.stdout"
+
+- name: Install ASP.NET Core runtimes for pre-net10 target frameworks
+  command: >
+    {{ ansible_env.HOME }}/.local/share/dotnet-install.sh
+    --channel {{ item }}
+    --runtime aspnetcore
+    --install-dir {{ dotnet_install_dir }}
+  loop: "{{ dotnet_runtime_channels }}"
+  register: dotnet_runtime
+  changed_when: "'is already installed' not in dotnet_runtime.stdout"
+
+- name: Install csharpier (dotnet global tool)
+  command:
+    cmd: "{{ dotnet_install_dir }}/dotnet tool install -g csharpier"
+    creates: "{{ ansible_env.HOME }}/.dotnet/tools/csharpier"
+  environment:
+    DOTNET_ROOT: "{{ dotnet_install_dir }}"
