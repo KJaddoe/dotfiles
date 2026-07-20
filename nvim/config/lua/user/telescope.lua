@@ -50,10 +50,17 @@ end
 telescope.load_extension("gh")
 telescope.load_extension("harpoon")
 
-local opts = { noremap = true, silent = true }
 local builtin = require("telescope.builtin")
 
-vim.keymap.set("n", "<c-p>", function()
+--- Add a normal-mode Telescope keymap.
+---@param lhs string Keymap
+---@param rhs function Action
+---@param desc string which-key description
+local function keymap(lhs, rhs, desc)
+  vim.keymap.set("n", lhs, rhs, { noremap = true, silent = true, desc = desc })
+end
+
+keymap("<c-p>", function()
   builtin.find_files({
     find_command = {
       "rg",
@@ -70,9 +77,9 @@ vim.keymap.set("n", "<c-p>", function()
       return true
     end,
   })
-end, opts)
+end, "Find files")
 
-vim.keymap.set("n", "<leader>fb", function()
+keymap("<leader>fb", function()
   builtin.buffers({
     attach_mappings = function(_, map)
       map("i", "<cr>", select_one_or_multi)
@@ -83,9 +90,9 @@ vim.keymap.set("n", "<leader>fb", function()
       return true
     end,
   })
-end, opts)
+end, "Buffers")
 
-vim.keymap.set("n", "<leader>of", function()
+keymap("<leader>of", function()
   builtin.oldfiles({
     only_cwd = true,
     attach_mappings = function(_, map)
@@ -96,14 +103,14 @@ vim.keymap.set("n", "<leader>of", function()
       return true
     end,
   })
-end, opts)
+end, "Recent files (cwd)")
 
-vim.keymap.set("n", "<leader>lg", builtin.live_grep, opts)
-vim.keymap.set("n", "<leader>fh", builtin.help_tags, opts)
-vim.keymap.set("n", "<leader>fc", builtin.commands, opts)
-vim.keymap.set("n", "<leader>fr", builtin.resume, opts)
-vim.keymap.set("n", "<leader>fq", builtin.quickfix, opts)
-vim.keymap.set("n", "<leader>/", builtin.current_buffer_fuzzy_find, opts)
-vim.keymap.set("n", "<leader>xx", builtin.diagnostics, opts)
-vim.keymap.set("n", "<leader>ghi", telescope.extensions.gh.issues, opts)
-vim.keymap.set("n", "<leader>fj", telescope.extensions.harpoon.marks, opts)
+keymap("<leader>lg", builtin.live_grep, "Live grep")
+keymap("<leader>fh", builtin.help_tags, "Help tags")
+keymap("<leader>fc", builtin.commands, "Commands")
+keymap("<leader>fr", builtin.resume, "Resume last picker")
+keymap("<leader>fq", builtin.quickfix, "Quickfix list")
+keymap("<leader>/", builtin.current_buffer_fuzzy_find, "Fuzzy find in buffer")
+keymap("<leader>xx", builtin.diagnostics, "Diagnostics list")
+keymap("<leader>ghi", telescope.extensions.gh.issues, "GitHub issues")
+keymap("<leader>fj", telescope.extensions.harpoon.marks, "Harpoon marks")

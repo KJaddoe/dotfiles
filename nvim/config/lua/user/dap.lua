@@ -236,20 +236,25 @@ vim.fn.sign_define("DapBreakpointRejected", {
   numhl = "",
 })
 
-local opts = { noremap = true, silent = true }
-local keymap = vim.keymap.set
+--- Add a normal-mode debugging keymap.
+---@param lhs string Keymap
+---@param rhs function|string Action
+---@param desc string which-key description
+local function map(lhs, rhs, desc)
+  vim.keymap.set("n", lhs, rhs, { noremap = true, silent = true, desc = desc })
+end
 
-keymap("n", "<leader>xb", dap.toggle_breakpoint, opts)
-keymap("n", "<leader>xB", function()
+map("<leader>xb", dap.toggle_breakpoint, "Toggle breakpoint")
+map("<leader>xB", function()
   dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
-end, opts)
-keymap("n", "<leader>xc", dap.continue, opts)
-keymap("n", "<leader>xi", dap.step_into, opts)
-keymap("n", "<leader>xo", dap.step_over, opts)
-keymap("n", "<leader>xO", dap.step_out, opts)
-keymap("n", "<leader>xr", dap.repl.toggle, opts)
-keymap("n", "<leader>xt", dap.terminate, opts)
-keymap("n", "<leader>xu", dapui.toggle, opts)
-keymap("n", "<leader>xk", function()
+end, "Conditional breakpoint")
+map("<leader>xc", dap.continue, "Continue / start")
+map("<leader>xi", dap.step_into, "Step into")
+map("<leader>xo", dap.step_over, "Step over")
+map("<leader>xO", dap.step_out, "Step out")
+map("<leader>xr", dap.repl.toggle, "Toggle REPL")
+map("<leader>xt", dap.terminate, "Terminate session")
+map("<leader>xu", dapui.toggle, "Toggle debug UI")
+map("<leader>xk", function()
   require("dapui").eval()
-end, opts)
+end, "Evaluate expression")

@@ -18,33 +18,38 @@ neotest.setup({
   },
 })
 
-local opts = { noremap = true, silent = true }
-local keymap = vim.keymap.set
+--- Add a normal-mode test keymap.
+---@param lhs string Keymap
+---@param rhs function Action
+---@param desc string which-key description
+local function map(lhs, rhs, desc)
+  vim.keymap.set("n", lhs, rhs, { noremap = true, silent = true, desc = desc })
+end
 
-keymap("n", "<leader>tt", function()
+map("<leader>tt", function()
   neotest.run.run()
-end, opts)
-keymap("n", "<leader>tf", function()
+end, "Run nearest test")
+map("<leader>tf", function()
   neotest.run.run(vim.fn.expand("%"))
-end, opts)
-keymap("n", "<leader>td", function()
+end, "Run file tests")
+map("<leader>td", function()
   neotest.run.run({ strategy = "dap" })
-end, opts)
-keymap("n", "<leader>tl", function()
+end, "Debug nearest test")
+map("<leader>tl", function()
   neotest.run.run_last()
-end, opts)
-keymap("n", "<leader>ts", function()
+end, "Run last test")
+map("<leader>ts", function()
   neotest.summary.toggle()
-end, opts)
-keymap("n", "<leader>to", function()
+end, "Toggle test summary")
+map("<leader>to", function()
   neotest.output.open({ enter = true, auto_close = true })
-end, opts)
-keymap("n", "<leader>tw", function()
+end, "Show test output")
+map("<leader>tw", function()
   neotest.watch.toggle(vim.fn.expand("%"))
-end, opts)
-keymap("n", "[T", function()
+end, "Toggle test watch")
+map("[T", function()
   neotest.jump.prev({ status = "failed" })
-end, opts)
-keymap("n", "]T", function()
+end, "Previous failed test")
+map("]T", function()
   neotest.jump.next({ status = "failed" })
-end, opts)
+end, "Next failed test")
