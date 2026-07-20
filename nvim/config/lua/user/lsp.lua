@@ -77,13 +77,84 @@ for _, server in ipairs({
   "zls",
   "rust_analyzer",
   "taplo",
-  "roslyn_ls",
   "eslint",
 }) do
   vim.lsp.config(server, {
     capabilities = capabilities,
   })
 end
+
+-- Roslyn (.NET). Overrides the diagnostics-refresh paths shipped by
+-- nvim-lspconfig's lsp/roslyn_ls.lua: roslyn 5.10 does not dynamically register
+-- a `diagnosticProvider`, so upstream's `vim.iter(...diagnosticProvider)` runs on
+-- nil and crashes on project init and on every save. These copies guard the nil.
+local roslyn_group =
+  vim.api.nvim_create_augroup("user.roslyn_ls", { clear = true })
+
+--- Ask Roslyn to re-pull diagnostics for every attached buffer, once per
+--- dynamically-registered diagnostic provider. No-op when the server registered
+--- none (roslyn 5.10), which is what the upstream copy fails to handle.
+---@param client vim.lsp.Client
+local function roslyn_refresh_diagnostics(client)
+  local provider = vim.tbl_get(
+    client,
+    "dynamic_capabilities",
+    "capabilities",
+    "diagnosticProvider"
+  )
+  if not provider then
+    return
+  end
+
+  local identifiers = vim
+    .iter(provider)
+    :map(function(cap)
+      return cap.registerOptions.identifier
+    end)
+    :totable()
+
+  for buf, _ in pairs(client.attached_buffers) do
+    if vim.api.nvim_buf_is_loaded(buf) then
+      for _, identifier in pairs(identifiers) do
+        client:request(vim.lsp.protocol.Methods.textDocument_diagnostic, {
+          identifier = identifier,
+          textDocument = vim.lsp.util.make_text_document_params(buf),
+        }, nil, buf)
+      end
+    end
+  end
+end
+
+vim.lsp.config("roslyn_ls", {
+  capabilities = capabilities,
+  handlers = {
+    ["workspace/projectInitializationComplete"] = function(_, _, ctx)
+      vim.notify(
+        "Roslyn project initialization complete",
+        vim.log.levels.INFO,
+        { title = "roslyn_ls" }
+      )
+      local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
+      roslyn_refresh_diagnostics(client)
+      return vim.NIL
+    end,
+  },
+  on_attach = function(client, bufnr)
+    if
+      vim.api.nvim_get_autocmds({ buffer = bufnr, group = roslyn_group })[1]
+    then
+      return
+    end
+    vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
+      group = roslyn_group,
+      buffer = bufnr,
+      callback = function()
+        roslyn_refresh_diagnostics(client)
+      end,
+      desc = "roslyn_ls: refresh diagnostics",
+    })
+  end,
+})
 
 vim.lsp.config("html", {
   capabilities = capabilities,
