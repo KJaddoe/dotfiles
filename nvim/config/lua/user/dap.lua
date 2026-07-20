@@ -172,7 +172,30 @@ dap.configurations.cs = {
   },
 }
 
-dapui.setup()
+-- Stack-agnostic layout (Angular, .NET, Nest, ...): Scopes over Stacks on the
+-- left, REPL + Console along the bottom. The Breakpoints and Watches panels are
+-- dropped -- breakpoints show as gutter signs, and ad-hoc values come from
+-- <leader>xk (eval) and the REPL -- which reclaims the space they wasted.
+dapui.setup({
+  layouts = {
+    {
+      position = "left",
+      size = 42,
+      elements = {
+        { id = "scopes", size = 0.6 },
+        { id = "stacks", size = 0.4 },
+      },
+    },
+    {
+      position = "bottom",
+      size = 10,
+      elements = {
+        { id = "repl", size = 0.5 },
+        { id = "console", size = 0.5 },
+      },
+    },
+  },
+})
 
 dap.listeners.after.event_initialized["dapui_config"] = function()
   dapui.open()
