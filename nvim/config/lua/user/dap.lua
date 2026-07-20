@@ -65,22 +65,104 @@ dap.adapters.coreclr = {
   args = { "--interpreter=vscode" },
 }
 
+--- Find the nearest ancestor directory of the current buffer that holds a file
+--- matching `pattern` (e.g. a `.csproj` or `.sln`).
+---@param pattern string Lua pattern a filename in the directory must match
+---@return string|nil dir Absolute directory, or nil when none is found upward
+local function nearest_root(pattern)
+  return vim.fs.root(0, function(fname)
+    return fname:match(pattern) ~= nil
+  end)
+end
+
+--- Locate the built, debuggable assembly for the current .NET solution.
+---
+--- A runnable app (not a class library) ships a sibling
+--- `<name>.runtimeconfig.json`, so we scan the solution's Debug output for
+--- those and keep only assemblies whose name matches their owning project
+--- folder — which drops copied dependencies and tooling such as roslyn's
+--- BuildHost. Test assemblies are skipped, the app the current buffer belongs
+--- to wins, and we prompt only when several candidates still remain.
+---@return string|nil program Absolute path to the dll, or nil when none is built
+local function find_dotnet_dll()
+  local root = nearest_root("%.sln[x]?$")
+    or nearest_root("%.csproj$")
+    or vim.fn.getcwd()
+
+  local configs = vim.fs.find(function(name, path)
+    return name:match("%.runtimeconfig%.json$") ~= nil
+      and path:match("[/\\]bin[/\\]Debug[/\\]") ~= nil
+  end, { path = root, type = "file", limit = 100 })
+
+  local dlls = {}
+  for _, cfg in ipairs(configs) do
+    local dll = cfg:gsub("%.runtimeconfig%.json$", ".dll")
+    local project_dir = dll:match("^(.*)/bin/")
+    local project = project_dir and vim.fs.basename(project_dir)
+    local name = vim.fs.basename(dll):gsub("%.dll$", "")
+    if
+      vim.uv.fs_stat(dll)
+      and project == name
+      and not name:match("[Tt]ests?$")
+    then
+      table.insert(dlls, dll)
+    end
+  end
+
+  if #dlls == 0 then
+    vim.notify(
+      "dap: no built .NET app under " .. root .. " (run dotnet build?)",
+      vim.log.levels.WARN,
+      { title = "dap" }
+    )
+    return nil
+  end
+
+  local buffer_project = nearest_root("%.csproj$")
+  if buffer_project then
+    for _, dll in ipairs(dlls) do
+      if vim.startswith(dll, buffer_project .. "/") then
+        return dll
+      end
+    end
+  end
+
+  if #dlls == 1 then
+    return dlls[1]
+  end
+
+  -- dap resolves configs inside a coroutine, so vim.ui.select can yield.
+  local co = coroutine.running()
+  vim.ui.select(dlls, {
+    prompt = "Select .NET assembly to debug",
+    format_item = function(dll)
+      return vim.fn.fnamemodify(dll, ":.")
+    end,
+  }, function(choice)
+    coroutine.resume(co, choice)
+  end)
+  return coroutine.yield()
+end
+
 dap.configurations.cs = {
   {
     type = "coreclr",
     request = "launch",
     name = "Launch .NET assembly",
-    --- Prompt for the assembly to debug, starting from the conventional
-    --- build output location.
-    ---@return string program Path to the dll to launch
-    program = function()
-      return vim.fn.input(
-        "Path to dll: ",
-        vim.fn.getcwd() .. "/bin/Debug/",
-        "file"
-      )
+    program = find_dotnet_dll,
+    --- Run from the owning project directory so ASP.NET resolves appsettings
+    --- and content-root relative paths as it would under `dotnet run`.
+    cwd = function()
+      return nearest_root("%.csproj$") or vim.fn.getcwd()
     end,
-    cwd = "${workspaceFolder}",
+    --- Launching the dll directly bypasses launchSettings.json, so ASP.NET
+    --- binds Kestrel's default port. Forward ASPNETCORE_URLS/ENVIRONMENT from
+    --- the shell when set (e.g. `export ASPNETCORE_URLS=http://localhost:5179`
+    --- to match a frontend proxy) -- nil values drop out, leaving defaults.
+    env = {
+      ASPNETCORE_URLS = vim.env.ASPNETCORE_URLS,
+      ASPNETCORE_ENVIRONMENT = vim.env.ASPNETCORE_ENVIRONMENT,
+    },
   },
   {
     type = "coreclr",
