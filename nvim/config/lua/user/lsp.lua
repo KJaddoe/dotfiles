@@ -176,32 +176,24 @@ vim.lsp.config("jsonls", {
   },
 })
 
--- Angular
-local function get_npm_global_root()
-  local handle = io.popen("npm root -g")
-  if not handle then
-    return ""
-  end
-  local result = handle:read("*a")
-  handle:close()
-  return result:gsub("%s+$", "")
-end
-
-local project_library_path = get_npm_global_root()
-local angular_cmd = {
-  "ngserver",
-  "--stdio",
-  "--tsProbeLocations",
-  project_library_path,
-  "--ngProbeLocations",
-  project_library_path,
-}
-
+-- Angular. No custom `cmd`: the shipped nvim-lspconfig angularls config builds
+-- ngserver's --tsProbeLocations/--ngProbeLocations from the project's own
+-- node_modules (and passes --angularCoreVersion), so it uses the workspace's
+-- TypeScript and Angular. Probing the global npm root instead breaks whenever
+-- the global TypeScript has dropped tsserverlibrary (removed in TS 7).
 vim.lsp.config("angularls", {
   capabilities = capabilities,
-  cmd = angular_cmd,
-  on_new_config = function(new_config)
-    new_config.cmd = angular_cmd
+  --- Only attach inside a real Angular/Nx workspace. Without this, Neovim
+  --- starts angularls in single-file mode for every TypeScript buffer (e.g. a
+  --- Nest project), where ngserver has no workspace and crash-loops with
+  --- exit code 1.
+  ---@param bufnr integer
+  ---@param on_dir fun(root_dir?: string)
+  root_dir = function(bufnr, on_dir)
+    local root = vim.fs.root(bufnr, { "angular.json", "nx.json" })
+    if root then
+      on_dir(root)
+    end
   end,
 })
 
