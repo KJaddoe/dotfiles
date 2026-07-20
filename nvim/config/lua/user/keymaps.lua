@@ -3,6 +3,22 @@ local opts = { noremap = true, silent = true }
 -- Shorten function name
 local keymap = vim.keymap.set
 
+--- Normal-mode leader map carrying a which-key description.
+---@param lhs string Keymap
+---@param rhs string|function Action
+---@param desc string which-key description
+local function nmap(lhs, rhs, desc)
+  keymap("n", lhs, rhs, { noremap = true, silent = true, desc = desc })
+end
+
+--- Visual-mode leader map carrying a which-key description.
+---@param lhs string Keymap
+---@param rhs string|function Action
+---@param desc string which-key description
+local function vmap(lhs, rhs, desc)
+  keymap("v", lhs, rhs, { noremap = true, silent = true, desc = desc })
+end
+
 --Remap space as leader key
 keymap("", "<Space>", "<Nop>", opts)
 vim.g.mapleader = " "
@@ -16,11 +32,11 @@ keymap("n", ";", ":", { noremap = true, nowait = true, silent = false })
 keymap("n", "Q", "<Nop>", opts)
 
 -- create and edit new buffer
-keymap("n", "<leader>n", ":enew<CR>", opts)
+nmap("<leader>n", ":enew<CR>", "New buffer")
 
 -- quicklists
-keymap("n", "<leader>co", ":copen<CR>", opts)
-keymap("n", "<leader>cc", ":cclose<CR>", opts)
+nmap("<leader>co", ":copen<CR>", "Open quickfix")
+nmap("<leader>cc", ":cclose<CR>", "Close quickfix")
 keymap("n", "[q", ":cprevious<CR>zz", opts)
 keymap("n", "]q", ":cnext<CR>zz", opts)
 
@@ -31,23 +47,22 @@ keymap("n", "<A-Left>", ":vertical resize -2<CR>", opts)
 keymap("n", "<A-Right>", ":vertical resize +2<CR>", opts)
 
 -- buffer killing
-keymap("n", "<leader>q", "<cmd>bp|bd #<CR>", opts) -- delete current buffer
-keymap("n", "<leader>bad", ":%bd!<cr>:intro<cr>", opts) -- delete all buffers
--- delete surrounding buffers, make sure to keep the cursor position
-keymap("n", "<leader>bsd", function()
+nmap("<leader>q", "<cmd>bp|bd #<CR>", "Delete current buffer")
+nmap("<leader>bad", ":%bd!<cr>:intro<cr>", "Delete all buffers")
+nmap("<leader>bsd", function()
   local cursor = vim.api.nvim_win_get_cursor(0)
   local current = vim.fn.expand("%:p")
   vim.cmd("%bd")
   vim.cmd("e " .. current)
   vim.api.nvim_win_set_cursor(0, cursor)
   vim.cmd("zz")
-end, opts)
+end, "Delete surrounding buffers")
 -- quickly move through buffers
 for i = 1, 9 do
-  keymap(
-    "n",
+  nmap(
     "<leader>" .. i,
-    ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>"
+    ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>",
+    "Go to buffer " .. i
   )
   keymap(
     "t",
@@ -57,10 +72,10 @@ for i = 1, 9 do
 end
 
 -- save and quit
-keymap("n", "<leader>w", ":write<CR>", opts)
+nmap("<leader>w", ":write<CR>", "Write file")
 
 -- paste over without replacing default register
-keymap("n", "<leader>p", '"_dP', opts)
+nmap("<leader>p", '"_dP', "Paste (keep register)")
 
 -- keep more or less in the same place when going next
 keymap("n", "n", "nzzzv", opts)
@@ -81,15 +96,15 @@ keymap("n", "]<Space>", "m`o<Esc>``", opts)
 keymap("n", "[<Space>", "m`O<Esc>``", opts)
 
 -- system clipboard integration
-keymap("n", "<leader>y", '"+y', opts)
-keymap("n", "<leader>Y", '"+Y', opts)
+nmap("<leader>y", '"+y', "Yank to system clipboard")
+nmap("<leader>Y", '"+Y', "Yank line to system clipboard")
 
 -- copy the current file path
-keymap("n", "<leader>py", ':let @" = expand("%:p")<CR>', opts)
+nmap("<leader>py", ':let @" = expand("%:p")<CR>', "Copy file path")
 
 -- delete to blackhole
-keymap("n", "<leader>d", '"_d', opts)
-keymap("n", "<leader>D", '"_D', opts)
+nmap("<leader>d", '"_d', "Delete to blackhole")
+nmap("<leader>D", '"_D', "Delete to EOL (blackhole)")
 
 -- Insert --
 -- in insert mode, adds new undo points after , . ! and ?.
@@ -119,12 +134,12 @@ keymap("v", "<A-k>", ":m .-2<CR>==", opts)
 keymap("v", "p", '"_dP', opts)
 
 -- system clipboard integration
-keymap("v", "<leader>y", '"+y', opts)
-keymap("v", "<leader>Y", '"+Y', opts)
+vmap("<leader>y", '"+y', "Yank to system clipboard")
+vmap("<leader>Y", '"+Y', "Yank to system clipboard")
 
 -- delete to blackhole
-keymap("v", "<leader>d", '"_d', opts)
-keymap("v", "<leader>D", '"_D', opts)
+vmap("<leader>d", '"_d', "Delete to blackhole")
+vmap("<leader>D", '"_D', "Delete to blackhole")
 
 -- Visual Block --
 -- Move text up and down

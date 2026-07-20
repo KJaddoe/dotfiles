@@ -92,7 +92,26 @@ require("lazy").setup({
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
-    opts = {},
+    config = function()
+      local wk = require("which-key")
+      wk.setup({})
+      wk.add({
+        -- Prefix group names shown in the popup.
+        { "<leader>b", group = "Buffer" },
+        { "<leader>c", group = "Code / Quickfix" },
+        { "<leader>f", group = "Find" },
+        { "<leader>g", group = "Git" },
+        { "<leader>k", group = "HTTP" },
+        { "<leader>l", group = "Symbols / Grep" },
+        { "<leader>o", group = "Open / Angular" },
+        { "<leader>s", group = "Swap" },
+        { "<leader>t", group = "Test" },
+        { "<leader>x", group = "Debug" },
+        -- treesitter swap mappings can't carry a native desc.
+        { "<leader>sa", desc = "Swap param with next" },
+        { "<leader>sA", desc = "Swap param with previous" },
+      })
+    end,
   },
   {
     "j-hui/fidget.nvim",
@@ -228,15 +247,25 @@ require("lazy").setup({
     "joeveiga/ng.nvim",
     config = function()
       local ng = require("ng")
-      local opts = { noremap = true, silent = true }
-      vim.keymap.set("n", "<leader>ot", ng.goto_template_for_component, opts)
-      vim.keymap.set(
-        "n",
+      local function map(lhs, rhs, desc)
+        vim.keymap.set(
+          "n",
+          lhs,
+          rhs,
+          { noremap = true, silent = true, desc = desc }
+        )
+      end
+      map(
+        "<leader>ot",
+        ng.goto_template_for_component,
+        "Angular: goto template"
+      )
+      map(
         "<leader>oc",
         ng.goto_component_with_template_file,
-        opts
+        "Angular: goto component"
       )
-      vim.keymap.set("n", "<leader>oT", ng.get_template_tcb, opts)
+      map("<leader>oT", ng.get_template_tcb, "Angular: template type-check")
     end,
   },
   { "mfussenegger/nvim-dap" },
@@ -253,6 +282,7 @@ require("lazy").setup({
       vim.keymap.set("n", "<leader>od", "<cmd>DBUIToggle<CR>", {
         noremap = true,
         silent = true,
+        desc = "Toggle DB UI",
       })
     end,
   },
@@ -273,12 +303,19 @@ require("lazy").setup({
         pattern = "http",
         callback = function(args)
           local kulala = require("kulala")
-          local kopts = { noremap = true, silent = true, buffer = args.buf }
-          vim.keymap.set("n", "<CR>", kulala.run, kopts)
-          vim.keymap.set("n", "[r", kulala.jump_prev, kopts)
-          vim.keymap.set("n", "]r", kulala.jump_next, kopts)
-          vim.keymap.set("n", "<leader>ki", kulala.inspect, kopts)
-          vim.keymap.set("n", "<leader>kc", kulala.copy, kopts)
+          local function kmap(lhs, rhs, desc)
+            vim.keymap.set("n", lhs, rhs, {
+              noremap = true,
+              silent = true,
+              buffer = args.buf,
+              desc = desc,
+            })
+          end
+          kmap("<CR>", kulala.run, "Run request")
+          kmap("[r", kulala.jump_prev, "Previous request")
+          kmap("]r", kulala.jump_next, "Next request")
+          kmap("<leader>ki", kulala.inspect, "Inspect request")
+          kmap("<leader>kc", kulala.copy, "Copy as cURL")
         end,
       })
     end,
