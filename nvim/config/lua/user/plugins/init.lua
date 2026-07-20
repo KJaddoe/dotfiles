@@ -89,6 +89,15 @@ require("lazy").setup({
       })
     end,
   },
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {},
+  },
+  {
+    "j-hui/fidget.nvim",
+    opts = {},
+  },
 
   -- Basics
   { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} },
