@@ -207,6 +207,35 @@ dap.listeners.before.event_exited["dapui_config"] = function()
   dapui.close()
 end
 
+-- Signs. nvim-dap highlights the stopped line with `debugPC`, which tokyonight
+-- renders darker than the background (invisible); re-point it at tokyonight's
+-- brighter `DapStoppedLine` and give every marker a visible colour instead of
+-- the default low-contrast `SignColumn`.
+vim.fn.sign_define("DapStopped", {
+  text = "→",
+  texthl = "DiagnosticWarn",
+  linehl = "DapStoppedLine",
+  numhl = "DiagnosticWarn",
+})
+vim.fn.sign_define("DapBreakpoint", {
+  text = "●",
+  texthl = "DiagnosticError",
+  linehl = "",
+  numhl = "",
+})
+vim.fn.sign_define("DapBreakpointCondition", {
+  text = "◆",
+  texthl = "DiagnosticWarn",
+  linehl = "",
+  numhl = "",
+})
+vim.fn.sign_define("DapBreakpointRejected", {
+  text = "○",
+  texthl = "DiagnosticError",
+  linehl = "",
+  numhl = "",
+})
+
 local opts = { noremap = true, silent = true }
 local keymap = vim.keymap.set
 
