@@ -1,5 +1,3 @@
-[difftool "diffmerge"]
-	cmd = diffmerge $LOCAL $REMOTE
 [alias]
 	co = checkout
 	count = shortlog -sn
@@ -31,17 +29,10 @@
 [help]
 	autocorrect = 1
 [merge]
-	tool = diffmerge
+	tool = nvimdiff
 	conflictStyle = diff3
-[mergetool "diffmerge"]
-	cmd = diffmerge --merge --result=$MERGED $LOCAL $BASE $REMOTE
-	trustExitCode = true
-	keepBackup = false
 [diff]
-	tool = diffmerge
 	colorMoved = zebra
-[difftool]
-	prompt = false
 [grep]
 	extendRegexp = true
 	lineNumber = true
