@@ -1,13 +1,13 @@
 ---
 - name: Install shfmt on Ubuntu
-  apt:
+  ansible.builtin.apt:
     name: shfmt
     state: present
   when: ansible_os_family == "Debian"
   become: yes
 
 - name: Install shfmt on macOS
-  homebrew:
+  community.general.homebrew:
     name: shfmt
     state: present
   when: ansible_os_family == "Darwin"

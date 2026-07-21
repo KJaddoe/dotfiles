@@ -1,6 +1,6 @@
 ---
 - name: Install prerequisites (Ubuntu)
-  apt:
+  ansible.builtin.apt:
     name:
       - curl
       - gnupg
@@ -14,7 +14,7 @@
 
 - name: Create keyrings directory (Ubuntu)
   become: true
-  file:
+  ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
     mode: "0755"
@@ -22,7 +22,7 @@
 
 - name: Add Microsoft signing key (Ubuntu)
   become: true
-  get_url:
+  ansible.builtin.get_url:
     url: https://packages.microsoft.com/keys/microsoft.asc
     dest: /etc/apt/keyrings/microsoft.asc
     mode: "0644"
@@ -30,7 +30,7 @@
 
 - name: Add Microsoft SQL Server repository (Ubuntu)
   become: true
-  deb822_repository:
+  ansible.builtin.deb822_repository:
     name: microsoft-prod
     types: deb
     uris: https://packages.microsoft.com/ubuntu/{{ ansible_facts.distribution_version }}/prod
@@ -45,7 +45,7 @@
   become: true
   environment:
     ACCEPT_EULA: 'Y'
-  apt:
+  ansible.builtin.apt:
     name:
       - mssql-tools18
       - unixodbc-dev
@@ -54,13 +54,13 @@
   when: ansible_facts.os_family == "Debian"
 
 - name: Tap Microsoft MSSQL repo (macOS)
-  homebrew_tap:
+  community.general.homebrew_tap:
     name: microsoft/mssql-release
     state: present
   when: ansible_facts.os_family == "Darwin"
 
 - name: Install sqlcmd (macOS)
-  homebrew:
+  community.general.homebrew:
     name: sqlcmd
     state: present
   when: ansible_facts.os_family == "Darwin" 

@@ -1,6 +1,6 @@
 ---
 - name: Install eza on Ubuntu
-  apt:
+  ansible.builtin.apt:
     name: eza
     state: present
     update_cache: yes
@@ -8,16 +8,16 @@
   become: yes
 
 - name: Install eza on macOS
-  homebrew:
+  community.general.homebrew:
     name: eza
     state: present
   when: ansible_os_family == "Darwin"
 
 - name: Verify eza installation
-  command: eza --version
+  ansible.builtin.command: eza --version
   register: eza_version
   changed_when: false
 
 - name: Show eza version
-  debug:
+  ansible.builtin.debug:
     msg: "{{ eza_version.stdout_lines[0] }}"

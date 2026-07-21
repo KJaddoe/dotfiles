@@ -1,18 +1,18 @@
 ---
 - name: Get installed Java versions from mise
-  command: mise ls --installed java
+  ansible.builtin.command: mise ls --installed java
   register: mise_java_installed
   changed_when: false
 
 - name: Install and pin Java {{ java_version }} via mise
-  command: mise use -g java@temurin-{{ java_version }}
+  ansible.builtin.command: mise use -g java@temurin-{{ java_version }}
   when: ('temurin-' ~ java_version) not in mise_java_installed.stdout
 
 - name: Verify Java installation
-  command: mise exec -- java -version
+  ansible.builtin.command: mise exec -- java -version
   register: java_version_output
   changed_when: false
 
 - name: Show Java version
-  debug:
+  ansible.builtin.debug:
     msg: "{{ java_version_output.stderr_lines[0] }}"

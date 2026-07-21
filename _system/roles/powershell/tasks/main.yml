@@ -1,6 +1,6 @@
 ---
 - name: Install prerequisites (Ubuntu)
-  apt:
+  ansible.builtin.apt:
     name:
       - curl
       - gnupg
@@ -14,7 +14,7 @@
 
 - name: Create keyrings directory (Ubuntu)
   become: true
-  file:
+  ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
     mode: "0755"
@@ -22,7 +22,7 @@
 
 - name: Add Microsoft signing key (Ubuntu)
   become: true
-  get_url:
+  ansible.builtin.get_url:
     url: https://packages.microsoft.com/keys/microsoft.asc
     dest: /etc/apt/keyrings/microsoft.asc
     mode: "0644"
@@ -30,7 +30,7 @@
 
 - name: Add Microsoft prod repository (Ubuntu)
   become: true
-  deb822_repository:
+  ansible.builtin.deb822_repository:
     name: microsoft-prod
     types: deb
     uris: https://packages.microsoft.com/ubuntu/{{ ansible_facts.distribution_version }}/prod
@@ -43,24 +43,24 @@
 
 - name: Install PowerShell (Ubuntu)
   become: true
-  apt:
+  ansible.builtin.apt:
     name: powershell
     state: present
     update_cache: yes
   when: ansible_facts.os_family == "Debian"
 
 - name: Install PowerShell (macOS)
-  homebrew:
+  community.general.homebrew:
     name: powershell
     state: present
   when: ansible_facts.os_family == "Darwin"
 
 - name: Check for PSScriptAnalyzer
-  command: pwsh -NoProfile -Command "if (Get-Module -ListAvailable PSScriptAnalyzer) { exit 0 } else { exit 1 }"
+  ansible.builtin.command: pwsh -NoProfile -Command "if (Get-Module -ListAvailable PSScriptAnalyzer) { exit 0 } else { exit 1 }"
   register: psscriptanalyzer_check
   changed_when: false
   failed_when: false
 
 - name: Install PSScriptAnalyzer
-  command: pwsh -NoProfile -Command "Install-Module PSScriptAnalyzer -Scope CurrentUser -Force -Repository PSGallery"
+  ansible.builtin.command: pwsh -NoProfile -Command "Install-Module PSScriptAnalyzer -Scope CurrentUser -Force -Repository PSGallery"
   when: psscriptanalyzer_check.rc != 0

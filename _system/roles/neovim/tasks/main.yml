@@ -1,13 +1,13 @@
 ---
 - name: Install neovim (macOS)
-  homebrew:
+  community.general.homebrew:
     name: neovim
     state: present
   when: ansible_facts.os_family == "Darwin"
 
 - name: Install neovim PPA prerequisites (Ubuntu)
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - software-properties-common
     state: present
@@ -16,45 +16,45 @@
 
 - name: Add neovim stable PPA (Ubuntu)
   become: true
-  command: add-apt-repository -y ppa:neovim-ppa/stable
+  ansible.builtin.command: add-apt-repository -y ppa:neovim-ppa/stable
   register: neovim_ppa
   changed_when: "'already exists' not in neovim_ppa.stdout"
   when: ansible_facts.os_family == "Debian"
 
 - name: Install neovim (Ubuntu)
   become: true
-  apt:
+  ansible.builtin.apt:
     name: neovim
     state: present
     update_cache: yes
   when: ansible_facts.os_family == "Debian"
 
 - name: Create js-debug versioned install directory
-  file:
+  ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}"
     state: directory
     mode: "0755"
 
 - name: Download js-debug DAP adapter tarball
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/microsoft/vscode-js-debug/releases/download/v{{ neovim_js_debug_version }}/js-debug-dap-v{{ neovim_js_debug_version }}.tar.gz"
     dest: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}/js-debug-dap.tar.gz"
     mode: "0644"
 
 - name: Extract js-debug DAP adapter
-  command:
+  ansible.builtin.command:
     cmd: tar -xzf js-debug-dap.tar.gz
     chdir: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}"
     creates: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}/js-debug"
 
 - name: Symlink js-debug to the pinned version
-  file:
+  ansible.builtin.file:
     src: "{{ ansible_env.HOME }}/.local/share/js-debug-v{{ neovim_js_debug_version }}/js-debug"
     dest: "{{ ansible_env.HOME }}/.local/share/js-debug"
     state: link
 
 - name: Install language tooling (macOS)
-  homebrew:
+  community.general.homebrew:
     name:
       - lua-language-server
       - selene
@@ -65,115 +65,115 @@
   when: ansible_facts.os_family == "Darwin"
 
 - name: Create lua-language-server versioned install directory (Ubuntu)
-  file:
+  ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}"
     state: directory
     mode: "0755"
   when: ansible_facts.os_family == "Debian"
 
 - name: Download lua-language-server tarball (Ubuntu)
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/LuaLS/lua-language-server/releases/download/{{ neovim_lua_ls_version }}/lua-language-server-{{ neovim_lua_ls_version }}-linux-x64.tar.gz"
     dest: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}/lua-language-server.tar.gz"
     mode: "0644"
   when: ansible_facts.os_family == "Debian"
 
 - name: Extract lua-language-server (Ubuntu)
-  command:
+  ansible.builtin.command:
     cmd: tar -xzf lua-language-server.tar.gz
     chdir: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}"
     creates: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}/bin/lua-language-server"
   when: ansible_facts.os_family == "Debian"
 
 - name: Symlink lua-language-server into PATH (Ubuntu)
-  file:
+  ansible.builtin.file:
     src: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}/bin/lua-language-server"
     dest: "{{ ansible_env.HOME }}/.local/bin/lua-language-server"
     state: link
   when: ansible_facts.os_family == "Debian"
 
 - name: Download selene archive (Ubuntu)
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/Kampfkarren/selene/releases/download/{{ neovim_selene_version }}/selene-{{ neovim_selene_version }}-linux.zip"
     dest: "{{ ansible_env.HOME }}/.local/share/selene-{{ neovim_selene_version }}.zip"
     mode: "0644"
   when: ansible_facts.os_family == "Debian"
 
 - name: Extract selene into PATH (Ubuntu)
-  command:
+  ansible.builtin.command:
     cmd: "unzip -o {{ ansible_env.HOME }}/.local/share/selene-{{ neovim_selene_version }}.zip -d {{ ansible_env.HOME }}/.local/bin"
     creates: "{{ ansible_env.HOME }}/.local/bin/selene"
   when: ansible_facts.os_family == "Debian"
 
 - name: Download taplo archive (Ubuntu)
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/tamasfe/taplo/releases/download/{{ neovim_taplo_version }}/taplo-linux-x86_64.gz"
     dest: "{{ ansible_env.HOME }}/.local/share/taplo-{{ neovim_taplo_version }}.gz"
     mode: "0644"
   when: ansible_facts.os_family == "Debian"
 
 - name: Extract taplo into PATH (Ubuntu)
-  shell:
+  ansible.builtin.shell:
     cmd: "gunzip -c {{ ansible_env.HOME }}/.local/share/taplo-{{ neovim_taplo_version }}.gz > {{ ansible_env.HOME }}/.local/bin/taplo && chmod +x {{ ansible_env.HOME }}/.local/bin/taplo"
     creates: "{{ ansible_env.HOME }}/.local/bin/taplo"
   when: ansible_facts.os_family == "Debian"
 
 - name: Download rust-analyzer archive (Ubuntu)
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/rust-lang/rust-analyzer/releases/download/{{ neovim_rust_analyzer_version }}/rust-analyzer-x86_64-unknown-linux-gnu.gz"
     dest: "{{ ansible_env.HOME }}/.local/share/rust-analyzer-{{ neovim_rust_analyzer_version }}.gz"
     mode: "0644"
   when: ansible_facts.os_family == "Debian"
 
 - name: Extract rust-analyzer into PATH (Ubuntu)
-  shell:
+  ansible.builtin.shell:
     cmd: "gunzip -c {{ ansible_env.HOME }}/.local/share/rust-analyzer-{{ neovim_rust_analyzer_version }}.gz > {{ ansible_env.HOME }}/.local/bin/rust-analyzer && chmod +x {{ ansible_env.HOME }}/.local/bin/rust-analyzer"
     creates: "{{ ansible_env.HOME }}/.local/bin/rust-analyzer"
   when: ansible_facts.os_family == "Debian"
 
 - name: Create zls versioned install directory (Ubuntu)
-  file:
+  ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}"
     state: directory
     mode: "0755"
   when: ansible_facts.os_family == "Debian"
 
 - name: Download zls archive (Ubuntu)
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/zigtools/zls/releases/download/{{ neovim_zls_version }}/zls-x86_64-linux.tar.xz"
     dest: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}/zls.tar.xz"
     mode: "0644"
   when: ansible_facts.os_family == "Debian"
 
 - name: Extract zls (Ubuntu)
-  command:
+  ansible.builtin.command:
     cmd: tar -xJf zls.tar.xz
     chdir: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}"
     creates: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}/zls"
   when: ansible_facts.os_family == "Debian"
 
 - name: Symlink zls into PATH (Ubuntu)
-  file:
+  ansible.builtin.file:
     src: "{{ ansible_env.HOME }}/.local/share/zls-v{{ neovim_zls_version }}/zls"
     dest: "{{ ansible_env.HOME }}/.local/bin/zls"
     state: link
   when: ansible_facts.os_family == "Debian"
 
 - name: Create netcoredbg versioned install directory
-  file:
+  ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}"
     state: directory
     mode: "0755"
 
 - name: Download netcoredbg archive (macOS)
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/Samsung/netcoredbg/releases/download/{{ neovim_netcoredbg_version }}/netcoredbg-osx-arm64.zip"
     dest: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg.zip"
     mode: "0644"
   when: ansible_facts.os_family == "Darwin"
 
 - name: Extract netcoredbg (macOS)
-  command:
+  ansible.builtin.command:
     cmd: unzip -o netcoredbg.zip
     chdir: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}"
     creates: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg"
@@ -184,7 +184,7 @@
 # without it netcoredbg launches the debuggee but can never stop or hit a
 # breakpoint. Samsung ships an adhoc signature with no entitlements, so re-sign.
 - name: Write netcoredbg debugging entitlements (macOS)
-  copy:
+  ansible.builtin.copy:
     dest: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg.entitlements"
     mode: "0644"
     content: |
@@ -207,14 +207,14 @@
   when: ansible_facts.os_family == "Darwin"
 
 - name: Check netcoredbg codesign entitlements (macOS)
-  command: codesign -d --entitlements - "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg"
+  ansible.builtin.command: codesign -d --entitlements - "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg"
   register: neovim_netcoredbg_entitlements
   changed_when: false
   failed_when: false
   when: ansible_facts.os_family == "Darwin"
 
 - name: Codesign netcoredbg with debugging entitlement (macOS)
-  command:
+  ansible.builtin.command:
     cmd: codesign --sign - --force --entitlements "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg.entitlements" "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg"
   changed_when: true
   when:
@@ -222,14 +222,14 @@
     - "'get-task-allow' not in (neovim_netcoredbg_entitlements.stdout | default('')) + (neovim_netcoredbg_entitlements.stderr | default(''))"
 
 - name: Download netcoredbg archive (Ubuntu)
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/Samsung/netcoredbg/releases/download/{{ neovim_netcoredbg_version }}/netcoredbg-linux-amd64.tar.gz"
     dest: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg.tar.gz"
     mode: "0644"
   when: ansible_facts.os_family == "Debian"
 
 - name: Extract netcoredbg (Ubuntu)
-  command:
+  ansible.builtin.command:
     cmd: tar -xzf netcoredbg.tar.gz
     chdir: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}"
     creates: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg"
@@ -238,7 +238,7 @@
 # a symlink breaks netcoredbg: it resolves libdbgshim relative to the
 # invoked path, so a wrapper that execs the real binary is required
 - name: Install netcoredbg wrapper into PATH
-  copy:
+  ansible.builtin.copy:
     content: |
       #!/bin/sh
       exec "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}/netcoredbg/netcoredbg" "$@"
@@ -246,10 +246,10 @@
     mode: "0755"
 
 - name: Verify neovim installation
-  command: nvim --version
+  ansible.builtin.command: nvim --version
   register: nvim_version
   changed_when: false
 
 - name: Show neovim version
-  debug:
+  ansible.builtin.debug:
     msg: "{{ nvim_version.stdout_lines[0] }}"

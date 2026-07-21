@@ -1,6 +1,6 @@
 ---
 - name: Install Ruby build dependencies (Ubuntu)
-  apt:
+  ansible.builtin.apt:
     name:
       - git
       - curl
@@ -19,7 +19,7 @@
   when: ansible_facts.os_family == "Debian"
 
 - name: Install Ruby build dependencies (macOS)
-  homebrew:
+  community.general.homebrew:
     name:
       - openssl@3
       - readline
@@ -28,25 +28,25 @@
   when: ansible_facts.os_family == "Darwin"
 
 - name: Get current global Ruby from mise
-  command: mise current ruby
+  ansible.builtin.command: mise current ruby
   register: mise_ruby_current
   changed_when: false
   failed_when: false
 
 - name: Install and pin Ruby {{ ruby_version }} via mise
-  command: mise use -g ruby@{{ ruby_version }}
+  ansible.builtin.command: mise use -g ruby@{{ ruby_version }}
   when: mise_ruby_current.stdout | trim != ruby_version
 
 - name: Install global Ruby gems
-  command: mise exec -- gem install {{ ruby_global_gems | join(' ') }}
+  ansible.builtin.command: mise exec -- gem install {{ ruby_global_gems | join(' ') }}
   register: gem_install
   changed_when: "'Successfully installed' in gem_install.stdout"
 
 - name: Verify Ruby installation
-  command: mise exec -- ruby -v
+  ansible.builtin.command: mise exec -- ruby -v
   register: ruby_version_output
   changed_when: false
 
 - name: Show Ruby version
-  debug:
+  ansible.builtin.debug:
     msg: "{{ ruby_version_output.stdout }}"

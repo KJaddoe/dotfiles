@@ -1,30 +1,30 @@
 ---
 - name: Get current global Python from mise
-  command: mise current python
+  ansible.builtin.command: mise current python
   register: mise_python_current
   changed_when: false
   failed_when: false
 
 - name: Install and pin Python {{ python_version }} via mise
-  command: mise use -g python@{{ python_version }}
+  ansible.builtin.command: mise use -g python@{{ python_version }}
   when: mise_python_current.stdout | trim != python_version
 
 - name: Install Neovim Python provider packages
-  command: mise exec -- python -m pip install --upgrade {{ python_provider_packages | join(' ') }}
+  ansible.builtin.command: mise exec -- python -m pip install --upgrade {{ python_provider_packages | join(' ') }}
   register: pip_provider
   changed_when: "'Successfully installed' in pip_provider.stdout"
 
 - name: Install Python CLI tools via uv
-  command: mise exec -- uv tool install {{ item }}
+  ansible.builtin.command: mise exec -- uv tool install {{ item }}
   loop: "{{ uv_tools }}"
   register: uv_tool_install
   changed_when: "'Installed' in uv_tool_install.stderr"
 
 - name: Verify Python installation
-  command: mise exec -- python --version
+  ansible.builtin.command: mise exec -- python --version
   register: python_verify
   changed_when: false
 
 - name: Show Python version
-  debug:
+  ansible.builtin.debug:
     msg: "{{ python_verify.stdout }}"
