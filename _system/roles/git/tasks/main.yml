@@ -35,13 +35,6 @@
   when:
     - git_user_email != ""
 
-- name: Configure Git pager with diff-so-fancy
-  git_config:
-    name: core.pager
-    value: "diff-so-fancy | less --tabs=4 -RFX"
-    scope: global
-  when: use_diff_so_fancy
-
 - name: Verify Git installation
   command: git --version
   register: git_version

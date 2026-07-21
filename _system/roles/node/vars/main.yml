@@ -7,7 +7,6 @@ npm_global_packages:
   - prettier
   - typescript
   - tern
-  - diff-so-fancy
   - "@angular/cli"
   - "@nestjs/cli"
   - tree-sitter-cli
