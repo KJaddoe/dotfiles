@@ -72,6 +72,11 @@ for these rules as FYI reference only; the binding text is HERE.
   If a suppression is genuinely unavoidable, justify it.
 - Write tests for code whenever possible. If the project has NO test setup, notify me and propose testing
   options rather than skipping.
+- Every test suite covers three kinds of case, each at the layer where it's real: the happy path;
+  edge/boundary cases; and what must NOT work and must stay broken — authorization/access denials, invalid
+  or malformed input rejection, and abuse/injection (SQL injection + authz bypass server-side;
+  output-escaping/XSS, authz-gated UI, and input rejection client-side). When you find a bug or a bad input,
+  lock it out with a regression test asserting it stays rejected.
 - Definition of done: before claiming work complete, format + lint + tests must all pass, and report the
   actual results honestly — say so if anything fails or was skipped. Evidence before assertions. When the
   suite is large/slow, run the changed-scope (affected) tests rather than the whole suite every time, and
@@ -112,9 +117,11 @@ for these rules as FYI reference only; the binding text is HERE.
   watch dev-server is already running — it's redundant and contends on caches. Let the running server
   surface errors, or ask.
 - When building Angular UI: generate components/services via the Angular CLI (own folder, separate files,
-  keep the spec), organize by feature, use signals + `inject()` + `input()`/`output()`, follow the current
-  Angular style guide, lean on Material/built-in layout over custom CSS, and give every component/service
-  a real test. Match the conventions of the existing Angular projects in the workspace.
+  keep the spec), organize by feature, use signals + `inject()` + `input()`/`output()`, use reactive forms
+  (`FormGroup`/`FormControl` with `nonNullable`, `[formGroup]`/`formControlName`) — NOT template-driven
+  `ngModel` — follow the current Angular style guide, lean on Material/built-in layout over custom CSS, and
+  give every component/service a real test. Match the conventions of the existing Angular projects in the
+  workspace.
 - Write SCSS with nesting that mirrors the component's DOM hierarchy — nest child selectors inside their
   parent's block following the real element tree, use `&` for states/variants, and don't write flat
   top-level selectors for elements that are actually nested. When one style would otherwise be
