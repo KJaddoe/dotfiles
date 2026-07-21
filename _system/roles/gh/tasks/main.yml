@@ -1,7 +1,7 @@
 ---
 - name: Install prerequisites (Ubuntu)
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - curl
       - ca-certificates
@@ -12,7 +12,7 @@
 
 - name: Add GitHub CLI GPG key (Ubuntu)
   become: true
-  get_url:
+  ansible.builtin.get_url:
     url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
     dest: /usr/share/keyrings/githubcli-archive-keyring.gpg
     mode: "0644"
@@ -20,7 +20,7 @@
 
 - name: Add GitHub CLI repository (Ubuntu)
   become: true
-  deb822_repository:
+  ansible.builtin.deb822_repository:
     name: github-cli
     types: deb
     uris: https://cli.github.com/packages
@@ -33,23 +33,23 @@
 
 - name: Install GitHub CLI (Ubuntu)
   become: true
-  apt:
+  ansible.builtin.apt:
     name: gh
     state: present
     update_cache: yes
   when: ansible_facts.os_family == "Debian"
 
 - name: Install GitHub CLI (macOS)
-  homebrew:
+  community.general.homebrew:
     name: gh
     state: present
   when: ansible_facts.os_family == "Darwin"
 
 - name: Verify GitHub CLI installation
-  command: gh --version
+  ansible.builtin.command: gh --version
   register: gh_version
   changed_when: false
 
 - name: Show GitHub CLI version
-  debug:
+  ansible.builtin.debug:
     msg: "{{ gh_version.stdout_lines[0] }}"

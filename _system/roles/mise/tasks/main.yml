@@ -1,7 +1,7 @@
 ---
 - name: Install prerequisites (Ubuntu)
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - gpg
       - wget
@@ -14,7 +14,7 @@
 
 - name: Add mise GPG key (Ubuntu)
   become: true
-  get_url:
+  ansible.builtin.get_url:
     url: https://mise.jdx.dev/gpg-key.pub
     dest: /usr/share/keyrings/mise-archive-keyring.asc
     mode: "0644"
@@ -22,7 +22,7 @@
 
 - name: Add mise repository (Ubuntu)
   become: true
-  deb822_repository:
+  ansible.builtin.deb822_repository:
     name: mise
     types: deb
     uris: https://mise.jdx.dev/deb
@@ -35,23 +35,23 @@
 
 - name: Install mise (Ubuntu)
   become: true
-  apt:
+  ansible.builtin.apt:
     name: mise
     state: present
     update_cache: yes
   when: ansible_facts.os_family == "Debian"
 
 - name: Install mise (macOS)
-  homebrew:
+  community.general.homebrew:
     name: mise
     state: present
   when: ansible_facts.os_family == "Darwin"
 
 - name: Verify mise installation
-  command: mise --version
+  ansible.builtin.command: mise --version
   register: mise_version
   changed_when: false
 
 - name: Show mise version
-  debug:
+  ansible.builtin.debug:
     msg: "{{ mise_version.stdout_lines[0] }}"
