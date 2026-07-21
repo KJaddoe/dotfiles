@@ -56,7 +56,6 @@
       - xsel
       - zip
       - unzip
-      - python3
       - socat
       - ripgrep
       - fd
