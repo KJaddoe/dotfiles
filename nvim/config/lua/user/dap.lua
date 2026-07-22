@@ -200,12 +200,20 @@ dapui.setup({
 dap.listeners.after.event_initialized["dapui_config"] = function()
   dapui.open()
 end
-dap.listeners.before.event_terminated["dapui_config"] = function()
-  dapui.close()
+-- vscode-js-debug spawns a child session per page target, so an Angular
+-- live-reload terminates the old target while the root session lives on. A
+-- child carries `session.parent`; the root does not. Tear the UI down only
+-- when the root session ends, so a reload keeps the panels open but a real
+-- quit (dap.terminate) closes them. (nvim-dap can't count remaining sessions
+-- here: `before` listeners fire before the terminating session is removed, so
+-- dap.sessions() still holds it and would never read as empty.)
+local function close_ui_on_root_exit(session)
+  if not (session and session.parent) then
+    dapui.close()
+  end
 end
-dap.listeners.before.event_exited["dapui_config"] = function()
-  dapui.close()
-end
+dap.listeners.before.event_terminated["dapui_config"] = close_ui_on_root_exit
+dap.listeners.before.event_exited["dapui_config"] = close_ui_on_root_exit
 
 -- Signs. nvim-dap highlights the stopped line with `debugPC`, which tokyonight
 -- renders darker than the background (invisible); re-point it at tokyonight's
