@@ -38,6 +38,9 @@
 	lineNumber = true
 [push]
 	default = simple
+	autoSetupRemote = true
+[checkout]
+	defaultRemote = origin
 [submodule]
 	fetchJobs = 4
 [commit]
