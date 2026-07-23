@@ -4,6 +4,7 @@
     "pr": ""
   },
   "permissions": {
+    "defaultMode": "default",
     "allow": [
       "Bash(gh project item-list *)",
       "Bash(gh project field-list *)",
