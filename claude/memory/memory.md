@@ -4,7 +4,7 @@ Read this file at session start. Load specific topic files only when relevant.
 
 | File | Description | Last updated |
 |------|-------------|--------------|
-| `general.md` | Cross-project conventions and preferences (commit/PR/branch/review rules, code quality gate: doc-comments + format/lint/test, mac/linux parity, generated-specs-stay-out-of-repo, GitHub issue status→To Be Refined, plan-execution inline default, SCSS nesting, terminal=plain CLI not TUIs) | 2026-07-16 |
+| `general.md` | Cross-project conventions and preferences (commit/PR/branch/review rules, code quality gate: doc-comments + format/lint/test + 3-kinds-of-case tests, mac/linux parity, generated-specs-stay-out-of-repo, GitHub issue status→To Be Refined, plan-execution inline default, Angular reactive forms, SCSS nesting, terminal=plain CLI not TUIs) | 2026-07-21 |
 | `tools/gh-pending-pr-reviews.md` | Pointer — promoted to the `pending-pr-review` skill (`claude/skills/`) | 2026-06-01 |
 | `tools/gh-projects-v2.md` | Org Projects v2 gotchas: issue numbers collide across repos on a shared board (disambiguate item lookup by repo!); field-mutation patterns (number/iteration/clear); stacked-PR link limitation | 2026-07-21 |
 | `tools/zsh-startup.md` | zsh startup perf: single-compinit architecture in `zsh/zshrc` (fpath→compinit→aliases→completion order), ng-completion caching. Cut ~2.1s→~0.35s. | 2026-06-11 |
