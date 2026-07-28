@@ -27,6 +27,8 @@ for these rules as FYI reference only; the binding text is HERE.
   changes. Prefer several scoped commits over one large mixed one, even within a single task.
 - Issue work: create the branch with `gh issue develop <n> … --checkout` using GitHub's default name —
   never `--name`, never a bare `git checkout -b`.
+- When starting work on a tracked issue, set its board Status to "In Progress" before editing code.
+  Applies to every issue picked up, including ones already on the board from earlier.
 - For non-trivial or customer-reported work, default to creating a tracked issue (with the right board
   fields) BEFORE editing code; confirm scope first. Skip only for trivial/throwaway changes or repos with
   no tracker.
