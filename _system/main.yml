@@ -28,6 +28,7 @@
     - { role: eza, tags: eza }
     - { role: bat, tags: bat }
     - { role: fswatch, tags: fswatch }
+    - { role: poppler, tags: poppler }
     - { role: neovim, tags: neovim }
     - { role: powershell, tags: powershell }
 

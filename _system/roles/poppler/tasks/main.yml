@@ -1,0 +1,23 @@
+---
+- name: Install poppler on Ubuntu
+  ansible.builtin.apt:
+    name: poppler-utils
+    state: present
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+  become: yes
+
+- name: Install poppler on macOS
+  community.general.homebrew:
+    name: poppler
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Verify poppler installation
+  ansible.builtin.command: pdftotext -v
+  register: poppler_version
+  changed_when: false
+
+- name: Show poppler version
+  ansible.builtin.debug:
+    msg: "{{ (poppler_version.stdout_lines + poppler_version.stderr_lines) | first }}"
