@@ -62,6 +62,36 @@ for these rules as FYI reference only; the binding text is HERE.
 - In Markdown, align table columns — pad every cell with trailing spaces so the pipes line up and the
   raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
 
+### Project documentation
+- Update the project's own docs as PART of the change — same commit/PR, never a later pass. Triggers:
+  behaviour; setup/install; commands/scripts; env vars or config keys; API/interface contracts;
+  dependencies or tooling/versions; the data model; structure/architecture; deploy/release steps; or a
+  documented decision. Removing a feature, endpoint, env var, flag, or command DELETES its docs in the
+  same commit. Also fix docs you notice have already drifted.
+- Docs state what the code ACTUALLY does, verified against it — never intended or aspirational
+  behaviour, and never invented to fill a gap (mark `TODO(owner)` and ask instead).
+- Coverage floor — EVERY project's docs answer: what it is; setup/install (incl. tooling + versions);
+  how to run; how to test; structure/architecture. Then by kind:
+
+  | Kind                 | Also needs                                                    |
+  |----------------------|---------------------------------------------------------------|
+  | Deployed service/app | config & env vars; deploy/release steps; how to roll back     |
+  | Library/package      | public API; versioning & compatibility; CHANGELOG             |
+  | CLI tool             | commands & flags; config file/env; exit codes                 |
+  | Infra / dotfiles     | what it manages; bootstrap on a fresh machine; OS parity      |
+
+  If one is MISSING, fill it in when your work touches that area and tell me what else is missing —
+  don't silently skip it, don't backfill the whole set unasked. Say what you added.
+- Write an ADR when a choice is non-obvious or hard to reverse: adding/replacing a dependency or
+  service, a new architectural pattern, a schema or data-model change, an auth/security boundary, or an
+  option you REJECTED for a reason people will re-propose later. Capture context, the decision,
+  alternatives weighed, and consequences. Don't ADR routine or trivially reversible choices.
+- Env vars/config/secrets/flags need name, purpose, required vs optional, default, safe placeholder, and
+  WHERE the real value lives — the LOCATION, never the value (see Confidentiality & secrets).
+- Use the project's existing docs layout, or `~/.claude/templates/docs-pointer/` if it has none. Project
+  docs are a repo deliverable and GET committed — unlike generated planning artifacts (above).
+- Use the `writing-project-docs` skill for the audit/remediate procedure and per-doc-type guidance.
+
 ### Code quality (all languages)
 - Format code whenever possible: use the project's configured formatter (its config/scripts); if the
   project defines none, use a locally available formatter for the language. Only format code you actually
@@ -79,10 +109,11 @@ for these rules as FYI reference only; the binding text is HERE.
   or malformed input rejection, and abuse/injection (SQL injection + authz bypass server-side;
   output-escaping/XSS, authz-gated UI, and input rejection client-side). When you find a bug or a bad input,
   lock it out with a regression test asserting it stays rejected.
-- Definition of done: before claiming work complete, format + lint + tests must all pass, and report the
-  actual results honestly — say so if anything fails or was skipped. Evidence before assertions. When the
-  suite is large/slow, run the changed-scope (affected) tests rather than the whole suite every time, and
-  state which scope was run; run the full suite when it's cheap or before a merge/release.
+- Definition of done: before claiming work complete, format + lint + tests must all pass AND the docs
+  the change touches must be updated (see Project documentation), and report the actual results
+  honestly — say so if anything fails or was skipped. Evidence before assertions. When the suite is
+  large/slow, run the changed-scope (affected) tests rather than the whole suite every time, and state
+  which scope was run; run the full suite when it's cheap or before a merge/release.
 - When introducing a formatter/linter/test setup, commit its config so it's reproducible across machines,
   keeping macOS/Linux parity.
 - Follow the codebase's existing conventions: read the surrounding code before writing, mirror its
