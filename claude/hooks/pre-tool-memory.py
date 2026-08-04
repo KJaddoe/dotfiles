@@ -15,6 +15,13 @@ from pathlib import Path
 
 
 def load_context():
+    """Assemble the FYI context block from project and global memory files.
+
+    Missing files are skipped rather than treated as errors — a project without memory is
+    normal. Both memory files are capped at 200 lines to bound what enters context.
+
+    :return: the assembled context string, always including the FYI-not-rules preamble
+    """
     project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
     # /Users/you/Projects/foo -> -Users-you-Projects-foo
     mapped = project_dir.replace("/", "-").replace(".", "-")
@@ -48,9 +55,15 @@ def load_context():
 
 
 def main():
+    """Emit the context block once per process, or on every SessionStart.
+
+    Unreadable stdin falls back to PreToolUse semantics rather than failing: the hook is
+    advisory, and aborting the tool call would be a worse outcome than injecting once more
+    than necessary. The fallback is deliberate and narrow, not a blanket catch.
+    """
     try:
         data = json.load(sys.stdin)
-    except Exception:
+    except (json.JSONDecodeError, UnicodeDecodeError):
         data = {}
 
     event = data.get("hook_event_name") or "PreToolUse"
