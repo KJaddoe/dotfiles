@@ -1,6 +1,6 @@
 ---
 name: writing-project-docs
-description: Use when a change touches behaviour, setup, commands, env vars or config keys, API contracts, the data model, architecture, or deploy/release steps; when a project's docs are missing, thin, or absent entirely; or when checking a repo for stale, wrong, or drifted documentation.
+description: Use when a change touches behaviour, setup, commands, env vars or config keys, API contracts, the data model, architecture, or deploy/release steps; when a user-visible change needs a CHANGELOG entry or a release is being cut; when a project's docs are missing, thin, or absent entirely; or when checking a repo for stale, wrong, or drifted documentation.
 ---
 
 # Writing Project Docs
@@ -27,9 +27,8 @@ user's call.
 
 ## Coverage Floor
 
-A project's docs should answer: **what it is · setup/install (incl. tooling + versions) · how to
-run · how to test · structure/architecture · config & env vars · how to deploy/release.** Plus a
-CHANGELOG entry for versioned projects, and the project's own `CLAUDE.md` when a convention changes.
+**Canonical list lives in `~/.claude/CLAUDE.md` → Project documentation** (universal core plus
+per-archetype extras). Read it there — do not restate it here, or the two drift apart.
 
 Layout: use what the project already has. Starting from nothing, copy
 `~/.claude/templates/docs-pointer/`. That template is scoped **"why, not what"** — reference
@@ -50,6 +49,7 @@ crammed into `architecture.md`.
    | API contracts | routes/controllers vs documented endpoints and shapes |
    | Structure | documented tree vs actual directories |
    | Deploy steps | CI/CD workflows, deploy scripts, infra manifests |
+   | CHANGELOG | see below — audited for OMISSIONS, not correctness |
 
 3. **Gap-check** against the coverage floor.
 4. **Classify** — `WRONG` (contradicts code) → `STALE` (describes something removed) → `MISSING`
@@ -63,6 +63,26 @@ crammed into `architecture.md`.
 - Touch only what's wrong or missing. No mass rewrites of prose that is merely *unfashionable*.
 - **Never invent unverifiable facts.** Deploy targets, credential locations, and who-to-ask are
   usually not derivable from the repo. Write `TODO(owner): …`, surface it in your report, and ask.
+
+## Auditing a CHANGELOG
+
+A changelog is the one doc you cannot check against current code — it records history for an
+audience, so it never "drifts", it can only be **incomplete**. Audit for omissions instead:
+
+```sh
+git log $(git describe --tags --abbrev=0)..HEAD --oneline
+```
+
+Every user-visible commit in that range should have an entry. Flag the ones that don't. Internal
+refactors, test-only changes, and chores correctly have none — absence is a finding only when the
+change was visible to a consumer.
+
+Writing an entry: describe the change from the **consumer's** side (what they can now do, what
+broke, what to migrate to), not the implementation. Breaking changes say what to change, not just
+that something changed. Follow the project's existing format and headings.
+
+Remediation caveat: reconstructing old entries from commit messages produces plausible fiction.
+Backfill only what the commits genuinely support, and flag the rest for a human.
 
 ## Documenting Env Vars & Config
 

@@ -123,6 +123,22 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
   into `architecture.md`. NOTE: `claude/templates` was committed in `d7e874a` but never linked into
   `~/.claude/` by dotbot until 2026-08-04; the link entry was added so
   `~/.claude/templates/docs-pointer/` actually resolves from other projects.
+- 2026-08-04 — A CHANGELOG is a doc of a DIFFERENT KIND and needs its own handling. Every other doc
+  describes CURRENT STATE (verifiable against code, fixable any time); a changelog is an append-only
+  record for an AUDIENCE — it can't be verified against code, never "drifts", and can only be
+  INCOMPLETE. A missed entry is unrecoverable (you can't reconstruct what mattered to a consumer six
+  months on), so it must land in the same commit. Trigger is "does someone downstream need to know"
+  (feature, breaking change, deprecation, security fix), NOT "did code change" — internal refactors
+  get no entry. Audit technique: `git log $(git describe --tags --abbrev=0)..HEAD --oneline` and look
+  for user-visible commits with no entry. Backfilling from commit messages produces plausible fiction
+  — only reconstruct what the commits genuinely support.
+- 2026-08-04 — DRIFT LESSON (learned the hard way, same session): after splitting docs knowledge
+  across CLAUDE.md / skill / template, the coverage floor got restated in BOTH the rule and the
+  skill. One edit later they contradicted each other, and the "update the project's own CLAUDE.md on
+  convention change" clause was silently dropped from the rule while the skill still asserted it.
+  Fix applied: the skill now POINTS at CLAUDE.md for the floor instead of restating it. Rule of
+  thumb — when the same fact lives in two files, it is already drifting; make one the owner and have
+  the other link.
 - 2026-08-04 — Docs rules are ENFORCED, not just written: `claude/hooks/undocumented-env-vars.py`
   is a Stop hook that diffs the session's added lines for new env var reads (JS/TS, .NET, Python)
   and blocks/reports any that appear in no doc. Modes via `DOCS_ENV_HOOK_MODE`: `dry-run`

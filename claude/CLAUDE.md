@@ -73,15 +73,23 @@ for these rules as FYI reference only; the binding text is HERE.
 - Coverage floor — EVERY project's docs answer: what it is; setup/install (incl. tooling + versions);
   how to run; how to test; structure/architecture. Then by kind:
 
-  | Kind                 | Also needs                                                    |
-  |----------------------|---------------------------------------------------------------|
-  | Deployed service/app | config & env vars; deploy/release steps; how to roll back     |
-  | Library/package      | public API; versioning & compatibility; CHANGELOG             |
-  | CLI tool             | commands & flags; config file/env; exit codes                 |
-  | Infra / dotfiles     | what it manages; bootstrap on a fresh machine; OS parity      |
+  | Kind                 | Also needs                                                |
+  |----------------------|-----------------------------------------------------------|
+  | Deployed service/app | config & env vars; deploy/release steps; how to roll back |
+  | Library/package      | public API; versioning & compatibility                    |
+  | CLI tool             | commands & flags; config file/env; exit codes             |
+  | Infra / dotfiles     | what it manages; bootstrap on a fresh machine; OS parity  |
 
   If one is MISSING, fill it in when your work touches that area and tell me what else is missing —
   don't silently skip it, don't backfill the whole set unasked. Say what you added.
+- A CHANGELOG is a doc of a different kind: it records what changed for an AUDIENCE, not what is true
+  now. It can't be verified against code and can't be reconstructed later — a missed entry is lost
+  information, so it goes in the SAME commit. Add one whenever a change is user-visible: new feature,
+  breaking change, deprecation, security fix, notable behaviour change. Internal refactors get NO entry.
+  Applies to anything with consumers beyond the people editing it (libraries, published packages, CLIs,
+  services with release notes) — not personal/infra repos. Follow the project's existing format.
+- Update the project's own `CLAUDE.md` when a convention changes — it's a doc, and it goes stale the
+  same way.
 - Write an ADR when a choice is non-obvious or hard to reverse: adding/replacing a dependency or
   service, a new architectural pattern, a schema or data-model change, an auth/security boundary, or an
   option you REJECTED for a reason people will re-propose later. Capture context, the decision,
