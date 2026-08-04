@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# hook unit tests need only python3 + git, so run them before the destructive setup below
+echo "running hook tests..."
+for suite in claude/hooks/tests/test_*.py; do
+	echo "  $suite"
+	python3 "$suite" >/dev/null
+done
+
 # link to ~ and cd to it
 cd ..
 cp -rf dotfiles ~/dotfiles
@@ -15,12 +22,12 @@ git config --global user.email "dotfiles@demo.com"
 echo "boostraping..."
 ./script/bootstrap
 
-# load zshrc and check if antibody is working
+# load zshrc and check if antidote is working
 echo "sourcing ~/.zshrc"
 # shellcheck disable=SC1090
 source ~/.zshrc || true
 
-test "$(antibody list | wc -l)" -gt 10 || {
+test "$(antidote list | wc -l)" -gt 10 || {
 	echo "expecting 10+ bundles loaded" >&2
 	exit 1
 }
