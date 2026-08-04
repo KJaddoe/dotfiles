@@ -8,6 +8,8 @@
     ~/.gitignore: git/gitignore
     ~/.gitattributes: git/gitattributes
     ~/.gitconfig.local: git/gitconfig.local
+    ~/.gitmessage: git/template.txt
+    ~/.git-template: git/template
     ~/.npmrc: node/npmrc
     ~/.gemrc: ruby/gemrc
     ~/.psqlrc: postgres/psqlrc

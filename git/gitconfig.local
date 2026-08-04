@@ -44,7 +44,7 @@
 [submodule]
 	fetchJobs = 4
 [commit]
-	template = ~/dotfiles/git/template.txt
+	template = ~/.gitmessage
 	verbose = true
 [log]
 	showSignature = false
@@ -52,7 +52,7 @@
 	rebase = true
 [init]
 	defaultBranch = main
-	templateDir = ~/dotfiles/git/template
+	templateDir = ~/.git-template
 [interactive]
 	diffFilter = delta --color-only
 [delta]
