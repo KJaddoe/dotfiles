@@ -32,9 +32,10 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   `ssh`, whose link carries dir-mode + backup logic dotbot can't express.
 - **`claude/`** — global Claude Code config, symlinked into `~/.claude/` (`settings.json`,
   `CLAUDE.md`, `hooks/`, `memory/`, `skills/`, `keybindings.json`, `templates/`). `templates/`
-  holds starter scaffolding, currently `docs-pointer/` (root `CLAUDE.md` + `docs/` skeleton) used
-  when a project has no docs structure yet. `hooks/` enforce CLAUDE.md rules the harness can
-  check mechanically rather than trusting the model to remember — see `docs/configuration.md` for
+  holds starter scaffolding, currently `docs-pointer/` — a `CLAUDE.md.template`, a `docs/`
+  skeleton, and its own `README.md` carrying the apply steps (copy, then replace the `{...}`
+  placeholders); don't copy the directory wholesale. `hooks/` enforce CLAUDE.md rules the harness
+  can check mechanically rather than trusting the model to remember — see `docs/configuration.md` for
   their switches (ADR 0002 covers why hooks rather than prose alone). The repo-root `CLAUDE.md`
   (this trial) is separate: it is repo-level project instructions, not the global config.
 
@@ -54,6 +55,19 @@ bootstrapped machine before anything is installed.
 `pyproject.toml` at the repo root holds the shared `black` / `pylint` settings (line length 100)
 so formatting is reproducible across machines. Tests use stdlib `unittest` for the same reason —
 no dependency to install. `black` and `pylint` are dev-only; neither is needed to run a hook.
+
+## Other languages
+
+Python is the only language here with a configured formatter, linter, and tests. The rest have
+tooling present but no repo-level command or config, so linting them is currently manual:
+
+| Language | Tooling present                                          | Configured? |
+|----------|----------------------------------------------------------|-------------|
+| Shell    | `# shellcheck disable` directives in 5 scripts            | No config, no runner |
+| Lua      | `stylua` (installed by its own topic), `selene` (neovim role) | No repo-level command |
+| Ansible  | 30 roles under `_system/`                                 | No `ansible-lint` |
+
+Closing those gaps means adding the config and a command here, not just installing the tool.
 
 ## Cross-repo / external relations
 
