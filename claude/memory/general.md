@@ -92,6 +92,53 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
   save it to the untracked session-dir location and skip the commit; still do the spec self-review +
   user-review-gate steps. Only put a spec in the repo if the user asks for it that time.
 
+## Project docs (the repo's own documentation)
+
+- 2026-08-04 — Standing rule the user added after noticing docs were being left stale. Docs update in
+  the SAME commit/PR as the change, never a later pass. The concrete misses that motivated it: a new
+  env var added without recording what the value should be or where to get it; project
+  structure/architecture undocumented; no deploy instructions. Why the first draft wasn't enough — it
+  was purely reactive (fires only when something *changes*), so anything never documented in the first
+  place never triggered, and deployment wasn't listed at all. Hence the **coverage floor**: what it is,
+  setup/install + tooling versions, run, test, structure/architecture, config & env vars,
+  deploy/release, CHANGELOG for versioned projects, project `CLAUDE.md` on convention changes. Filled
+  in when work touches that area (report what's still missing) — NOT backfilled wholesale unasked.
+  Also added: removals must delete the docs for the removed thing; docs must state what the code
+  ACTUALLY does (verified, not aspirational); env vars need name/purpose/required/default/placeholder
+  + where the real value lives — the LOCATION, never the value (ties to Confidentiality & secrets).
+  How to apply: treat the docs edit as the same unit of work as the code edit. Do NOT confuse with
+  "Generated specs & docs" above — project docs ARE a repo deliverable and get committed.
+  Binding copy in CLAUDE.md → Project documentation.
+- 2026-08-04 — Docs knowledge is split across THREE places by design; keep ownership strict or they
+  drift. (1) `CLAUDE.md` → Project documentation = the always-on OBLIGATION (triggers, removals delete
+  docs, coverage floor, verified-not-aspirational) — must stay in context or it never fires; a skill
+  alone can't fix a *forgetting* problem. (2) The `writing-project-docs` SKILL = the procedure
+  (inline/audit/remediate modes, the claim→where-to-verify table, env-var doc fields, anti-patterns).
+  (3) `claude/templates/docs-pointer/` = the STRUCTURE (root `CLAUDE.md` pointer + `docs/README.md`,
+  `architecture.md`, `decisions/` ADRs, `erd.md` for DB projects). Same shape as `pending-pr-review`
+  (`5db1a9e`): terse rule in CLAUDE.md pointing at a skill that holds the detail.
+- 2026-08-04 — The `docs-pointer` template is scoped "why, not what — rationale and relations the code
+  doesn't make obvious", so it deliberately does NOT cover env vars, deploy, setup/run/test or API
+  contracts. Those are "what" and belong in the README or a dedicated `docs/` page — do NOT cram them
+  into `architecture.md`. NOTE: `claude/templates` was committed in `d7e874a` but never linked into
+  `~/.claude/` by dotbot until 2026-08-04; the link entry was added so
+  `~/.claude/templates/docs-pointer/` actually resolves from other projects.
+- 2026-08-04 — Docs rules are ENFORCED, not just written: `claude/hooks/undocumented-env-vars.py`
+  is a Stop hook that diffs the session's added lines for new env var reads (JS/TS, .NET, Python)
+  and blocks/reports any that appear in no doc. Modes via `DOCS_ENV_HOOK_MODE`: `dry-run`
+  (default, logs to `~/.claude/logs/env-doc-hook.log`), `enforce`, `off` — documented in
+  `docs/configuration.md`. Why: the user's complaint ("sometimes lacking") was a COMPLIANCE
+  problem, and prose rule #41 in a file of 40 rules doesn't fix forgetting — same reasoning that
+  produced `block-claude-attribution.py`. Rule of thumb: a "whenever X" behaviour needs a hook;
+  CLAUDE.md alone cannot deliver it. Security constraint: the hook captures variable NAMES only,
+  never the matched line, so secret VALUES in a diff can't leak into the log — locked in by
+  regression tests. Dry-running it against this repo immediately caught a real false-positive
+  class (its own test fixtures), which is why test/fixture paths are excluded.
+- 2026-08-04 — CAVEAT on `writing-project-docs`: it was written inline WITHOUT the subagent
+  baseline/pressure testing that `superpowers:writing-skills` mandates (the user's inline-execution
+  default + this session's no-Agent-tool constraint). Untested against real rationalizations — if it
+  underperforms, run the RED/GREEN loop before assuming the content is wrong.
+
 ## GitHub issue status (project boards)
 
 - 2026-06-23 — Whenever I create a GitHub issue that goes onto a project board, set its **Status = "To Be Refined"** by default (do not leave Status unset). When I **update/edit an existing issue**, also set its Status back to **"To Be Refined"** AND add an issue comment stating that the status was set to "To Be Refined" because of changes made by Claude that a human needs to review. Why: the user wants every Claude-touched issue to land in the refinement column so a human verifies it before it moves forward. How to apply: after the create/edit call, set the project item's Status single-select to the "To Be Refined" option; on edits, post the explanatory comment too. Combine with the "Acting under the user's identity" rule — still draft issue/comment content for approval before the public create/post.
