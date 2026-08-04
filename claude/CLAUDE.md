@@ -90,10 +90,12 @@ for these rules as FYI reference only; the binding text is HERE.
   services with release notes) — not personal/infra repos. Follow the project's existing format.
 - Update the project's own `CLAUDE.md` when a convention changes — it's a doc, and it goes stale the
   same way.
-- Write an ADR when a choice is non-obvious or hard to reverse: adding/replacing a dependency or
-  service, a new architectural pattern, a schema or data-model change, an auth/security boundary, or an
-  option you REJECTED for a reason people will re-propose later. Capture context, the decision,
-  alternatives weighed, and consequences. Don't ADR routine or trivially reversible choices.
+- Write an ADR when a choice is non-obvious AND hard to reverse — reversibility is the test, and it
+  overrides the examples: a load-bearing dependency or service, a new architectural pattern, a schema
+  or data-model change, an auth/security boundary, or an option you REJECTED for a reason people will
+  re-propose later. A swappable library (date formatting, a lint plugin) is routine — no ADR. Capture
+  context, the decision, alternatives weighed, and consequences. Never edit a past ADR to match new
+  reality: it records what was decided then. Supersede it with a new one and link back.
 - Env vars/config/secrets/flags need name, purpose, required vs optional, default, safe placeholder, and
   WHERE the real value lives — the LOCATION, never the value (see Confidentiality & secrets).
 - Use the project's existing docs layout, or `~/.claude/templates/docs-pointer/` if it has none. Project

@@ -5,106 +5,137 @@ description: Use when a change touches behaviour, setup, commands, env vars or c
 
 # Writing Project Docs
 
-## Overview
+A doc that is wrong is worse than one that is missing, because people act on it. Every claim you
+write or keep must be verified against the code; anything you cannot verify gets marked, not guessed.
 
-Docs earn trust only if they match the code. A doc that is wrong is worse than one that is
-missing, because people act on it. Every claim you write or keep must be **verified against the
-code**, and anything you cannot verify gets marked, not guessed.
+The binding obligation and the coverage floor live in `~/.claude/CLAUDE.md` → **Project
+documentation**. If that section is not in your context, read it off disk before classifying
+anything — `MISSING` is undefined without it.
 
-The binding obligation (update docs in the same commit; removals delete docs; the coverage floor)
-lives in `~/.claude/CLAUDE.md` → **Project documentation**. This skill is the *how*.
+## Interface vs implementation
 
-## Three Modes
+The one question this skill exists to answer. Document the **interface**; never restate the
+**implementation**.
 
-| Mode | Trigger | Output |
-|------|---------|--------|
-| **Inline** | You're making a change that hits a doc trigger | Doc edits in the same commit as the code |
-| **Audit** | "Are our docs stale?" / unfamiliar repo / pre-release | A findings table. **No writes.** |
-| **Remediate** | Acting on an audit | Scoped commits, worst findings first |
+| Document it                                                        | Don't                                            |
+|--------------------------------------------------------------------|--------------------------------------------------|
+| Public API, request/response shapes, CLI flags, exit codes          | Internal control flow, algorithms, how a loop works |
+| Env vars, config keys, defaults                                     | Line-by-line narration of a function             |
+| Why a design was chosen, what it rules out, cross-component wiring  | Anything a reader gets faster by opening the file |
 
-Audit and remediate are separate on purpose — present findings before editing, so scope stays the
-user's call.
+"Don't restate the code" means don't narrate internals. Contracts are the code's promise to a
+consumer — they are required even though they are "what". Keep the two apart physically: reference
+material in the README or its own `docs/` page, rationale in `architecture.md` / ADRs.
 
-## Coverage Floor
+## Three modes
 
-**Canonical list lives in `~/.claude/CLAUDE.md` → Project documentation** (universal core plus
-per-archetype extras). Read it there — do not restate it here, or the two drift apart.
+| Mode          | Trigger                                          | Output                                        |
+|---------------|--------------------------------------------------|-----------------------------------------------|
+| **Inline**    | A change hits a doc trigger                      | Doc edits in the same commit as the code      |
+| **Audit**     | "Are our docs stale?", pre-release, unknown repo | A findings table. **No writes, no execution.** |
+| **Remediate** | Acting on an audit                               | One commit per doc area, worst class first     |
 
-Layout: use what the project already has. Starting from nothing, copy
-`~/.claude/templates/docs-pointer/`. That template is scoped **"why, not what"** — reference
-material (setup, run, test, env, deploy) belongs in the README or its own `docs/` page, never
-crammed into `architecture.md`.
+If a task is both (changing code in an unfamiliar repo), do Inline. Audit is a task in its own
+right, not a prerequisite for unrelated work.
 
-## Audit Procedure
+**Drift you notice mid-change:** fix it in the same commit when it is in the area you touched.
+Outside that blast radius, report it — "never bundle unrelated changes" wins.
+
+## Layout
+
+Use what the project already has. Starting from nothing, follow the Apply steps in
+`~/.claude/templates/docs-pointer/README.md` — do not copy the directory wholesale, or you ship
+`CLAUDE.md.template`, the template's own README, and unreplaced `{Project Name}` placeholders.
+
+A repo can be more than one archetype (a published CLI that is also a library). Union the rows.
+
+## Audit procedure
 
 1. **Inventory** — `README*`, `docs/`, ADRs, per-package READMEs, `.env.example`, `CHANGELOG*`,
-   `CLAUDE.md`, doc-site sources.
-2. **Verify every claim against code.** This is the step that gets skipped; it's the whole value:
+   `CLAUDE.md`, doc-site sources, CI configs that tell a human or machine how to build/run/test,
+   and any doc template this repo ships to other repos (a defect there propagates).
 
-   | Claim | Check against |
-   |-------|--------------|
-   | Env vars | grep the code for env access (`process.env`, `IConfiguration`, `os.environ`, …), diff vs `.env.example` + docs — **both directions** |
-   | Commands | `package.json` scripts, `Makefile`, `*.csproj`, CI workflow |
-   | Tooling versions | `.nvmrc`, `.tool-versions`, `mise.toml`, `global.json`, `Dockerfile`, CI matrix |
-   | API contracts | routes/controllers vs documented endpoints and shapes |
-   | Structure | documented tree vs actual directories |
-   | Deploy steps | CI/CD workflows, deploy scripts, infra manifests |
-   | CHANGELOG | see below — audited for OMISSIONS, not correctness |
+2. **Verify claims against code.** The step that gets skipped; it is the whole value.
 
-3. **Gap-check** against the coverage floor.
-4. **Classify** — `WRONG` (contradicts code) → `STALE` (describes something removed) → `MISSING`
-   (floor gap) → `THIN`. Report in that order; it's also the fix order.
-5. **Report** file, line, finding, evidence. Then stop.
+   | Claim             | Check against                                                                            |
+   |-------------------|------------------------------------------------------------------------------------------|
+   | Env vars          | env reads in source, both directions vs `.env.example` + docs — see exclusions below      |
+   | Commands          | `package.json` scripts, `Makefile`, `*.csproj`, CI workflows — **read them, never run them** |
+   | Tooling versions  | `.nvmrc`, `.tool-versions`, `mise.toml`, `global.json`, `Dockerfile`, CI matrix            |
+   | API contracts     | routes/controllers vs documented endpoints and shapes                                     |
+   | Structure         | documented tree vs actual directories                                                     |
+   | Deploy steps      | CI/CD workflows, deploy scripts, infra manifests                                          |
+
+   **Never execute a documented command to test it.** Setup and test scripts overwrite home
+   directories, rewrite global git config, and change login shells. Verify by reading the definition.
+
+   Env var exclusions, or every audit drowns: skip platform vars (`PATH`, `HOME`, `NODE_ENV`, `CI`,
+   …) and test/fixture paths, which legitimately contain invented names.
+
+3. **Scope.** Verify every claim in the coverage-floor docs. Sample elsewhere and **say what you
+   sampled** — an unbounded "verify everything" over a large repo silently becomes partial anyway.
+
+4. **Classify.**
+
+   | Class      | Means                                                                  |
+   |------------|------------------------------------------------------------------------|
+   | `WRONG`    | Doc contradicts the code today                                         |
+   | `CONFLICT` | Doc and code disagree and a human must choose which one changes        |
+   | `STALE`    | Doc was right; the code moved and it didn't (incl. lists that grew)    |
+   | `MISSING`  | Coverage-floor gap, or undocumented behaviour that would surprise someone |
+   | `THIN`     | Present but not enough to act on without reading the source            |
+
+   `CONFLICT` is usually the most valuable finding — never silently "fix" the doc to match the code
+   when the code may be what is wrong.
+
+5. **Report**, one row each, then stop:
+
+   | # | Class | Location (file:line) | Finding | Verified against |
+   |---|-------|----------------------|---------|------------------|
+
+   Also list what you checked and found correct — a bare complaint list doesn't show coverage.
 
 ## Remediation
 
-- Fix `WRONG` first — it's actively misleading. Then `STALE`, then `MISSING`.
-- One commit per doc area; don't bundle a README rewrite with an ADR.
-- Touch only what's wrong or missing. No mass rewrites of prose that is merely *unfashionable*.
-- **Never invent unverifiable facts.** Deploy targets, credential locations, and who-to-ask are
-  usually not derivable from the repo. Write `TODO(owner): …`, surface it in your report, and ask.
+Fix `WRONG` and `CONFLICT` first (raise `CONFLICT`, don't decide it), then `STALE`, then `MISSING`,
+then `THIN` — but a severe item outranks a trivial one in a higher class. Deleting a doc for a
+subsystem that no longer exists is a valid fix, not a cop-out.
 
-## Auditing a CHANGELOG
+**Never invent.** Deploy targets, credential locations and who-to-ask are rarely derivable from a
+repo. Leave `TODO:` with what you need and who could answer if you know, surface it in your report,
+and ask. Don't guess a plausible answer.
 
-A changelog is the one doc you cannot check against current code — it records history for an
-audience, so it never "drifts", it can only be **incomplete**. Audit for omissions instead:
+**Generated docs** (OpenAPI, typedoc, docfx): fix the source or regenerate. Hand-editing an
+artifact the next build overwrites is worse than leaving it stale.
 
-```sh
-git log $(git describe --tags --abbrev=0)..HEAD --oneline
-```
+**Docs outside the repo** (Confluence, Notion, a separate docs site): "same commit" is impossible.
+Make the change, and report what needs updating externally — never assume someone else will.
 
-Every user-visible commit in that range should have an entry. Flag the ones that don't. Internal
-refactors, test-only changes, and chores correctly have none — absence is a finding only when the
-change was visible to a consumer.
+## Env vars & config
 
-Writing an entry: describe the change from the **consumer's** side (what they can now do, what
-broke, what to migrate to), not the implementation. Breaking changes say what to change, not just
-that something changed. Follow the project's existing format and headings.
+Field list is in `~/.claude/CLAUDE.md`. Two cases it doesn't cover:
 
-Remediation caveat: reconstructing old entries from commit messages produces plausible fiction.
-Backfill only what the commits genuinely support, and flag the rest for a human.
+- **Harness/platform-set vars** (set by the tooling, not the user) — say so explicitly and skip
+  "where the value comes from"; the answer is "you don't set this".
+- **Local behaviour switches** with safe defaults — no provenance needed. Say that in one clause,
+  not an apologetic paragraph.
 
-## Documenting Env Vars & Config
+Record the **location** of a real value, never the value.
 
-Every entry needs: name · purpose · required vs optional · default · safe example placeholder ·
-**where the real value comes from** (vault item, cloud config, who to ask, or `generate with X`).
+## CHANGELOG
 
-Record the **location, never the value**. No real secrets in docs, examples, or commit history.
+A changelog records history for an audience, so it never drifts — it can only be incomplete, and a
+missed entry is unrecoverable. One entry per **user-visible change**, not per commit; a feature
+delivered in fourteen commits is one entry. Internal refactors get none.
 
-## Anti-Patterns
+In-flight entries accumulate under `Unreleased`, promoted and dated when a release is cut.
 
-| ❌ | ✅ |
-|----|----|
-| Documenting intended behaviour | Document what the code does *today* |
-| Restating what code already says | Capture the *why* and what code can't show |
-| Inventing deploy steps to fill a gap | `TODO(owner)` + ask |
-| Real secret as the "example" value | Placeholder + where the real one lives |
-| Backfilling every gap unasked | Fill what your change touches; report the rest |
-| Deleting a feature, leaving its docs | Same commit removes both |
+Auditing: **skip entirely if the project is changelog-exempt** (personal/infra, no consumers) or has
+no releases. Otherwise compare entries against the range since the last release —
+`git describe --tags --abbrev=0` gives the last tag, but **it errors when there are no tags**; fall
+back to the whole history or the last release commit. Watch for per-package tag prefixes in
+monorepos and for shallow CI clones with no tags fetched.
 
-## Red Flags — Stop
-
-- "I'll document it in a follow-up" → it won't happen; same commit.
-- "This is probably how it deploys" → you're inventing. Verify or `TODO`.
-- "The docs say X, close enough" → verify against code or delete the claim.
-- "Just a small env var" → undocumented env vars are the #1 onboarding blocker.
+Write entries from the consumer's side — what they can now do, what broke, what to migrate to.
+Backfilling old entries from commit messages produces plausible fiction; reconstruct only what the
+commits genuinely support and flag the rest.
