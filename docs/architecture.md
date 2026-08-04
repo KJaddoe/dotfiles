@@ -43,11 +43,13 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
 Hooks are plain Python 3, no third-party runtime dependencies — they must work on a freshly
 bootstrapped machine before anything is installed.
 
-| Task   | Command                                                       |
-|--------|---------------------------------------------------------------|
-| Test   | `python3 claude/hooks/tests/test_undocumented_env_vars.py`     |
-| Format | `black claude/hooks/`                                          |
-| Lint   | `pylint claude/hooks/`                                         |
+| Task   | Command                                                              |
+|--------|----------------------------------------------------------------------|
+| Test   | `for s in claude/hooks/tests/test_*.py; do python3 "$s"; done`        |
+| Format | `black claude/hooks/`                                                 |
+| Lint   | `pylint claude/hooks/`                                                |
+
+`script/test` runs the hook suites first, before its (destructive) bootstrap steps.
 
 `pyproject.toml` at the repo root holds the shared `black` / `pylint` settings (line length 100)
 so formatting is reproducible across machines. Tests use stdlib `unittest` for the same reason —
