@@ -43,7 +43,7 @@ Exported from `zsh/zshrc`. Override any of them in `~/.localrc`, which is source
 | Variable                | Purpose                                                | Required | Default          |
 |-------------------------|--------------------------------------------------------|----------|------------------|
 | `DOTFILES`              | Repo location; must match the real clone path           | Yes      | `~/dotfiles`     |
-| `PROJECTS`              | Project folder                                          | No       | `~/projects`     |
+| `PROJECTS`              | Project folder; `c [tab]` jumps into it                 | No       | `~/projects`     |
 | `EDITOR`                | Terminal editor                                         | No       | `nvim`           |
 | `VEDITOR`               | Visual/GUI editor                                       | No       | `code`           |
 | `ZSH_TMUX_AUTOSTART`    | Start tmux on shell launch                              | No       | `true`           |
