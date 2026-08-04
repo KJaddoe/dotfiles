@@ -68,7 +68,7 @@ to install the tmux plugins you will have to manually do `prefix + I` to install
 
 ## Claude Code
 
-The `claude` topic installs [Claude Code][claude-code] and restores the global config. Its `install.sh` installs the binary, then adds the configured marketplaces and plugins. Dotbot symlinks `settings.json`, `CLAUDE.md`, `hooks/` and `memory/` into `~/.claude`, so they stay in sync with the repo. You will need to authenticate once with `claude` on a new machine.
+The `claude` topic installs [Claude Code][claude-code] and restores the global config. Its `install.sh` installs the binary, then adds the configured marketplaces and plugins. Dotbot symlinks `settings.json`, `CLAUDE.md`, `keybindings.json`, `hooks/`, `memory/`, `skills/` and `templates/` into `~/.claude`, so they stay in sync with the repo. You will need to authenticate once with `claude` on a new machine.
 
 [claude-code]: https://github.com/anthropics/claude-code
 
