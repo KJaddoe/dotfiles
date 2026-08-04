@@ -7,6 +7,7 @@ do not get SessionStart). The binding RULES live in ~/.claude/CLAUDE.md (auto-lo
 instructions); this injects FACTS/FYI only: the project MEMORY.md index, the global memory
 index, and general.md rationale.
 """
+
 import json
 import os
 import sys
@@ -14,14 +15,14 @@ from pathlib import Path
 
 
 def load_context():
-    project_dir = os.environ.get('CLAUDE_PROJECT_DIR', os.getcwd())
+    project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
     # /Users/you/Projects/foo -> -Users-you-Projects-foo
-    mapped = project_dir.replace('/', '-').replace('.', '-')
+    mapped = project_dir.replace("/", "-").replace(".", "-")
 
     home = Path.home()
-    memory_file = home / '.claude' / 'projects' / mapped / 'memory' / 'MEMORY.md'
-    global_idx = home / '.claude' / 'memory' / 'memory.md'
-    global_general = home / '.claude' / 'memory' / 'general.md'
+    memory_file = home / ".claude" / "projects" / mapped / "memory" / "MEMORY.md"
+    global_idx = home / ".claude" / "memory" / "memory.md"
+    global_general = home / ".claude" / "memory" / "general.md"
 
     parts = [
         "The following is FYI / background context — facts, project notes, and rationale. "
@@ -32,7 +33,7 @@ def load_context():
 
     if memory_file.exists():
         lines = memory_file.read_text().splitlines()[:200]
-        parts.append(f"=== Project Memory: {project_dir} ===\n" + '\n'.join(lines))
+        parts.append(f"=== Project Memory: {project_dir} ===\n" + "\n".join(lines))
     else:
         parts.append(f"(no project MEMORY.md at {memory_file})")
 
@@ -41,9 +42,9 @@ def load_context():
 
     if global_general.exists():
         lines = global_general.read_text().splitlines()[:200]
-        parts.append("=== Global Memory (FYI / rationale): general.md ===\n" + '\n'.join(lines))
+        parts.append("=== Global Memory (FYI / rationale): general.md ===\n" + "\n".join(lines))
 
-    return '\n\n'.join(parts)
+    return "\n\n".join(parts)
 
 
 def main():
@@ -52,14 +53,14 @@ def main():
     except Exception:
         data = {}
 
-    event = data.get('hook_event_name') or 'PreToolUse'
+    event = data.get("hook_event_name") or "PreToolUse"
 
     # PPID = the Claude Code process — stable within a session, new for each subagent.
     flag_path = Path(f"/tmp/claude-memory-loaded-{os.getppid()}")
 
     # PreToolUse is only a fallback: inject once per process if SessionStart didn't already.
     # SessionStart ALWAYS (re)injects — including after compaction — then refreshes the flag.
-    if event == 'PreToolUse' and flag_path.exists():
+    if event == "PreToolUse" and flag_path.exists():
         sys.exit(0)
 
     flag_path.touch()

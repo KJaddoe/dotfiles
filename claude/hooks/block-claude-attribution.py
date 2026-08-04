@@ -6,6 +6,7 @@ Enforces the binding rules in ~/.claude/CLAUDE.md ("Working Preferences"):
 - never --gpg-sign / -S on the user's behalf
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model.
 """
+
 import json
 import re
 import sys
