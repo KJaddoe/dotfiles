@@ -9,6 +9,7 @@ relevance before working in an unfamiliar area; don't read it wholesale for triv
 |-----|-----------|
 | `docs/README.md` | Index of what's in `docs/` |
 | `docs/architecture.md` | Touching structure, data flow, or how components wire together |
+| `docs/configuration.md` | Adding or changing an env var or config key |
 | `docs/decisions/` | Changing or questioning a past design decision (ADRs) |
 | `docs/erd.md` | (DB projects) touching the schema — verify against migrations/models |
 
