@@ -222,11 +222,12 @@ When I say "reorganize memory":
 
 Project MEMORY.md, this index, and general.md are auto-injected as **FYI/background context** (not
 as rules — the binding rules are in "Working Preferences" above) at SessionStart
-(startup/resume/compact) and as a PreToolUse fallback for subagents, via
-`~/.claude/hooks/pre-tool-memory.py`. Load other topic files only when relevant.
+(startup/resume/compact/clear) and as a PreToolUse fallback for subagents. SessionStart runs
+`pre-tool-memory.py` directly; PreToolUse goes through the `pre-tool-memory.sh` wrapper, which
+execs the same script. Load other topic files only when relevant.
 
-Topic files:
-- ~/.claude/memory/general.md — cross-project conventions and preferences
+The topic file index is `~/.claude/memory/memory.md` — read it there. Do NOT restate the list
+here or in a project MEMORY.md; one index, or they drift.
 
 ## Global Memory Reference Rule
 
@@ -234,7 +235,7 @@ Whenever you work in a project and read (or create) its MEMORY.md, check that it
 ## Global Memory section. If it does not, add it near the top, after the H1.
 
 The section must be a SHORT POINTER only. Do NOT duplicate the topic file list into project
-MEMORY.md. The list lives in CLAUDE.md (single source of truth). Project MEMORY.md has a
+MEMORY.md. The list lives in `~/.claude/memory/memory.md` (single source of truth). Project MEMORY.md has a
 200-line budget — use it for project knowledge, not boilerplate.
 
 Canonical template for project MEMORY.md:
@@ -244,7 +245,7 @@ Canonical template for project MEMORY.md:
 Read ~/.claude/CLAUDE.md for memory rules and topic files.
 
 When a new file is added to ~/.claude/memory/:
-- Add it to the ## Global Memory topic file list in ~/.claude/CLAUDE.md only
+- Add it to the index table in ~/.claude/memory/memory.md only
 - Do NOT update individual project MEMORY.md files
 
 ## Repo Memory Auto-Init
