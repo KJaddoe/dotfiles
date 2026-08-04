@@ -31,8 +31,27 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   they do **not** symlink plain configs (that's dotbot's job — see ADR 0001). The exception is
   `ssh`, whose link carries dir-mode + backup logic dotbot can't express.
 - **`claude/`** — global Claude Code config, symlinked into `~/.claude/` (`settings.json`,
-  `CLAUDE.md`, `hooks/`, `memory/`, `skills/`, `keybindings.json`). The repo-root `CLAUDE.md`
+  `CLAUDE.md`, `hooks/`, `memory/`, `skills/`, `keybindings.json`, `templates/`). `templates/`
+  holds starter scaffolding, currently `docs-pointer/` (root `CLAUDE.md` + `docs/` skeleton) used
+  when a project has no docs structure yet. `hooks/` enforce CLAUDE.md rules the harness can
+  check mechanically rather than trusting the model to remember — see `docs/configuration.md` for
+  their switches (ADR 0002 covers why hooks rather than prose alone). The repo-root `CLAUDE.md`
   (this trial) is separate: it is repo-level project instructions, not the global config.
+
+## Python tooling (hooks)
+
+Hooks are plain Python 3, no third-party runtime dependencies — they must work on a freshly
+bootstrapped machine before anything is installed.
+
+| Task   | Command                                                       |
+|--------|---------------------------------------------------------------|
+| Test   | `python3 claude/hooks/tests/test_undocumented_env_vars.py`     |
+| Format | `black claude/hooks/`                                          |
+| Lint   | `pylint claude/hooks/`                                         |
+
+`pyproject.toml` at the repo root holds the shared `black` / `pylint` settings (line length 100)
+so formatting is reproducible across machines. Tests use stdlib `unittest` for the same reason —
+no dependency to install. `black` and `pylint` are dev-only; neither is needed to run a hook.
 
 ## Cross-repo / external relations
 
