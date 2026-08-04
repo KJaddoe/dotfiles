@@ -38,13 +38,11 @@ for these rules as FYI reference only; the binding text is HERE.
   manually via the `gcs` alias).
 - Make small, focused, easy-to-revert commits: one logical change per commit, never bundle unrelated
   changes. Prefer several scoped commits over one large mixed one, even within a single task.
-- Issue work: create the branch with `gh issue develop <n> … --checkout` using GitHub's default name —
-  never `--name`, never a bare `git checkout -b`.
-- When starting work on a tracked issue, set its board Status to "In Progress" before editing code.
-  Applies to every issue picked up, including ones already on the board from earlier.
-- For non-trivial or customer-reported work, default to creating a tracked issue (with the right board
-  fields) BEFORE editing code; confirm scope first. Skip only for trivial/throwaway changes or repos with
-  no tracker.
+- Issue work, in this order: for non-trivial or customer-reported work create a tracked issue (with the
+  right board fields) BEFORE editing code, confirming scope first — skip only for trivial/throwaway
+  changes or repos with no tracker. Set its board Status to "In Progress" before editing, including for
+  issues already on the board. Create the branch with `gh issue develop <n> … --checkout` using GitHub's
+  default name — never `--name`, never a bare `git checkout -b`.
 - Reviewing a PR ("review" / "add comments" / "leave feedback"): build ONE pending GitHub review, present
   each inline comment/`suggestion` for sign-off BEFORE attaching it, and submit only on explicit
   approval. Don't edit working-tree files as the "fix" path. Use the `pending-pr-review` skill.
@@ -63,15 +61,14 @@ for these rules as FYI reference only; the binding text is HERE.
   matching the project's existing doc style. Do NOT add inline narration comments explaining what a
   single line does — keep line-level code self-explanatory. Config files stay comment-free (only what's
   functionally required, e.g. shebangs); commit messages stay terse.
-- By DEFAULT don't commit generated planning artifacts (specs, design docs, implementation plans). Write
-  them to the untracked session dir `~/.claude/projects/<mapped-path>/specs/` — this overrides the
-  brainstorming skill's commit-to-repo default. Only commit a spec if asked that time.
-- Put scratch files in the session scratchpad dir; namespace any `/tmp` scripts per-project. Never
-  overwrite or `rm` a temp file you didn't create this session without asking.
-- When asked to build something "to test" / "to try out" / "for me to test", it's a LOCAL scratch
-  (working tree or stash) — do NOT commit it. Commit only what the user explicitly named as a
-  deliverable, and don't bundle unrequested refactors into that commit. "Commit X and build Y to test"
-  means: commit X; build Y locally; nothing more.
+- Keep non-deliverables OUT of the repo. Generated planning artifacts (specs, design docs, plans) go to
+  the untracked session dir `~/.claude/projects/<mapped-path>/specs/`, overriding the brainstorming
+  skill's commit-to-repo default; only commit one if asked that time. Scratch goes in the session
+  scratchpad; namespace `/tmp` scripts per-project, and never overwrite or `rm` a temp file you didn't
+  create this session without asking. Anything built "to test" / "to try out" / "for me to test" is
+  LOCAL scratch (working tree or stash). Commit only what was explicitly named as a deliverable and
+  don't bundle unrequested refactors — "commit X and build Y to test" means: commit X, build Y
+  locally, nothing more.
 - In Markdown, align table columns — pad every cell with trailing spaces so the pipes line up and the
   raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
 
@@ -115,33 +112,26 @@ for these rules as FYI reference only; the binding text is HERE.
 - Use the `writing-project-docs` skill for the audit/remediate procedure and per-doc-type guidance.
 
 ### Code quality (all languages)
-- Format code whenever possible: use the project's configured formatter (its config/scripts); if the
-  project defines none, use a locally available formatter for the language. Only format code you actually
-  touched — never mass-reformat untouched lines or files (it buries the real change in noise).
-- Lint every change: run the project's linter, or a locally available one for the language when the
-  project defines none. If the project has NO linting set up, notify me and propose linter options rather
-  than silently skipping.
+- Format and lint every change: use the project's configured tooling, or a locally available tool for
+  the language when it defines none. Only format code you actually touched — never mass-reformat
+  untouched lines or files (it buries the real change in noise). If the project has NO linting or test
+  setup at all, notify me and propose options rather than silently skipping; when you introduce one,
+  commit its config so it's reproducible across machines, keeping macOS/Linux parity.
 - Drive lint messages as close to zero as possible — fix as many warnings as you can. Fix the root cause;
   don't silence warnings with blanket disables (`eslint-disable`, `#pragma warning disable`, `any` casts).
   If a suppression is genuinely unavoidable, justify it.
-- Write tests for code whenever possible; if the project has NO test setup, notify me and propose
-  options rather than skipping. Every suite covers three kinds of case, each at the layer where it's real: the happy path;
-  edge/boundary cases; and what must NOT work and must stay broken — authorization/access denials, invalid
+- Write tests whenever possible. Every suite covers three kinds of case, each at the layer where it's
+  real: the happy path; edge/boundary cases; and what must NOT work and must stay broken — authorization/access denials, invalid
   or malformed input rejection, and abuse/injection (SQL injection + authz bypass server-side;
   output-escaping/XSS, authz-gated UI, and input rejection client-side). When you find a bug or a bad input,
   lock it out with a regression test asserting it stays rejected.
-- Definition of done: before claiming work complete, format + lint + tests must all pass AND the docs
-  the change touches must be updated (see Project documentation), and report the actual results
-  honestly — say so if anything fails or was skipped. Evidence before assertions. When the suite is
-  large/slow, run the changed-scope (affected) tests rather than the whole suite every time, and state
-  which scope was run; run the full suite when it's cheap or before a merge/release.
-- When introducing a formatter/linter/test setup, commit its config so it's reproducible across machines,
-  keeping macOS/Linux parity.
+- Definition of done: before claiming work complete, every gate above passes — format, lint, tests, and
+  the docs the change touches — and you report the actual results honestly, saying so if anything failed
+  or was skipped. Evidence before assertions. On a large/slow suite run the changed-scope (affected)
+  tests and state which scope was run; run the full suite when it's cheap or before a merge/release.
 - Follow the codebase's existing conventions: read the surrounding code before writing, mirror its
   patterns, naming, and already-chosen libraries, and reuse existing helpers. Don't add a new dependency
   or introduce a parallel way of doing something that already exists without sign-off.
-- Never hardcode secrets (credentials, tokens, API keys) in source — use env vars, config, or a secret
-  store. (The dotfiles repo is public; a leaked secret in a commit is hard to undo.)
 - Check dependencies for known vulnerabilities when you touch the manifest and before a release —
   `npm audit`, `dotnet list package --vulnerable --include-transitive`, `pip-audit`. Report what's
   found with severity; don't silently auto-bump majors. Before ADDING a dependency, check what it
@@ -161,9 +151,10 @@ for these rules as FYI reference only; the binding text is HERE.
   identifying details into git-tracked memory or any committed dotfiles file (the dotfiles repo is
   PUBLIC). Keep tracked content generic ("a client RN app", "the project"); put client-specific notes in
   an untracked location.
-- NEVER store real secrets (passwords, tokens, TOTP/2FA secrets, API keys) or customer PII in ANY memory
-  file — public OR local. Local project memory still auto-injects into context, so it is not a safe place
-  for secrets either. Record where the value lives (e.g. compose.yml, per-session) instead of the value.
+- NEVER put real secrets (passwords, tokens, TOTP/2FA secrets, API keys) or customer PII in ANY memory
+  file — public OR local, since local memory still auto-injects into context — nor hardcode them in
+  source, where env vars, config, or a secret store are the answer. Record where the value lives (e.g.
+  compose.yml, per-session), never the value itself.
 
 ### Stack-specific (apply only when it fits)
 - Don't run a one-off build/type-check (`ng build`, `dotnet build`, …) just to verify changes while a
