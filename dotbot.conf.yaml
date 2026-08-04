@@ -41,6 +41,9 @@
     ~/.claude/skills:
       path: claude/skills
       create: true
+    ~/.claude/templates:
+      path: claude/templates
+      create: true
 
 - shell:
     - [git submodule update --init --recursive, Installing submodules]
