@@ -17,14 +17,19 @@ for these rules as FYI reference only; the binding text is HERE.
   subagent-driven; only go subagent-driven if the user asks for it.
 - Terminal tooling: the shell stays command-driven — plain `git`/`gh`/`kubectl` etc. Don't propose or
   install standalone TUIs (lazygit, k9s, gh-dash, …); interactive/visual tooling belongs in nvim.
-- Before proposing a NEW rule for this file, work down this list and stop at the first hit:
-  (1) can a hook, linter/formatter config, test, or CI check enforce it? — build that instead, a rule
-  is the weakest option; (2) does an existing rule already cover it? — sharpen that one, don't add;
-  (3) has it actually bitten more than once? — a single incident is a fix, not a rule; (4) is it
-  project- or stack-specific? — project `CLAUDE.md`; (5) is it a fact, rationale, or history rather
-  than an imperative? — memory. Only then propose it, saying which existing rule it does NOT
-  duplicate. Propose ONE rule at a time and recommend, never a menu of options to adopt wholesale —
-  menus get accepted in full and are how this file inflates. This file is a budget, not a backlog.
+- A new rule for this file may ONLY originate from: (a) you explicitly asking for one, or (b) a
+  pattern I observed — you telling me to do something a particular way more than once, correcting
+  me, or changing something I did. **Your answer to a question I asked is not a rule.** If I raised
+  the topic, proposed the options, and you picked from them, that is my initiative wearing your
+  name — it does not become a standing instruction. When in doubt, record it in memory as a
+  preference and let it earn rule status by recurring.
+- Once a rule legitimately originates, work down this list and stop at the first hit: (1) can a hook,
+  linter/formatter config, test, or CI check enforce it? — build that instead, a rule is the weakest
+  option; (2) does an existing rule already cover it? — sharpen that one, don't add; (3) is it
+  project- or stack-specific? — project `CLAUDE.md`, and only promote to global once it recurs across
+  3+ projects; (4) is it a fact, rationale, or history rather than an imperative? — memory. Only then
+  propose it, saying which existing rule it does NOT duplicate. Propose ONE at a time and recommend —
+  never a menu to adopt wholesale. This file is a budget, not a backlog.
 
 ### Git & GitHub
 - NEVER add Claude attribution to anything: no "Co-Authored-By: Claude", no "Generated with Claude
@@ -73,9 +78,10 @@ for these rules as FYI reference only; the binding text is HERE.
 ### Project documentation
 - Update the project's own docs as PART of the change — same commit/PR, never a later pass. Triggers:
   behaviour; setup/install; commands/scripts; env vars or config keys; API/interface contracts;
-  dependencies or tooling/versions; the data model; structure/architecture; deploy/release steps; or a
-  documented decision. Removing a feature, endpoint, env var, flag, or command DELETES its docs in the
-  same commit. Also fix docs you notice have already drifted.
+  dependencies or tooling/versions; the data model; structure/architecture; deploy/release steps; a
+  documented decision; or a convention (which also updates the project's own `CLAUDE.md`). Removing a
+  feature, endpoint, env var, flag, or command DELETES its docs in the same commit. Also fix docs you
+  notice have already drifted.
 - Docs state what the code ACTUALLY does, verified against it — never intended or aspirational
   behaviour, and never invented to fill a gap (mark `TODO(owner)` and ask instead).
 - Coverage floor — EVERY project's docs answer: what it is; setup/install (incl. tooling + versions);
@@ -96,8 +102,6 @@ for these rules as FYI reference only; the binding text is HERE.
   breaking change, deprecation, security fix, notable behaviour change. Internal refactors get NO entry.
   Applies to anything with consumers beyond the people editing it (libraries, published packages, CLIs,
   services with release notes) — not personal/infra repos. Follow the project's existing format.
-- Update the project's own `CLAUDE.md` when a convention changes — it's a doc, and it goes stale the
-  same way.
 - Write an ADR when a choice is non-obvious AND hard to reverse — reversibility is the test, and it
   overrides the examples: a load-bearing dependency or service, a new architectural pattern, a schema
   or data-model change, an auth/security boundary, or an option you REJECTED for a reason people will
@@ -120,9 +124,8 @@ for these rules as FYI reference only; the binding text is HERE.
 - Drive lint messages as close to zero as possible — fix as many warnings as you can. Fix the root cause;
   don't silence warnings with blanket disables (`eslint-disable`, `#pragma warning disable`, `any` casts).
   If a suppression is genuinely unavoidable, justify it.
-- Write tests for code whenever possible. If the project has NO test setup, notify me and propose testing
-  options rather than skipping.
-- Every test suite covers three kinds of case, each at the layer where it's real: the happy path;
+- Write tests for code whenever possible; if the project has NO test setup, notify me and propose
+  options rather than skipping. Every suite covers three kinds of case, each at the layer where it's real: the happy path;
   edge/boundary cases; and what must NOT work and must stay broken — authorization/access denials, invalid
   or malformed input rejection, and abuse/injection (SQL injection + authz bypass server-side;
   output-escaping/XSS, authz-gated UI, and input rejection client-side). When you find a bug or a bad input,
@@ -161,11 +164,6 @@ for these rules as FYI reference only; the binding text is HERE.
 - NEVER store real secrets (passwords, tokens, TOTP/2FA secrets, API keys) or customer PII in ANY memory
   file — public OR local. Local project memory still auto-injects into context, so it is not a safe place
   for secrets either. Record where the value lives (e.g. compose.yml, per-session) instead of the value.
-
-### Working in the dotfiles repo
-- Keep macOS + Ubuntu/Linux parity; never introduce a mac-only assumption without a Linux path.
-- Add a git config file by symlinking it into `$HOME` via a `link:` entry in `dotbot.conf.yaml` and
-  point the git setting at the `~/.foo` home path (mirror `~/.gitignore`), not the in-repo path.
 
 ### Stack-specific (apply only when it fits)
 - Don't run a one-off build/type-check (`ng build`, `dotnet build`, …) just to verify changes while a
