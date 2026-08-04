@@ -56,6 +56,18 @@ bootstrapped machine before anything is installed.
 so formatting is reproducible across machines. Tests use stdlib `unittest` for the same reason —
 no dependency to install. `black` and `pylint` are dev-only; neither is needed to run a hook.
 
+## Git commit hook
+
+`git/template/hooks/pre-commit` ships via `init.templateDir` (`~/.git-template`), so **every repo
+created with `git init` from this machine** gets it — existing repos do not, copy it in manually.
+
+It enforces the format+lint half of the definition of done on staged files: whitespace errors, then
+prettier/eslint, black/pylint, shellcheck, stylua, and `dotnet format`. Each tool runs only when it
+is **installed AND the project configures it**, so it stays silent in repos that haven't opted in.
+It checks, never rewrites what you staged. Bypass with `SKIP_HOOKS=1 git commit …`.
+
+Tests are deliberately excluded — a hook slow enough to be bypassed enforces nothing.
+
 ## Other languages
 
 Python is the only language here with a configured formatter, linter, and tests. The rest have
