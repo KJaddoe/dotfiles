@@ -1,21 +1,51 @@
 #!/usr/bin/env python3
-"""PreToolUse(Bash) guard: block git commits that carry Claude attribution or gpg-sign.
+"""PreToolUse(Bash) guard: block git commands that record Claude attribution or gpg-sign.
 
 Enforces the binding rules in ~/.claude/CLAUDE.md ("Working Preferences"):
 - no "Co-Authored-By: Claude" / "Generated with Claude Code" / 🤖 trailers
 - never --gpg-sign / -S on the user's behalf
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model.
+
+Scope is the git subcommands that record a message (commit, merge, tag, revert, cherry-pick,
+am, rebase, notes, stash), not the substring "commit" — so read-only history inspection
+(`git log … | grep`, and prose like "commits ahead") is never blocked, while attribution can
+no longer slip through `git merge -m` or `git tag -a -m`. The gpg check stays scoped to
+`git commit`, which is what the rule names.
 """
 
 import json
 import re
 import sys
 
+GIT_FLAGS = r"(?:\s+-{1,2}[\w-]+(?:[= ]\S+)?)*"
+
+WRITE_SUBCOMMAND = re.compile(
+    rf"\bgit\b{GIT_FLAGS}\s+(commit|merge|tag|revert|cherry-pick|am|rebase|notes|stash)\b",
+    re.IGNORECASE,
+)
+
+COMMIT_SUBCOMMAND = re.compile(rf"\bgit\b{GIT_FLAGS}\s+commit\b", re.IGNORECASE)
+
+
+def writes_history(cmd):
+    """Report whether a shell command invokes a git subcommand that records a message.
+
+    Read-only subcommands (log, show, diff, …) are excluded so that inspecting history —
+    including grepping it for attribution — is never blocked. Matching the subcommand
+    rather than the bare substring "commit" also stops prose like "commits ahead" from
+    tripping the guard.
+
+    :param cmd: full shell command, possibly compound
+    :return: True when a history-writing git subcommand is present
+    """
+    return bool(WRITE_SUBCOMMAND.search(cmd))
+
 
 def main():
+    """Block a git invocation that would record Claude attribution or gpg-sign a commit."""
     try:
         data = json.load(sys.stdin)
-    except Exception:
+    except (json.JSONDecodeError, UnicodeDecodeError):
         sys.exit(0)
 
     if data.get("tool_name") != "Bash":
@@ -24,8 +54,7 @@ def main():
     cmd = (data.get("tool_input") or {}).get("command") or ""
     low = cmd.lower()
 
-    # Only inspect git commit commands (handles compound commands like `cd x && git commit …`)
-    if "commit" not in low or "git" not in low:
+    if not writes_history(cmd):
         sys.exit(0)
 
     attribution = [
@@ -36,8 +65,12 @@ def main():
     ]
     hit = next((p for p in attribution if p in low), None)
 
-    # --gpg-sign, or -S in a short-flag cluster (-S, -Sm, -amS). Case-sensitive: -s is --signoff, allowed.
-    gpg = ("--gpg-sign" in cmd) or bool(re.search(r"(?<![\w-])-[A-Za-z]*S[A-Za-z]*(?![\w-])", cmd))
+    # --gpg-sign, or -S in a short-flag cluster (-S, -Sm, -amS). Case-sensitive: -s is
+    # --signoff, allowed. Scoped to `git commit` — the rule names commit/--amend, not
+    # tag or merge signing.
+    gpg = bool(COMMIT_SUBCOMMAND.search(cmd)) and (
+        ("--gpg-sign" in cmd) or bool(re.search(r"(?<![\w-])-[A-Za-z]*S[A-Za-z]*(?![\w-])", cmd))
+    )
 
     if hit or gpg:
         reasons = []
@@ -46,10 +79,10 @@ def main():
         if gpg:
             reasons.append("--gpg-sign / -S")
         msg = (
-            "BLOCKED by user policy: git commit must not include "
+            "BLOCKED by user policy: a git command that records history must not include "
             + " or ".join(reasons)
-            + ".\nSee ~/.claude/CLAUDE.md (Working Preferences): no Claude attribution trailers, and "
-            "never gpg-sign on the user's behalf. Remove it and retry."
+            + ".\nSee ~/.claude/CLAUDE.md (Working Preferences): no Claude attribution "
+            "trailers, and never gpg-sign on the user's behalf. Remove it and retry."
         )
         print(msg, file=sys.stderr)
         sys.exit(2)
