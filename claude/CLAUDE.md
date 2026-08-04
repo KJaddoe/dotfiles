@@ -17,6 +17,14 @@ for these rules as FYI reference only; the binding text is HERE.
   subagent-driven; only go subagent-driven if the user asks for it.
 - Terminal tooling: the shell stays command-driven — plain `git`/`gh`/`kubectl` etc. Don't propose or
   install standalone TUIs (lazygit, k9s, gh-dash, …); interactive/visual tooling belongs in nvim.
+- Before proposing a NEW rule for this file, work down this list and stop at the first hit:
+  (1) can a hook, linter/formatter config, test, or CI check enforce it? — build that instead, a rule
+  is the weakest option; (2) does an existing rule already cover it? — sharpen that one, don't add;
+  (3) has it actually bitten more than once? — a single incident is a fix, not a rule; (4) is it
+  project- or stack-specific? — project `CLAUDE.md`; (5) is it a fact, rationale, or history rather
+  than an imperative? — memory. Only then propose it, saying which existing rule it does NOT
+  duplicate. Propose ONE rule at a time and recommend, never a menu of options to adopt wholesale —
+  menus get accepted in full and are how this file inflates. This file is a budget, not a backlog.
 
 ### Git & GitHub
 - NEVER add Claude attribution to anything: no "Co-Authored-By: Claude", no "Generated with Claude
@@ -131,6 +139,10 @@ for these rules as FYI reference only; the binding text is HERE.
   or introduce a parallel way of doing something that already exists without sign-off.
 - Never hardcode secrets (credentials, tokens, API keys) in source — use env vars, config, or a secret
   store. (The dotfiles repo is public; a leaked secret in a commit is hard to undo.)
+- Check dependencies for known vulnerabilities when you touch the manifest and before a release —
+  `npm audit`, `dotnet list package --vulnerable --include-transitive`, `pip-audit`. Report what's
+  found with severity; don't silently auto-bump majors. Before ADDING a dependency, check what it
+  pulls in transitively, when it was last released, and whether the stdlib or an existing dep covers it.
 - Leave the tree clean: delete dead code, commented-out code, and debug artifacts you introduced (stray
   logging, `debugger`/`console.log`, throwaway TODOs) rather than shipping them — git keeps the history.
 - Guard external input: validate/sanitize it, use parameterized queries (never string-concatenated SQL),
