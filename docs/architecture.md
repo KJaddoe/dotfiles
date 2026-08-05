@@ -68,6 +68,12 @@ It checks, never rewrites what you staged. Bypass with `SKIP_HOOKS=1 git commit 
 
 Tests are deliberately excluded — a hook slow enough to be bypassed enforces nothing.
 
+It also prints the matching audit command (`npm audit`, `pip-audit`, `dotnet list package
+--vulnerable`) when a staged path is a dependency manifest. These are **notices, not gates**: they
+never fail the commit, because a real audit needs the network and would be bypassed on the first slow
+day. A `pyproject.toml` only counts when it actually declares dependencies, so config-only ones (like
+this repo's) stay quiet.
+
 ## Other languages
 
 Python is the only language here with a configured formatter, linter, and tests. The rest have

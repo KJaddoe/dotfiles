@@ -129,9 +129,8 @@ for these rules as FYI reference only; the binding text is HERE.
 - Follow the codebase's existing conventions: read the surrounding code before writing, mirror its
   patterns, naming, and already-chosen libraries, and reuse existing helpers. Don't add a new dependency
   or introduce a parallel way of doing something that already exists without sign-off.
-- Check dependencies for known vulnerabilities when you touch the manifest and before a release —
-  `npm audit`, `dotnet list package --vulnerable --include-transitive`, `pip-audit`. Report what's
-  found with severity; don't silently auto-bump majors. Before ADDING a dependency, check what it
+- Audit dependencies before a release; the pre-commit hook prompts it when a manifest changes. Report
+  findings with severity and don't silently auto-bump majors. Before ADDING a dependency, check what it
   pulls in transitively, when it was last released, and whether the stdlib or an existing dep covers it.
 - Leave the tree clean: delete dead code, commented-out code, and debug artifacts you introduced (stray
   logging, `debugger`/`console.log`, throwaway TODOs) rather than shipping them — git keeps the history.
