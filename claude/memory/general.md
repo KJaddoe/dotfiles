@@ -172,8 +172,9 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 - 2026-08-05 — RESOLVED the 11 menu-origin rules the provenance gate flagged on 2026-08-04. Deciding
   test applied: origin FLAGS a rule, it does not convict it — what decides is "does this change
   behaviour I'd otherwise get wrong." Eight kept (they correct real failure modes, several in use for
-  weeks). Three acted on: CHANGELOG compressed 6→3 lines with the procedure left to the skill;
-  idempotency demoted to the dotfiles repo's own CLAUDE.md (one project — fails the 3+ promotion test;
+  weeks). Three acted on: CHANGELOG cut from CLAUDE.md entirely (compressed 6→3 first, then removed on
+  the user's call — the `writing-project-docs` skill owns it and its own description still triggers on
+  changelog work); idempotency demoted to the dotfiles repo's own CLAUDE.md (one project — fails the 3+ promotion test;
   the migrations half lost global coverage deliberately); dependency audit converted to a pre-commit
   notice per the file's own gate that a check beats prose. Do NOT re-raise these — the gate governs
   new rules from here.
