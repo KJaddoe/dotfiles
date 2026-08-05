@@ -93,12 +93,9 @@ for these rules as FYI reference only; the binding text is HERE.
 
   If one is MISSING, fill it in when your work touches that area and tell me what else is missing —
   don't silently skip it, don't backfill the whole set unasked. Say what you added.
-- A CHANGELOG is a doc of a different kind: it records what changed for an AUDIENCE, not what is true
-  now. It can't be verified against code and can't be reconstructed later — a missed entry is lost
-  information, so it goes in the SAME commit. Add one whenever a change is user-visible: new feature,
-  breaking change, deprecation, security fix, notable behaviour change. Internal refactors get NO entry.
-  Applies to anything with consumers beyond the people editing it (libraries, published packages, CLIs,
-  services with release notes) — not personal/infra repos. Follow the project's existing format.
+- A CHANGELOG can't be reconstructed later, so a user-visible change (feature, breaking change,
+  deprecation, security fix) adds its entry in the SAME commit; internal refactors get none. Repos with
+  no consumers beyond the people editing them are exempt. The skill below has the rest.
 - Write an ADR when a choice is non-obvious AND hard to reverse — reversibility is the test, and it
   overrides the examples: a load-bearing dependency or service, a new architectural pattern, a schema
   or data-model change, an auth/security boundary, or an option you REJECTED for a reason people will
