@@ -71,6 +71,27 @@ if [ -n "$cs" ] && have dotnet && any .editorconfig; then
 		report "dotnet format would change staged files"
 fi
 
+notice() {
+	echo "pre-commit: $1" >&2
+}
+
+if [ -n "$(staged '(^|/)(package|package-lock)\.json$')" ]; then
+	notice "dependencies changed — run: npm audit"
+fi
+
+py_manifest=$(staged '(^|/)(requirements.*\.txt|Pipfile|poetry\.lock)$')
+for f in $(staged '(^|/)pyproject\.toml$'); do
+	grep -qE '^[[:space:]]*(dependencies|install_requires)' "$f" 2>/dev/null &&
+		py_manifest="$py_manifest $f"
+done
+if [ -n "$py_manifest" ]; then
+	notice "dependencies changed — run: pip-audit"
+fi
+
+if [ -n "$(staged '\.(csproj|fsproj)$|(^|/)Directory\.Packages\.props$')" ]; then
+	notice "dependencies changed — run: dotnet list package --vulnerable --include-transitive"
+fi
+
 [ "$fail" -ne 0 ] && echo "pre-commit: fix, or SKIP_HOOKS=1 git commit … to bypass" >&2
 
 exit $fail
