@@ -3,7 +3,7 @@ set -e
 
 # hook unit tests need only python3 + git, so run them before the destructive setup below
 echo "running hook tests..."
-for suite in claude/hooks/tests/test_*.py; do
+for suite in claude/hooks/tests/test_*.py git/tests/test_*.py; do
 	echo "  $suite"
 	python3 "$suite" >/dev/null
 done
