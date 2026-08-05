@@ -150,10 +150,13 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
   never the matched line, so secret VALUES in a diff can't leak into the log — locked in by
   regression tests. Dry-running it against this repo immediately caught a real false-positive
   class (its own test fixtures), which is why test/fixture paths are excluded.
-- 2026-08-04 — CAVEAT on `writing-project-docs`: it was written inline WITHOUT the subagent
-  baseline/pressure testing that `superpowers:writing-skills` mandates (the user's inline-execution
-  default + this session's no-Agent-tool constraint). Untested against real rationalizations — if it
-  underperforms, run the RED/GREEN loop before assuming the content is wrong.
+- 2026-08-04 — `writing-project-docs` was written inline without the subagent pressure-testing
+  `superpowers:writing-skills` mandates, then tested and rewritten the same day (`6b7a0dc`): three
+  fresh agents applying it adversarially found six real defects — the anti-pattern and the coverage
+  floor gave OPPOSITE answers on API/flags/exit codes, the audit taxonomy had no class for "list
+  grew, doc didn't", and an audit that RUNS commands to verify them clobbers HOME and the global git
+  identity via `script/test`. Lesson: an inline-written skill reads fine to its author; only a fresh
+  agent applying it surfaces the contradictions.
 
 ## GitHub issue status (project boards)
 
