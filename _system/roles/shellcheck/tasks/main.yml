@@ -1,0 +1,13 @@
+---
+- name: Install shellcheck on Ubuntu
+  ansible.builtin.apt:
+    name: shellcheck
+    state: present
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install shellcheck on macOS
+  community.general.homebrew:
+    name: shellcheck
+    state: present
+  when: ansible_os_family == "Darwin"

@@ -84,13 +84,23 @@ this repo's) stay quiet.
 Python is the only language here with a configured formatter, linter, and tests. The rest have
 tooling present but no repo-level command or config, so linting them is currently manual:
 
-| Language | Tooling present                                          | Configured? |
-|----------|----------------------------------------------------------|-------------|
-| Shell    | `# shellcheck disable` directives in 5 scripts            | No config, no runner |
-| Lua      | `stylua` (installed by its own topic), `selene` (neovim role) | No repo-level command |
-| Ansible  | 30 roles under `_system/`                                 | No `ansible-lint` |
+| Language | Tooling present                                               | Configured?              |
+|----------|---------------------------------------------------------------|--------------------------|
+| Shell    | `shellcheck` + `shfmt` (each its own ansible role)            | Command below, not gated |
+| Lua      | `stylua` (installed by its own topic), `selene` (neovim role) | No repo-level command    |
+| Ansible  | 31 roles under `_system/`                                     | No `ansible-lint`        |
 
-Closing those gaps means adding the config and a command here, not just installing the tool.
+Lint shell with:
+
+```sh
+git ls-files | grep -E '\.(sh|bash)$|^script/' | xargs shellcheck
+```
+
+The zsh files are excluded on purpose — shellcheck cannot parse zsh. The shipped `pre-commit` hook is
+clean, but 14 findings (1 error, 4 warnings, 9 notes) remain in older `install.sh` scripts, so this is
+**not** wired into `script/test` yet; doing that means fixing those first.
+
+Closing the remaining gaps means adding the config and a command here, not just installing the tool.
 
 ## Cross-repo / external relations
 
