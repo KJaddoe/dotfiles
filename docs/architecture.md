@@ -44,13 +44,18 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
 Hooks are plain Python 3, no third-party runtime dependencies — they must work on a freshly
 bootstrapped machine before anything is installed.
 
-| Task   | Command                                                              |
-|--------|----------------------------------------------------------------------|
-| Test   | `for s in claude/hooks/tests/test_*.py; do python3 "$s"; done`        |
-| Format | `black claude/hooks/`                                                 |
-| Lint   | `pylint claude/hooks/`                                                |
+| Task   | Command                                                                        |
+|--------|--------------------------------------------------------------------------------|
+| Test   | `for s in claude/hooks/tests/test_*.py git/tests/test_*.py; do python3 "$s"; done` |
+| Format | `black claude/hooks/ git/tests/`                                                |
+| Lint   | `pylint claude/hooks/ git/tests/`                                               |
 
 `script/test` runs the hook suites first, before its (destructive) bootstrap steps.
+
+`git/tests/` covers the shipped git `pre-commit` hook (see below). It lives outside
+`git/template/` on purpose: git copies that directory wholesale into every new repo, so a `tests/`
+folder inside it would ship too. The suite neutralises `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_SYSTEM`
+and works in throwaway repos, so unlike `script/test` it cannot touch your real git config.
 
 `pyproject.toml` at the repo root holds the shared `black` / `pylint` settings (line length 100)
 so formatting is reproducible across machines. Tests use stdlib `unittest` for the same reason —
