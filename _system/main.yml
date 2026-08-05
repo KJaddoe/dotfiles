@@ -23,6 +23,7 @@
     - { role: delta, tags: delta }
     - { role: jq, tags: jq }
     - { role: shfmt, tags: shfmt }
+    - { role: shellcheck, tags: shellcheck }
     - { role: fzf, tags: fzf }
     - { role: zoxide, tags: zoxide }
     - { role: eza, tags: eza }
