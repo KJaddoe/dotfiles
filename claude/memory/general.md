@@ -169,6 +169,15 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 - 2026-07-13 — Two more global rules added after reviewing the stacks worked on often (Angular, .NET/C#+SQL Server, dotfiles ansible/dotbot, RN): (1) don't swallow errors — no empty catch/silent fallback, surface or handle meaningfully, log with context, fail loud/early; (2) scripts & automation (ansible, dotbot, migrations, version pinning) must be idempotent and safe to re-run (guard on state, expect changed=0). Why: both are language-agnostic and recurred in practice — the idempotency one is grounded in the mise-migration ansible work. NOTE: the biggest remaining gap is .NET/C# backend conventions, but those are stack-specific and belong in that project's own CLAUDE.md, not the global file (user declined a starter template for now). Binding copy in CLAUDE.md → Code quality.
 - 2026-07-21 — Made the test-coverage bar explicit: every suite must cover THREE kinds of case, each at the layer where it's real — (1) the happy path; (2) edge/boundary cases; (3) what must NOT work and must stay broken (authorization/access denials, invalid or malformed input rejection, abuse/injection). Split by layer: server-side = SQL injection + authz bypass; client-side = output-escaping/XSS, authz-gated UI, input rejection. When a bug or bad input is found, lock it out with a regression test asserting it stays rejected. Why: "write tests when possible" (2026-07-13) was too loose — the negative/must-stay-broken cases are the ones most often skipped, and a found bug should never be able to silently return. How to apply: when writing or reviewing a test suite, check all three buckets are present, not just the happy path. Binding copy in CLAUDE.md → Code quality.
 
+- 2026-08-05 — RESOLVED the 11 menu-origin rules the provenance gate flagged on 2026-08-04. Deciding
+  test applied: origin FLAGS a rule, it does not convict it — what decides is "does this change
+  behaviour I'd otherwise get wrong." Eight kept (they correct real failure modes, several in use for
+  weeks). Three acted on: CHANGELOG compressed 6→3 lines with the procedure left to the skill;
+  idempotency demoted to the dotfiles repo's own CLAUDE.md (one project — fails the 3+ promotion test;
+  the migrations half lost global coverage deliberately); dependency audit converted to a pre-commit
+  notice per the file's own gate that a check beats prose. Do NOT re-raise these — the gate governs
+  new rules from here.
+
 ## Code & Writing Style
 
 - 2026-06-01 — Don't add explanatory/descriptive comments to code or config files. Keep only what's functionally required (e.g. shebangs) and match the surrounding file's existing comment density, which is near-zero. Why: the user explicitly rejected added comments in a zsh dotfile and expects this as a standing preference. How to apply: write code without narration comments unless the user asks for them — the same terse style applies to commit messages (see Commits & PRs).
