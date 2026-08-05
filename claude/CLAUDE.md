@@ -139,9 +139,6 @@ for these rules as FYI reference only; the binding text is HERE.
   and escape output.
 - Don't swallow errors: no empty `catch` blocks or silent fallbacks — surface or handle a failure
   meaningfully, log with context, and prefer failing loud/early over hiding it.
-- Scripts and automation (ansible roles, dotbot, migrations, env/version pinning) must be idempotent and
-  safe to re-run: guard on actual state rather than assumptions, and expect a re-run to be a no-op
-  (`changed=0`).
 
 ### Confidentiality & secrets
 - NEVER write client/customer names, private repo names, app/package ids, device ids, or other
