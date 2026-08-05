@@ -20,3 +20,6 @@ truth; `docs/` can go stale — verify against them before relying, and fix docs
 - Keep macOS + Ubuntu/Linux parity; never introduce a mac-only assumption without a Linux path.
 - Add a git config file by symlinking it into `$HOME` via a `link:` entry in `dotbot.conf.yaml` and
   point the git setting at the `~/.foo` home path (mirror `~/.gitignore`), not the in-repo path.
+- Scripts and automation (ansible roles, dotbot, env/version pinning) must be idempotent and safe to
+  re-run: guard on actual state rather than assumptions, and expect a re-run to be a no-op
+  (`changed=0`).
