@@ -219,5 +219,62 @@ class EnforcementStillBlocks(HookTestCase):
         self.assertNotIn("npm audit", err)
 
 
+@unittest.skipUnless(shutil.which("shellcheck"), "shellcheck not installed")
+class ShellcheckReachesExtensionlessScripts(HookTestCase):
+    """Scripts named without a .sh suffix are found by shebang, not by extension."""
+
+    BAD = '#!/bin/bash\nif [ $1 = "x" ]; then echo hi; fi\n'
+    GOOD = '#!/bin/bash\necho "clean"\n'
+
+    def test_extensionless_bash_script_blocks(self):
+        """A bin/-style script with findings fails the commit."""
+        self.stage("bin/tool", self.BAD)
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("shellcheck", err)
+
+    def test_clean_extensionless_script_passes(self):
+        """A script with no findings commits normally."""
+        self.stage("bin/tool", self.GOOD)
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+
+    def test_suffixed_script_still_blocks(self):
+        """The original .sh path keeps working."""
+        self.stage("tool.sh", self.BAD)
+        self.assertEqual(self.commit()[0], 1)
+
+    def test_env_shebang_is_matched(self):
+        """#!/usr/bin/env bash is as much a shell script as #!/bin/bash."""
+        self.stage("bin/tool", self.BAD.replace("#!/bin/bash", "#!/usr/bin/env bash"))
+        self.assertEqual(self.commit()[0], 1)
+
+
+@unittest.skipUnless(shutil.which("shellcheck"), "shellcheck not installed")
+class ShellcheckSkipsWhatItCannotParse(HookTestCase):
+    """Widening the net must not drag in files shellcheck would choke on."""
+
+    def test_zsh_script_is_skipped(self):
+        """shellcheck cannot parse zsh, so a zsh shebang is left alone."""
+        self.stage("bin/tool", '#!/bin/zsh\nif [ $1 = "x" ]; then echo hi; fi\n')
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+
+    def test_non_shell_script_is_skipped(self):
+        """An extensionless file with a python shebang is not a shell script."""
+        self.stage("bin/tool", "#!/usr/bin/env python3\nx = 1\n")
+        self.assertEqual(self.commit()[0], 0)
+
+    def test_extensionless_non_script_is_skipped(self):
+        """A plain extensionless file has no shebang and is ignored."""
+        self.stage("LICENSE", "All rights reserved.\n")
+        self.assertEqual(self.commit()[0], 0)
+
+    def test_dotted_path_is_not_treated_as_extensionless(self):
+        """A file with a real extension is matched by the glob, not the shebang scan."""
+        self.stage("notes.md", "# hi\n")
+        self.assertEqual(self.commit()[0], 0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

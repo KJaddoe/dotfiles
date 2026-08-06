@@ -53,7 +53,33 @@ if [ -n "$py" ]; then
 	fi
 fi
 
+# True when the file's shebang names a shell shellcheck can parse (zsh cannot be).
+shell_shebang() {
+	first=$(head -n 1 "$1" 2>/dev/null)
+	case "$first" in
+	'#!'*) ;;
+	*) return 1 ;;
+	esac
+	# intentional word splitting: the shebang's interpreter and its arguments
+	# shellcheck disable=SC2086
+	set -- ${first#\#!}
+	[ "$#" -gt 0 ] || return 1
+	interp=${1##*/}
+	if [ "$interp" = env ] && [ "$#" -gt 1 ]; then
+		interp=${2##*/}
+	fi
+	case "$interp" in
+	sh | bash | dash | ksh) return 0 ;;
+	esac
+	return 1
+}
+
 sh_files=$(staged '\.(sh|bash)$')
+extensionless=$(staged '(^|/)[^./]*$' | while IFS= read -r f; do
+	[ -f "$f" ] && shell_shebang "$f" && echo "$f"
+done)
+sh_files=$(printf '%s\n%s\n' "$sh_files" "$extensionless" | grep -v '^$')
+
 if [ -n "$sh_files" ] && have shellcheck; then
 	echo "$sh_files" | xargs shellcheck >/dev/null 2>&1 ||
 		report "shellcheck reported problems in staged files"
