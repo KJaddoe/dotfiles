@@ -4,7 +4,7 @@
 #
 # `dot_update` handles installation, updates, things like that. Run it
 # periodically to make sure you're on the latest and greatest.
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 DOTFILES_ROOT=$(pwd -P)
 
 export DOTFILES="${DOTFILES_ROOT}"
