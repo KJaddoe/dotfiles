@@ -261,7 +261,7 @@ vim.lsp.handlers[ms.textDocument_hover] =
 vim.lsp.handlers[ms.textDocument_signatureHelp] =
   vim.lsp.with(vim.lsp.handlers.signature_help, float_config)
 
-vim.highlight.priorities.semantic_tokens = 95
+vim.hl.priorities.semantic_tokens = 95
 
 -- diagnostic signs
 for name, icon in pairs(require("user.icons").diagnostics) do
