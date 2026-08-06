@@ -73,6 +73,11 @@ prettier/eslint, black/pylint, shellcheck, stylua, and `dotnet format`. Each too
 is **installed AND the project configures it**, so it stays silent in repos that haven't opted in.
 It checks, never rewrites what you staged. Bypass with `SKIP_HOOKS=1 git commit …`.
 
+Most tools select files by extension, but shell scripts are commonly extensionless (`bin/git-gone`),
+so shellcheck additionally picks up any staged file with no extension whose shebang names a shell it
+can parse — `sh`, `bash`, `dash`, `ksh`, directly or via `env`. `zsh` is excluded because shellcheck
+cannot parse it.
+
 Tests are deliberately excluded — a hook slow enough to be bypassed enforces nothing.
 
 It also prints the matching audit command (`npm audit`, `pip-audit`, `dotnet list package
@@ -98,11 +103,12 @@ Lint shell with:
 git ls-files | grep -E '\.(sh|bash)$|^script/|^bin/' | xargs shellcheck
 ```
 
-The zsh files are excluded on purpose — shellcheck cannot parse zsh. `bin/` is included because its
-scripts are extensionless, so neither the extension glob above nor the `pre-commit` hook's
-`\.(sh|bash)$` filter would otherwise reach them. The shipped `pre-commit` hook and `bin/` are clean,
-but 14 findings (1 error, 4 warnings, 9 notes) remain in older `install.sh` scripts, so this is
-**not** wired into `script/test` yet; doing that means fixing those first.
+The zsh files are excluded on purpose — shellcheck cannot parse zsh. `bin/` is listed explicitly
+because its scripts are extensionless and the glob alone would miss them; the `pre-commit` hook
+covers the same files by reading shebangs instead, which works in any repo rather than only this
+one. The shipped hook and `bin/` are clean, but 14 findings (1 error, 4 warnings, 9 notes) remain in
+older `install.sh` scripts, so this is **not** wired into `script/test` yet; doing that means fixing
+those first.
 
 Closing the remaining gaps means adding the config and a command here, not just installing the tool.
 
