@@ -100,9 +100,9 @@ git ls-files | grep -E '\.(sh|bash)$|^script/|^bin/' | xargs shellcheck
 
 The zsh files are excluded on purpose — shellcheck cannot parse zsh. `bin/` is included because its
 scripts are extensionless, so neither the extension glob above nor the `pre-commit` hook's
-`\.(sh|bash)$` filter would otherwise reach them. The shipped `pre-commit` hook is clean, but 15
-findings (1 error, 5 warnings, 9 notes) remain in older `install.sh` scripts plus one `SC2164` in
-`bin/dot_update`, so this is **not** wired into `script/test` yet; doing that means fixing those first.
+`\.(sh|bash)$` filter would otherwise reach them. The shipped `pre-commit` hook and `bin/` are clean,
+but 14 findings (1 error, 4 warnings, 9 notes) remain in older `install.sh` scripts, so this is
+**not** wired into `script/test` yet; doing that means fixing those first.
 
 Closing the remaining gaps means adding the config and a command here, not just installing the tool.
 
