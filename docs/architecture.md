@@ -21,7 +21,9 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   convention, not by an explicit manifest:
   - `*/*.zsh` are sourced by `zsh/zshrc` (glob `$DOTFILES/*/*.zsh`).
   - `*/path.zsh` loads **first** (set up `$PATH`), `*/completion.zsh` loads **last**.
-  - `bin/*` is added to `$PATH`.
+  - `bin/*` is added to `$PATH`. A script named `git-<name>` there becomes the `git <name>`
+    subcommand for free — that's the home for git helpers with real logic (`bin/git-gone`),
+    since a `gitconfig.local` alias is a config string and so invisible to shellcheck and tests.
   - `*/install.sh` (executable) runs at bootstrap and `dot_update`.
 - **`dotbot.conf.yaml`** — the symlink manifest and **sole owner of plain config symlinks**:
   maps in-repo paths to `~/.foo` targets. Add a new linked config here, and point the tool's
@@ -52,7 +54,7 @@ bootstrapped machine before anything is installed.
 
 `script/test` runs the hook suites first, before its (destructive) bootstrap steps.
 
-`git/tests/` covers the shipped git `pre-commit` hook (see below). It lives outside
+`git/tests/` covers the shipped git `pre-commit` hook (see below) and `bin/git-gone`. It lives outside
 `git/template/` on purpose: git copies that directory wholesale into every new repo, so a `tests/`
 folder inside it would ship too. The suite neutralises `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_SYSTEM`
 and works in throwaway repos, so unlike `script/test` it cannot touch your real git config.
@@ -93,12 +95,14 @@ tooling present but no repo-level command or config, so linting them is currentl
 Lint shell with:
 
 ```sh
-git ls-files | grep -E '\.(sh|bash)$|^script/' | xargs shellcheck
+git ls-files | grep -E '\.(sh|bash)$|^script/|^bin/' | xargs shellcheck
 ```
 
-The zsh files are excluded on purpose — shellcheck cannot parse zsh. The shipped `pre-commit` hook is
-clean, but 14 findings (1 error, 4 warnings, 9 notes) remain in older `install.sh` scripts, so this is
-**not** wired into `script/test` yet; doing that means fixing those first.
+The zsh files are excluded on purpose — shellcheck cannot parse zsh. `bin/` is included because its
+scripts are extensionless, so neither the extension glob above nor the `pre-commit` hook's
+`\.(sh|bash)$` filter would otherwise reach them. The shipped `pre-commit` hook is clean, but 15
+findings (1 error, 5 warnings, 9 notes) remain in older `install.sh` scripts plus one `SC2164` in
+`bin/dot_update`, so this is **not** wired into `script/test` yet; doing that means fixing those first.
 
 Closing the remaining gaps means adding the config and a command here, not just installing the tool.
 

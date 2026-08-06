@@ -1,0 +1,88 @@
+#!/bin/bash
+#
+# git-gone
+#
+# Delete local branches whose upstream branch has been deleted on the remote.
+# On $PATH as bin/*, so git resolves it as the `git gone` subcommand.
+set -e
+
+# Print the usage message to stdout.
+usage() {
+	cat <<'EOF'
+usage: git gone [-n|--dry-run] [--no-fetch] [-h|--help]
+
+Delete local branches whose upstream is gone.
+
+  -n, --dry-run   list what would be deleted, delete nothing
+      --no-fetch  skip the `git fetch --prune` that marks upstreams gone
+  -h, --help      show this message
+
+Branches with no upstream at all are never touched. Deletion uses `git branch -D`,
+because a squash-merged branch never registers as merged.
+EOF
+}
+
+dry_run=false
+fetch=true
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-n | --dry-run) dry_run=true ;;
+	--no-fetch) fetch=false ;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		echo "git gone: unknown option '$1'" >&2
+		usage >&2
+		exit 2
+		;;
+	esac
+	shift
+done
+
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+	echo "git gone: not a git repository" >&2
+	exit 1
+fi
+
+if $fetch; then
+	git fetch --prune --quiet
+fi
+
+current=$(git symbolic-ref --quiet --short HEAD || echo "")
+
+branches=()
+while IFS= read -r branch; do
+	[ -n "$branch" ] || continue
+	if [ "$branch" = "$current" ]; then
+		echo "  skipped  $branch (current branch)"
+		continue
+	fi
+	branches+=("$branch")
+done < <(git for-each-ref \
+	--format='%(if:equals=[gone])%(upstream:track)%(then)%(refname:short)%(end)' \
+	refs/heads)
+
+if [ ${#branches[@]} -eq 0 ]; then
+	echo "No branches with a gone upstream."
+	exit 0
+fi
+
+status=0
+for branch in "${branches[@]}"; do
+	sha=$(git rev-parse --short "$branch")
+	if $dry_run; then
+		echo "  would delete  $branch ($sha)"
+		continue
+	fi
+	if err=$(git branch -D "$branch" 2>&1); then
+		echo "  deleted  $branch ($sha)"
+	else
+		echo "git gone: could not delete $branch: $err" >&2
+		status=1
+	fi
+done
+
+exit $status
