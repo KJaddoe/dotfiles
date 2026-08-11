@@ -4,7 +4,6 @@
     ~/.config/nvim: nvim/config
     ~/.gvimrc: nvim/gvimrc
     ~/.editorconfig: editorconfig/editorconfig
-    ~/.eslintrc.json: eslint/eslintrc.json
     ~/.gitignore: git/gitignore
     ~/.gitattributes: git/gitattributes
     ~/.gitconfig.local: git/gitconfig.local
@@ -16,7 +15,6 @@
     ~/.psqlrc.local: postgres/psqlrc.local
     ~/.p10k.zsh: powerlevel10k/p10k.zsh
     ~/.prettierrc.json: prettier/prettierrc.json
-    ~/.tern-config: tern/tern-config
     ~/.tmux.conf: tmux/tmux.conf
     ~/.zshrc: zsh/zshrc
     ~/.zsh_plugins.txt: antidote/zsh_plugins.txt
