@@ -8,10 +8,10 @@ never the value itself.
 
 ## Claude Code hooks
 
-| Variable              | Purpose                                                              | Required | Default          | Example   |
-|-----------------------|----------------------------------------------------------------------|----------|------------------|-----------|
-| `DOCS_ENV_HOOK_MODE`  | Behaviour of the `undocumented-env-vars` Stop hook (`claude/hooks/`)  | No       | `dry-run`        | `enforce` |
-| `CLAUDE_PROJECT_DIR`  | Project root the memory hook maps to a session dir                   | No       | current dir      | —         |
+| Variable             | Purpose                                                              | Required | Default     | Example   |
+|----------------------|----------------------------------------------------------------------|----------|-------------|-----------|
+| `DOCS_ENV_HOOK_MODE` | Behaviour of the `undocumented-env-vars` Stop hook (`claude/hooks/`) | No       | `dry-run`   | `enforce` |
+| `CLAUDE_PROJECT_DIR` | Project root the memory hook maps to a session dir                   | No       | current dir | —         |
 
 `CLAUDE_PROJECT_DIR` is **set by Claude Code itself**, not by you — don't export it. `pre-tool-memory.py`
 reads it to derive the mapped session path, replacing both `/` and `.` with `-`
@@ -20,11 +20,11 @@ directory when it's absent, so the hook still works outside a Claude session.
 
 `DOCS_ENV_HOOK_MODE` accepts:
 
-| Value     | Behaviour                                                                              |
-|-----------|----------------------------------------------------------------------------------------|
+| Value     | Behaviour                                                                                     |
+|-----------|-----------------------------------------------------------------------------------------------|
 | `dry-run` | Default. Reports findings and appends them to `~/.claude/logs/env-doc-hook.log`; never blocks |
-| `enforce` | Exits non-zero so the finding is fed back to the model for action                        |
-| `off`     | No-op                                                                                    |
+| `enforce` | Exits non-zero so the finding is fed back to the model for action                             |
+| `off`     | No-op                                                                                         |
 
 Set it wherever you export shell env (`zsh/`), or per-invocation for a one-off:
 
@@ -36,18 +36,35 @@ DOCS_ENV_HOOK_MODE=enforce claude
 not a credential. Start on `dry-run`, review the log, then flip to `enforce` once the findings
 look right for your projects.
 
+## Git hooks
+
+| Variable     | Purpose                                                      | Required | Default | Example |
+|--------------|--------------------------------------------------------------|----------|---------|---------|
+| `SKIP_HOOKS` | Any non-empty value bypasses `git/template/hooks/pre-commit` | No       | unset   | `1`     |
+
+The hook exits immediately when it is set, so **every** gate is skipped — formatting, linting and
+secret scanning alike, along with the dependency-audit notices. Prefer fixing the finding; a bypassed
+gate enforces nothing.
+
+```sh
+SKIP_HOOKS=1 git commit -m "wip"
+```
+
+**Where the value comes from:** none needed — it is a local escape hatch, not a credential. Set it
+per-invocation rather than exporting it, or the hook is permanently off in that shell.
+
 ## Shell environment
 
 Exported from `zsh/zshrc`. Override any of them in `~/.localrc`, which is sourced after.
 
-| Variable                | Purpose                                                | Required | Default          |
-|-------------------------|--------------------------------------------------------|----------|------------------|
-| `DOTFILES`              | Repo location; must match the real clone path           | Yes      | `~/dotfiles`     |
-| `PROJECTS`              | Project folder; `c [tab]` jumps into it                 | No       | `~/projects`     |
-| `EDITOR`                | Terminal editor                                         | No       | `nvim`           |
-| `VEDITOR`               | Visual/GUI editor                                       | No       | `code`           |
-| `ZSH_TMUX_AUTOSTART`    | Start tmux on shell launch                              | No       | `true`           |
-| `ZSH_TMUX_AUTOCONNECT`  | Attach to an existing tmux session instead of a new one | No       | `false`          |
+| Variable               | Purpose                                                 | Required | Default      |
+|------------------------|---------------------------------------------------------|----------|--------------|
+| `DOTFILES`             | Repo location; must match the real clone path           | Yes      | `~/dotfiles` |
+| `PROJECTS`             | Project folder; `c [tab]` jumps into it                 | No       | `~/projects` |
+| `EDITOR`               | Terminal editor                                         | No       | `nvim`       |
+| `VEDITOR`              | Visual/GUI editor                                       | No       | `code`       |
+| `ZSH_TMUX_AUTOSTART`   | Start tmux on shell launch                              | No       | `true`       |
+| `ZSH_TMUX_AUTOCONNECT` | Attach to an existing tmux session instead of a new one | No       | `false`      |
 
 **Where the values come from:** all are local preferences with safe defaults — no credentials.
 `DOTFILES` is the exception worth care: the clone path is also hardcoded in the autoupdate crontab

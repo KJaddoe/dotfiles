@@ -46,11 +46,11 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
 Hooks are plain Python 3, no third-party runtime dependencies — they must work on a freshly
 bootstrapped machine before anything is installed.
 
-| Task   | Command                                                                        |
-|--------|--------------------------------------------------------------------------------|
+| Task   | Command                                                                            |
+|--------|------------------------------------------------------------------------------------|
 | Test   | `for s in claude/hooks/tests/test_*.py git/tests/test_*.py; do python3 "$s"; done` |
-| Format | `black claude/hooks/ git/tests/`                                                |
-| Lint   | `pylint claude/hooks/ git/tests/`                                               |
+| Format | `black claude/hooks/ git/tests/`                                                   |
+| Lint   | `pylint claude/hooks/ git/tests/`                                                  |
 
 `script/test` runs the hook suites first, before its (destructive) bootstrap steps.
 
@@ -69,14 +69,35 @@ no dependency to install. `black` and `pylint` are dev-only; neither is needed t
 created with `git init` from this machine** gets it — existing repos do not, copy it in manually.
 
 It enforces the format+lint half of the definition of done on staged files: whitespace errors, then
-prettier/eslint, black/pylint, shellcheck, stylua, and `dotnet format`. Each tool runs only when it
-is **installed AND the project configures it**, so it stays silent in repos that haven't opted in.
-It checks, never rewrites what you staged. Bypass with `SKIP_HOOKS=1 git commit …`.
+betterleaks, prettier/eslint, black/pylint, shellcheck, `zsh -n`, stylua/selene, csharpier, hadolint,
+markdownlint and yamllint. Each tool runs only when it is **installed AND the project configures it**,
+so it stays silent in repos that haven't opted in. It checks, never rewrites what you staged. Bypass
+with `SKIP_HOOKS=1 git commit …`.
+
+**Secret scanning is the one gate with no opt-in.** Every other tool waits for project config, because
+formatting is a matter of taste that a shared repo gets to decide. A committed credential is not —
+it is the single mistake no later gate can undo, since rewriting published history does not unpublish
+the secret. So it runs wherever it is installed. It reads the staged diff
+(`betterleaks git --staged`), takes well under a second, and needs no network.
+
+The tool is `betterleaks`, not the better-known `gitleaks`, because gitleaks' own README declares it
+feature complete — security patches only — and points at betterleaks, written by the same authors
+including the original one. The CLI is a drop-in: same `git --staged` invocation, same exit codes, and
+it still reads `GITLEAKS_CONFIG`. Picking the frozen tool would have meant adopting a dependency with
+a known end date.
+
+Two detection rules are load-bearing. ESLint is detected by flat config only (`eslint.config.*`) —
+`.eslintrc*` was removed in ESLint 9 and matching it would gate on a file ESLint no longer reads. C#
+is checked with `csharpier`, the same tool that formats it on save; `dotnet format` is a different
+formatter, and gating with one while formatting with the other fails the hook on correct code.
 
 Most tools select files by extension, but shell scripts are commonly extensionless (`bin/git-gone`),
 so shellcheck additionally picks up any staged file with no extension whose shebang names a shell it
 can parse — `sh`, `bash`, `dash`, `ksh`, directly or via `env`. `zsh` is excluded because shellcheck
-cannot parse it.
+cannot parse it — and neither can `shfmt`, so zsh has no linter or formatter at all. `zsh -n`, a
+syntax check, is the only gate available for it; that is worth having because a parse error in a
+sourced file breaks *every new shell*, not just the script. It matches `*.zsh`, `zshrc` and `zshenv`
+by name only — extensionless zsh scripts are not covered, unlike the shellcheck shebang scan.
 
 Tests are deliberately excluded — a hook slow enough to be bypassed enforces nothing.
 
@@ -86,22 +107,74 @@ never fail the commit, because a real audit needs the network and would be bypas
 day. A `pyproject.toml` only counts when it actually declares dependencies, so config-only ones (like
 this repo's) stay quiet.
 
+## Editor formatting and linting
+
+`conform.nvim` formats on save (`nvim/config/lua/user/plugins/init.lua`), falling back to the LSP for
+any filetype it has no formatter for. Indent width is **not** set there — `shfmt` and `csharpier` both
+read `.editorconfig`, so `~/.editorconfig` (from `editorconfig/editorconfig`) is what decides it.
+That file is `root = true` in `$HOME`, so it applies to every project below it that has none of its
+own. This repo adds a non-root `.editorconfig` so its own extensionless scripts in `bin/`, `script/`
+and `git/template/hooks/` get the same 4-space indent as its `*.sh` files.
+
+Linting is LSP-first. `nvim-lint` is wired only to the filetypes no enabled language server already
+covers, because running both would double every diagnostic:
+
+| Language   | Linted by                         | Runner    |
+|------------|-----------------------------------|-----------|
+| JS/TS      | `eslint`                          | LSP       |
+| Shell      | `shellcheck`, via `bashls`        | LSP       |
+| C#         | Roslyn analyzers, via `roslyn_ls` | LSP       |
+| Lua        | `lua_ls` diagnostics              | LSP       |
+| Ansible    | `ansible-lint`, via `ansiblels`   | LSP       |
+| Python     | `pylint`                          | nvim-lint |
+| Dockerfile | `hadolint`                        | nvim-lint |
+| Markdown   | `markdownlint-cli2`               | nvim-lint |
+| YAML       | `yamllint`                        | nvim-lint |
+
+Python needs `nvim-lint` because `jedi_language_server` publishes at most one diagnostic per file (a
+syntax error) and does no rule linting. `yaml.ansible` buffers keep their exact filetype, so
+`yamllint` does not fire on files `ansiblels` already lints.
+
+XML is deliberately unformatted: the only locally available tool, `xmllint --format`, injects an
+`<?xml …?>` declaration into files that lack one, which would rewrite every `.csproj` on first save.
+
 ## Other languages
 
-Python is the only language here with a configured formatter, linter, and tests. The rest have
-tooling present but no repo-level command or config, so linting them is currently manual:
+Python is the only language here with a repo-level formatter, linter, and test command. The rest have
+tooling present but no repo-level command, so running them over this repo is manual:
 
-| Language | Tooling present                                               | Configured?              |
-|----------|---------------------------------------------------------------|--------------------------|
-| Shell    | `shellcheck` + `shfmt` (each its own ansible role)            | Command below, not gated |
-| Lua      | `stylua` (installed by its own topic), `selene` (neovim role) | No repo-level command    |
-| Ansible  | 31 roles under `_system/`                                     | No `ansible-lint`        |
+| Language | Tooling present                                    | Configured?                   |
+|----------|----------------------------------------------------|-------------------------------|
+| Shell    | `shellcheck` + `shfmt` (each its own ansible role) | Command below, not gated      |
+| Lua      | `stylua` (own topic), `selene` (own topic)         | Command below, gated          |
+| zsh      | none exists — `zsh -n` only                        | Syntax gated, never formatted |
+| Ansible  | 32 roles under `_system/`                          | Linted in-editor, not gated   |
+
+109 `ansible-lint` findings remain across `_system/`, so that is reported in the editor but not yet
+gated. zsh is the second-largest filetype here (26 files) and the only one with no formatter and no
+linter in existence — `shfmt` and `shellcheck` both refuse to parse it, so a syntax check is the
+ceiling, not a placeholder for something better.
 
 Lint shell with:
 
 ```sh
 git ls-files | grep -E '\.(sh|bash)$|^script/|^bin/' | xargs shellcheck
 ```
+
+Lint Lua with:
+
+```sh
+selene --config selene/selene.toml nvim/config/lua/
+```
+
+`--config` is not optional: selene reads `selene.toml` from the working directory only and does **not**
+search parent directories, so it cannot find a config held in a topic folder on its own. That is why
+`selene/` is a topic folder but *not* a dotbot symlink — a `~/selene.toml` would only ever apply when
+the shell sits in `$HOME`, unlike `~/.editorconfig` and `~/.prettierrc.json`, whose tools do search
+upward. The `pre-commit` hook passes `--config` for the same reason, accepting either a root
+`selene.toml` (selene's own convention, preferred) or `selene/selene.toml` (this repo's layout).
+`vim.toml`, the standard library `selene.toml` names, is resolved relative to the config file, so the
+two must stay side by side.
 
 The zsh files are excluded on purpose — shellcheck cannot parse zsh. `bin/` is listed explicitly
 because its scripts are extensionless and the glob alone would miss them; the `pre-commit` hook
