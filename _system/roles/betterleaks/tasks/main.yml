@@ -1,0 +1,24 @@
+---
+- name: Install betterleaks on macOS
+  community.general.homebrew:
+    name: betterleaks
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Download betterleaks archive (Ubuntu)
+  ansible.builtin.get_url:
+    url: "https://github.com/betterleaks/betterleaks/releases/download/v{{ betterleaks_version }}/betterleaks_{{ betterleaks_version }}_linux_x64.tar.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/betterleaks-{{ betterleaks_version }}.tar.gz"
+    mode: "0644"
+  when: ansible_os_family == "Debian"
+
+- name: Extract betterleaks into PATH (Ubuntu)
+  ansible.builtin.unarchive:
+    src: "{{ ansible_env.HOME }}/.local/share/betterleaks-{{ betterleaks_version }}.tar.gz"
+    dest: "{{ ansible_env.HOME }}/.local/bin"
+    include:
+      - betterleaks
+    mode: "0755"
+    remote_src: true
+    creates: "{{ ansible_env.HOME }}/.local/bin/betterleaks"
+  when: ansible_os_family == "Debian"
