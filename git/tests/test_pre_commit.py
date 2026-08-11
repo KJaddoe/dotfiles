@@ -276,5 +276,32 @@ class ShellcheckSkipsWhatItCannotParse(HookTestCase):
         self.assertEqual(self.commit()[0], 0)
 
 
+@unittest.skipUnless(shutil.which("csharpier"), "csharpier not installed")
+class CsharpierGate(HookTestCase):
+    """C# formatting is checked by the same tool that formats it on save."""
+
+    def test_formatted_cs_passes(self):
+        """Already-formatted C# commits normally."""
+        self.stage(".editorconfig", "root = true\n[*]\nindent_size = 4\n")
+        self.stage("Good.cs", "class A\n{\n    void B()\n    {\n        int x = 1;\n    }\n}\n")
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+
+    def test_unformatted_cs_blocks(self):
+        """Unformatted C# fails the commit."""
+        self.stage(".editorconfig", "root = true\n[*]\nindent_size = 4\n")
+        self.stage("Bad.cs", "class A{void B(){int x=1;}}\n")
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("csharpier", err)
+
+    def test_without_editorconfig_is_silent(self):
+        """A repo with no shared formatting config is left alone."""
+        self.stage("Bad.cs", "class A{void B(){int x=1;}}\n")
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+        self.assertNotIn("csharpier", err)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

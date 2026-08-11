@@ -35,7 +35,8 @@ if [ -n "$js" ] && have npx; then
         echo "$js" | xargs npx --no-install prettier --check >/dev/null 2>&1 ||
             report "prettier would reformat staged files"
     fi
-    if any .eslintrc .eslintrc.json .eslintrc.js eslint.config.js eslint.config.mjs; then
+    # eslintrc is not checked: it was removed in ESLint 9, which reads flat config only.
+    if any eslint.config.js eslint.config.mjs eslint.config.cjs eslint.config.ts; then
         echo "$js" | xargs npx --no-install eslint >/dev/null 2>&1 ||
             report "eslint reported problems in staged files"
     fi
@@ -91,10 +92,12 @@ if [ -n "$lua" ] && have stylua && any .stylua.toml stylua.toml; then
         report "stylua would reformat staged files"
 fi
 
+# csharpier, not `dotnet format`: it is what formats C# on save, and two formatters
+# disagreeing over the same files would fail this gate on correctly-formatted code.
 cs=$(staged '\.cs$')
-if [ -n "$cs" ] && have dotnet && any .editorconfig; then
-    dotnet format --verify-no-changes >/dev/null 2>&1 ||
-        report "dotnet format would change staged files"
+if [ -n "$cs" ] && have csharpier && any .editorconfig; then
+    echo "$cs" | xargs csharpier check >/dev/null 2>&1 ||
+        report "csharpier would reformat staged files"
 fi
 
 notice() {
