@@ -1,0 +1,2 @@
+[{bin/*,script/*,git/template/hooks/*}]
+indent_size = 4

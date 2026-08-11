@@ -13,13 +13,15 @@ insert_final_newline = true
 max_line_length = 80
 trim_trailing_whitespace = true
 
-[*.{xml,py,java,go,sh,cs}]
-indent_style = tab
+[*.{cs,csproj,props,targets,resx,xml,java}]
 indent_size = 4
 
-[*.{rb,yaml,yml}]
-indent_style = space
-indent_size = 2
+[*.{sh,bash}]
+indent_size = 4
+
+[*.py]
+indent_size = 4
+max_line_length = 100
 
 [Makefile]
 indent_style = tab
