@@ -8,7 +8,9 @@ and hooks can never influence a result.
 """
 
 import os
+import random
 import shutil
+import string
 import subprocess
 import tempfile
 import unittest
@@ -440,6 +442,45 @@ class ZshSyntaxGate(HookTestCase):
         self.stage("aliases.zsh", "if true; then\n  echo hi\n")
         _, err = self.commit()
         self.assertNotIn("shellcheck", err)
+
+
+@unittest.skipUnless(shutil.which("betterleaks"), "betterleaks not installed")
+class SecretsNeverCommit(HookTestCase):
+    """What must stay broken: a staged credential never reaches a commit."""
+
+    # Generated rather than written literally: betterleaks scans this file too, so a
+    # credential-shaped literal here would block its own commit. The seed keeps it
+    # deterministic, and the entropy is what the github-pat rule actually matches on —
+    # a low-entropy stand-in like "ghp_AAA..." is not detected and would test nothing.
+    FAKE_TOKEN = "ghp_" + "".join(
+        random.Random(0).choices(string.ascii_letters + string.digits, k=36)
+    )
+
+    def test_staged_secret_blocks(self):
+        """A credential in staged content fails the commit."""
+        self.stage("config.py", f'GITHUB_TOKEN = "{self.FAKE_TOKEN}"\n')
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("betterleaks", err)
+
+    def test_blocked_secret_creates_no_commit(self):
+        """The secret must not reach history even as a rejected attempt."""
+        self.stage("config.py", f'GITHUB_TOKEN = "{self.FAKE_TOKEN}"\n')
+        self.commit()
+        self.assertNotEqual(self.git("rev-parse", "HEAD").returncode, 0)
+
+    def test_ordinary_content_is_silent(self):
+        """Code that merely mentions a token name is not a leak."""
+        self.stage("config.py", 'GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]\n')
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+        self.assertNotIn("betterleaks", err)
+
+    def test_needs_no_project_config(self):
+        """Unlike every other gate, secret scanning is not opt-in per repo."""
+        self.stage("config.py", f'GITHUB_TOKEN = "{self.FAKE_TOKEN}"\n')
+        code, _ = self.commit()
+        self.assertEqual(code, 1)
 
 
 if __name__ == "__main__":

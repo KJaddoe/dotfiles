@@ -29,6 +29,14 @@ report() {
     fail=1
 }
 
+# Secrets first: a leaked credential is the one mistake a later gate cannot undo.
+# Unlike every other tool here this needs no project config — a secret is never wanted.
+# betterleaks, not gitleaks: same authors, but gitleaks is feature-frozen upstream.
+if have betterleaks; then
+    betterleaks git --staged >/dev/null 2>&1 ||
+        report "betterleaks found a secret in staged changes"
+fi
+
 web=$(staged '\.(js|jsx|ts|tsx|mjs|cjs|css|scss|less|html|json|md|ya?ml)$')
 if [ -n "$web" ] && have npx; then
     if any .prettierrc .prettierrc.json .prettierrc.json5 .prettierrc.yml .prettierrc.yaml \
