@@ -35,7 +35,6 @@
 
     # databases
     - { role: postgresql, tags: postgresql }
-    - { role: pgformatter, tags: pgformatter }
     - { role: sqlcmd, tags: sqlcmd }
 
     # terminal
