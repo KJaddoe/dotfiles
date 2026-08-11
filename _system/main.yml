@@ -25,6 +25,7 @@
     - { role: shfmt, tags: shfmt }
     - { role: shellcheck, tags: shellcheck }
     - { role: hadolint, tags: hadolint }
+    - { role: betterleaks, tags: betterleaks }
     - { role: fzf, tags: fzf }
     - { role: zoxide, tags: zoxide }
     - { role: eza, tags: eza }
