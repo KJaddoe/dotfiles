@@ -20,6 +20,12 @@ truth; `docs/` can go stale — verify against them before relying, and fix docs
 - Keep macOS + Ubuntu/Linux parity; never introduce a mac-only assumption without a Linux path.
 - Add a git config file by symlinking it into `$HOME` via a `link:` entry in `dotbot.conf.yaml` and
   point the git setting at the `~/.foo` home path (mirror `~/.gitignore`), not the in-repo path.
+- A topic folder is not automatically a symlink. Link a config into `$HOME` only when the tool
+  actually discovers it from there by searching upward (editorconfig, prettier). A tool that reads
+  its config from the working directory only — `selene` — keeps it in its topic folder and gets
+  `--config` passed explicitly; linking it to `~` would be dead config. Config that governs *this
+  repo's own* sources rather than every project stays at the repo root (`pyproject.toml`,
+  `.editorconfig`) and is not linked at all.
 - Scripts and automation (ansible roles, dotbot, env/version pinning) must be idempotent and safe to
   re-run: guard on actual state rather than assumptions, and expect a re-run to be a no-op
   (`changed=0`).
