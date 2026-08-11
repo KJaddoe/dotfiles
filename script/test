@@ -4,8 +4,8 @@ set -e
 # hook unit tests need only python3 + git, so run them before the destructive setup below
 echo "running hook tests..."
 for suite in claude/hooks/tests/test_*.py git/tests/test_*.py; do
-	echo "  $suite"
-	python3 "$suite" >/dev/null
+    echo "  $suite"
+    python3 "$suite" >/dev/null
 done
 
 # link to ~ and cd to it
@@ -28,13 +28,13 @@ echo "sourcing ~/.zshrc"
 source ~/.zshrc || true
 
 test "$(antidote list | wc -l)" -gt 10 || {
-	echo "expecting 10+ bundles loaded" >&2
-	exit 1
+    echo "expecting 10+ bundles loaded" >&2
+    exit 1
 }
 
 test -s ~/.zcompdump || {
-	echo "zcompdump file is empty" >&2
-	exit 1
+    echo "zcompdump file is empty" >&2
+    exit 1
 }
 
 # check if a random plugin is working (meaning that the bundles were loaded)

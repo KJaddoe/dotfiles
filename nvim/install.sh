@@ -7,9 +7,9 @@ OS="$(uname)"
 setup_brew_env() {
     if [ "$OS" = "Darwin" ]; then
         if [ -x /opt/homebrew/bin/brew ]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"  # Apple Silicon
+            eval "$(/opt/homebrew/bin/brew shellenv)" # Apple Silicon
         elif [ -x /usr/local/bin/brew ]; then
-            eval "$(/usr/local/bin/brew shellenv)"     # Intel
+            eval "$(/usr/local/bin/brew shellenv)" # Intel
         fi
     elif [ "$OS" = "Linux" ]; then
         if [ -x "$HOME/.linuxbrew/bin/brew" ]; then
@@ -27,7 +27,7 @@ install_neovim_ubuntu() {
     sudo add-apt-repository --yes --update ppa:neovim-ppa/unstable
     sudo apt install -y neovim
 
-	 echo "Configuring Neovim as the default editor..."
+    echo "Configuring Neovim as the default editor..."
     sudo update-alternatives --install /usr/bin/vi vi /usr/bin/nvim 60
     sudo update-alternatives --install /usr/bin/vim vim /usr/bin/nvim 60
     sudo update-alternatives --install /usr/bin/editor editor /usr/bin/nvim 60
@@ -61,21 +61,21 @@ verify_installation() {
 
 setup_brew_env
 case "$OS" in
-    Linux)
-        if grep -qi "ubuntu" /etc/os-release; then
-            install_neovim_ubuntu
-        else
-            echo "Unsupported Linux distribution."
-            exit 1
-        fi
-        ;;
-    Darwin)
-        install_neovim_macos
-        ;;
-    *)
-        echo "Unsupported OS: $OS"
+Linux)
+    if grep -qi "ubuntu" /etc/os-release; then
+        install_neovim_ubuntu
+    else
+        echo "Unsupported Linux distribution."
         exit 1
-        ;;
+    fi
+    ;;
+Darwin)
+    install_neovim_macos
+    ;;
+*)
+    echo "Unsupported OS: $OS"
+    exit 1
+    ;;
 esac
 
 verify_installation

@@ -8,19 +8,19 @@ mkdir -p "$TARGET"
 cd "$TARGET"
 
 if [ ! -d .git ]; then
-	git init -q
+    git init -q
 fi
 
 copy() {
-	src="$1"
-	dest="$2"
-	if [ -e "$dest" ]; then
-		echo "  skip  $dest (exists)"
-	elif [ -f "$src" ]; then
-		mkdir -p "$(dirname "$dest")"
-		cp "$src" "$dest"
-		echo "  add   $dest"
-	fi
+    src="$1"
+    dest="$2"
+    if [ -e "$dest" ]; then
+        echo "  skip  $dest (exists)"
+    elif [ -f "$src" ]; then
+        mkdir -p "$(dirname "$dest")"
+        cp "$src" "$dest"
+        echo "  add   $dest"
+    fi
 }
 
 copy "$DOTFILES/editorconfig/editorconfig" ".editorconfig"
@@ -29,9 +29,9 @@ copy "$DOTFILES/eslint/eslintrc.json" ".eslintrc.json"
 copy "$DOTFILES/git/PULL_REQUEST_TEMPLATE.md" ".github/PULL_REQUEST_TEMPLATE.md"
 
 if [ ! -f .gitignore ]; then
-	types="${2:-macos,linux}"
-	curl -sfL "https://www.toptal.com/developers/gitignore/api/$types" >.gitignore 2>/dev/null || : >.gitignore
-	echo "  add   .gitignore ($types)"
+    types="${2:-macos,linux}"
+    curl -sfL "https://www.toptal.com/developers/gitignore/api/$types" >.gitignore 2>/dev/null || : >.gitignore
+    echo "  add   .gitignore ($types)"
 fi
 
 echo "Project scaffolded in $(pwd)"
