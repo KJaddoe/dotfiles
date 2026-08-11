@@ -29,17 +29,23 @@ report() {
     fail=1
 }
 
-js=$(staged '\.(js|jsx|ts|tsx|mjs|cjs)$')
-if [ -n "$js" ] && have npx; then
-    if any .prettierrc .prettierrc.json .prettierrc.yml .prettierrc.js prettier.config.js; then
-        echo "$js" | xargs npx --no-install prettier --check >/dev/null 2>&1 ||
+web=$(staged '\.(js|jsx|ts|tsx|mjs|cjs|css|scss|less|html|json|md|ya?ml)$')
+if [ -n "$web" ] && have npx; then
+    if any .prettierrc .prettierrc.json .prettierrc.json5 .prettierrc.yml .prettierrc.yaml \
+        .prettierrc.toml .prettierrc.js .prettierrc.mjs .prettierrc.cjs \
+        prettier.config.js prettier.config.mjs prettier.config.cjs ||
+        grep -q '"prettier"[[:space:]]*:' package.json 2>/dev/null; then
+        echo "$web" | xargs npx --no-install prettier --check >/dev/null 2>&1 ||
             report "prettier would reformat staged files"
     fi
-    # eslintrc is not checked: it was removed in ESLint 9, which reads flat config only.
-    if any eslint.config.js eslint.config.mjs eslint.config.cjs eslint.config.ts; then
-        echo "$js" | xargs npx --no-install eslint >/dev/null 2>&1 ||
-            report "eslint reported problems in staged files"
-    fi
+fi
+
+# eslintrc is not checked: it was removed in ESLint 9, which reads flat config only.
+js=$(staged '\.(js|jsx|ts|tsx|mjs|cjs)$')
+if [ -n "$js" ] && have npx &&
+    any eslint.config.js eslint.config.mjs eslint.config.cjs eslint.config.ts; then
+    echo "$js" | xargs npx --no-install eslint >/dev/null 2>&1 ||
+        report "eslint reported problems in staged files"
 fi
 
 py=$(staged '\.py$')
@@ -86,10 +92,32 @@ if [ -n "$sh_files" ] && have shellcheck; then
         report "shellcheck reported problems in staged files"
 fi
 
+# zsh has no formatter or linter that can parse it, so a syntax check is the only
+# gate available — and a parse error in a sourced file breaks every new shell.
+zsh_files=$(staged '\.zsh$|(^|/)\.?zshrc$|(^|/)\.?zshenv$')
+if [ -n "$zsh_files" ] && have zsh; then
+    echo "$zsh_files" | while IFS= read -r f; do
+        [ -f "$f" ] || continue
+        zsh -n "$f" 2>/dev/null || exit 1
+    done || report "zsh reported a syntax error in staged files"
+fi
+
 lua=$(staged '\.lua$')
-if [ -n "$lua" ] && have stylua && any .stylua.toml stylua.toml; then
-    echo "$lua" | xargs stylua --check >/dev/null 2>&1 ||
-        report "stylua would reformat staged files"
+if [ -n "$lua" ]; then
+    if have stylua && any .stylua.toml stylua.toml; then
+        echo "$lua" | xargs stylua --check >/dev/null 2>&1 ||
+            report "stylua would reformat staged files"
+    fi
+    # selene does not search parent directories, so the config is passed explicitly.
+    # selene.toml is its own convention; selene/ is this repo's topic-folder layout.
+    if have selene; then
+        for conf in selene.toml selene/selene.toml; do
+            [ -f "$conf" ] || continue
+            echo "$lua" | xargs selene --config "$conf" >/dev/null 2>&1 ||
+                report "selene reported problems in staged files"
+            break
+        done
+    fi
 fi
 
 # csharpier, not `dotnet format`: it is what formats C# on save, and two formatters
@@ -98,6 +126,25 @@ cs=$(staged '\.cs$')
 if [ -n "$cs" ] && have csharpier && any .editorconfig; then
     echo "$cs" | xargs csharpier check >/dev/null 2>&1 ||
         report "csharpier would reformat staged files"
+fi
+
+docker=$(staged '(^|/)Dockerfile(\..*)?$')
+if [ -n "$docker" ] && have hadolint; then
+    echo "$docker" | xargs hadolint >/dev/null 2>&1 ||
+        report "hadolint reported problems in staged files"
+fi
+
+md=$(staged '\.md$')
+if [ -n "$md" ] && have markdownlint-cli2 && any .markdownlint.json .markdownlint.jsonc \
+    .markdownlint.yaml .markdownlint.yml .markdownlint-cli2.jsonc .markdownlint-cli2.yaml; then
+    echo "$md" | xargs markdownlint-cli2 >/dev/null 2>&1 ||
+        report "markdownlint reported problems in staged files"
+fi
+
+yml=$(staged '\.ya?ml$')
+if [ -n "$yml" ] && have yamllint && any .yamllint .yamllint.yml .yamllint.yaml; then
+    echo "$yml" | xargs yamllint >/dev/null 2>&1 ||
+        report "yamllint reported problems in staged files"
 fi
 
 notice() {
