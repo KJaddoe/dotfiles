@@ -10,6 +10,7 @@
     url: "https://github.com/betterleaks/betterleaks/releases/download/v{{ betterleaks_version }}/betterleaks_{{ betterleaks_version }}_linux_x64.tar.gz"
     dest: "{{ ansible_env.HOME }}/.local/share/betterleaks-{{ betterleaks_version }}.tar.gz"
     mode: "0644"
+    checksum: "sha256:{{ betterleaks_linux_sha256 }}"
   when: ansible_os_family == "Debian"
 
 - name: Extract betterleaks into PATH (Ubuntu)
