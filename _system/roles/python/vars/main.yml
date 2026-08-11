@@ -4,6 +4,7 @@ uv_tools:
   - black
   - isort
   - pylint
+  - yamllint
   - rshell
   - jedi-language-server
   - ansible-lint

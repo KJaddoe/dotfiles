@@ -24,6 +24,7 @@
     - { role: jq, tags: jq }
     - { role: shfmt, tags: shfmt }
     - { role: shellcheck, tags: shellcheck }
+    - { role: hadolint, tags: hadolint }
     - { role: fzf, tags: fzf }
     - { role: zoxide, tags: zoxide }
     - { role: eza, tags: eza }

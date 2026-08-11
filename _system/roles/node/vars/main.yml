@@ -5,6 +5,7 @@ npm_global_packages:
   - eslint
   - prettier
   - typescript
+  - markdownlint-cli2
   - "@angular/cli"
   - "@nestjs/cli"
   - tree-sitter-cli
