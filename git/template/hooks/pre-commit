@@ -9,113 +9,113 @@
 git diff --cached --check || exit 1
 
 staged() {
-	git diff --cached --name-only --diff-filter=ACM | grep -E "$1"
+    git diff --cached --name-only --diff-filter=ACM | grep -E "$1"
 }
 
 have() {
-	command -v "$1" >/dev/null 2>&1
+    command -v "$1" >/dev/null 2>&1
 }
 
 any() {
-	for f in "$@"; do
-		[ -e "$f" ] && return 0
-	done
-	return 1
+    for f in "$@"; do
+        [ -e "$f" ] && return 0
+    done
+    return 1
 }
 
 fail=0
 report() {
-	echo "pre-commit: $1" >&2
-	fail=1
+    echo "pre-commit: $1" >&2
+    fail=1
 }
 
 js=$(staged '\.(js|jsx|ts|tsx|mjs|cjs)$')
 if [ -n "$js" ] && have npx; then
-	if any .prettierrc .prettierrc.json .prettierrc.yml .prettierrc.js prettier.config.js; then
-		echo "$js" | xargs npx --no-install prettier --check >/dev/null 2>&1 ||
-			report "prettier would reformat staged files"
-	fi
-	if any .eslintrc .eslintrc.json .eslintrc.js eslint.config.js eslint.config.mjs; then
-		echo "$js" | xargs npx --no-install eslint >/dev/null 2>&1 ||
-			report "eslint reported problems in staged files"
-	fi
+    if any .prettierrc .prettierrc.json .prettierrc.yml .prettierrc.js prettier.config.js; then
+        echo "$js" | xargs npx --no-install prettier --check >/dev/null 2>&1 ||
+            report "prettier would reformat staged files"
+    fi
+    if any .eslintrc .eslintrc.json .eslintrc.js eslint.config.js eslint.config.mjs; then
+        echo "$js" | xargs npx --no-install eslint >/dev/null 2>&1 ||
+            report "eslint reported problems in staged files"
+    fi
 fi
 
 py=$(staged '\.py$')
 if [ -n "$py" ]; then
-	if have black && any pyproject.toml setup.cfg; then
-		echo "$py" | xargs black --check >/dev/null 2>&1 ||
-			report "black would reformat staged files"
-	fi
-	if have pylint && any pyproject.toml .pylintrc setup.cfg; then
-		echo "$py" | xargs pylint --errors-only >/dev/null 2>&1 ||
-			report "pylint reported errors in staged files"
-	fi
+    if have black && any pyproject.toml setup.cfg; then
+        echo "$py" | xargs black --check >/dev/null 2>&1 ||
+            report "black would reformat staged files"
+    fi
+    if have pylint && any pyproject.toml .pylintrc setup.cfg; then
+        echo "$py" | xargs pylint --errors-only >/dev/null 2>&1 ||
+            report "pylint reported errors in staged files"
+    fi
 fi
 
 # True when the file's shebang names a shell shellcheck can parse (zsh cannot be).
 shell_shebang() {
-	first=$(head -n 1 "$1" 2>/dev/null)
-	case "$first" in
-	'#!'*) ;;
-	*) return 1 ;;
-	esac
-	# intentional word splitting: the shebang's interpreter and its arguments
-	# shellcheck disable=SC2086
-	set -- ${first#\#!}
-	[ "$#" -gt 0 ] || return 1
-	interp=${1##*/}
-	if [ "$interp" = env ] && [ "$#" -gt 1 ]; then
-		interp=${2##*/}
-	fi
-	case "$interp" in
-	sh | bash | dash | ksh) return 0 ;;
-	esac
-	return 1
+    first=$(head -n 1 "$1" 2>/dev/null)
+    case "$first" in
+    '#!'*) ;;
+    *) return 1 ;;
+    esac
+    # intentional word splitting: the shebang's interpreter and its arguments
+    # shellcheck disable=SC2086
+    set -- ${first#\#!}
+    [ "$#" -gt 0 ] || return 1
+    interp=${1##*/}
+    if [ "$interp" = env ] && [ "$#" -gt 1 ]; then
+        interp=${2##*/}
+    fi
+    case "$interp" in
+    sh | bash | dash | ksh) return 0 ;;
+    esac
+    return 1
 }
 
 sh_files=$(staged '\.(sh|bash)$')
 extensionless=$(staged '(^|/)[^./]*$' | while IFS= read -r f; do
-	[ -f "$f" ] && shell_shebang "$f" && echo "$f"
+    [ -f "$f" ] && shell_shebang "$f" && echo "$f"
 done)
 sh_files=$(printf '%s\n%s\n' "$sh_files" "$extensionless" | grep -v '^$')
 
 if [ -n "$sh_files" ] && have shellcheck; then
-	echo "$sh_files" | xargs shellcheck >/dev/null 2>&1 ||
-		report "shellcheck reported problems in staged files"
+    echo "$sh_files" | xargs shellcheck >/dev/null 2>&1 ||
+        report "shellcheck reported problems in staged files"
 fi
 
 lua=$(staged '\.lua$')
 if [ -n "$lua" ] && have stylua && any .stylua.toml stylua.toml; then
-	echo "$lua" | xargs stylua --check >/dev/null 2>&1 ||
-		report "stylua would reformat staged files"
+    echo "$lua" | xargs stylua --check >/dev/null 2>&1 ||
+        report "stylua would reformat staged files"
 fi
 
 cs=$(staged '\.cs$')
 if [ -n "$cs" ] && have dotnet && any .editorconfig; then
-	dotnet format --verify-no-changes >/dev/null 2>&1 ||
-		report "dotnet format would change staged files"
+    dotnet format --verify-no-changes >/dev/null 2>&1 ||
+        report "dotnet format would change staged files"
 fi
 
 notice() {
-	echo "pre-commit: $1" >&2
+    echo "pre-commit: $1" >&2
 }
 
 if [ -n "$(staged '(^|/)(package|package-lock)\.json$')" ]; then
-	notice "dependencies changed — run: npm audit"
+    notice "dependencies changed — run: npm audit"
 fi
 
 py_manifest=$(staged '(^|/)(requirements.*\.txt|Pipfile|poetry\.lock)$')
 for f in $(staged '(^|/)pyproject\.toml$'); do
-	grep -qE '^[[:space:]]*(dependencies|install_requires)' "$f" 2>/dev/null &&
-		py_manifest="$py_manifest $f"
+    grep -qE '^[[:space:]]*(dependencies|install_requires)' "$f" 2>/dev/null &&
+        py_manifest="$py_manifest $f"
 done
 if [ -n "$py_manifest" ]; then
-	notice "dependencies changed — run: pip-audit"
+    notice "dependencies changed — run: pip-audit"
 fi
 
 if [ -n "$(staged '\.(csproj|fsproj)$|(^|/)Directory\.Packages\.props$')" ]; then
-	notice "dependencies changed — run: dotnet list package --vulnerable --include-transitive"
+    notice "dependencies changed — run: dotnet list package --vulnerable --include-transitive"
 fi
 
 [ "$fail" -ne 0 ] && echo "pre-commit: fix, or SKIP_HOOKS=1 git commit … to bypass" >&2

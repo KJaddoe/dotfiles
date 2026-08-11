@@ -56,21 +56,21 @@ verify_installation() {
 setup_brew_env
 
 case "$OS" in
-    Linux)
-        if grep -qi "ubuntu" /etc/os-release; then
-            install_antidote_ubuntu
-        else
-            echo "Unsupported Linux distribution."
-            exit 1
-        fi
-        ;;
-    Darwin)
-        install_antidote_macos
-        ;;
-    *)
-        echo "Unsupported OS: $OS"
+Linux)
+    if grep -qi "ubuntu" /etc/os-release; then
+        install_antidote_ubuntu
+    else
+        echo "Unsupported Linux distribution."
         exit 1
-        ;;
+    fi
+    ;;
+Darwin)
+    install_antidote_macos
+    ;;
+*)
+    echo "Unsupported OS: $OS"
+    exit 1
+    ;;
 esac
 
 verify_installation

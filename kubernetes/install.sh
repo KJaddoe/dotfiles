@@ -7,9 +7,9 @@ OS="$(uname)"
 setup_brew_env() {
     if [ "$OS" = "Darwin" ]; then
         if [ -x /opt/homebrew/bin/brew ]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"  # Apple Silicon
+            eval "$(/opt/homebrew/bin/brew shellenv)" # Apple Silicon
         elif [ -x /usr/local/bin/brew ]; then
-            eval "$(/usr/local/bin/brew shellenv)"     # Intel
+            eval "$(/usr/local/bin/brew shellenv)" # Intel
         fi
     elif [ "$OS" = "Linux" ]; then
         if [ -x "$HOME/.linuxbrew/bin/brew" ]; then
@@ -84,21 +84,21 @@ verify_installation() {
 
 setup_brew_env
 case "$OS" in
-    Linux)
-        if grep -qi "ubuntu" /etc/os-release; then
-            install_kubernetes_ubuntu
-        else
-            echo "Unsupported Linux distribution."
-            exit 1
-        fi
-        ;;
-    Darwin)
-        install_kubernetes_macos
-        ;;
-    *)
-        echo "Unsupported OS: $OS"
+Linux)
+    if grep -qi "ubuntu" /etc/os-release; then
+        install_kubernetes_ubuntu
+    else
+        echo "Unsupported Linux distribution."
         exit 1
-        ;;
+    fi
+    ;;
+Darwin)
+    install_kubernetes_macos
+    ;;
+*)
+    echo "Unsupported OS: $OS"
+    exit 1
+    ;;
 esac
 
 install_minikube
