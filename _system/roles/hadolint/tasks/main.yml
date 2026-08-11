@@ -10,6 +10,7 @@
     url: "https://github.com/hadolint/hadolint/releases/download/v{{ hadolint_version }}/hadolint-linux-x86_64"
     dest: "{{ ansible_env.HOME }}/.local/share/hadolint-{{ hadolint_version }}"
     mode: "0755"
+    checksum: "sha256:{{ hadolint_linux_sha256 }}"
   when: ansible_os_family == "Debian"
 
 - name: Symlink hadolint into PATH (Ubuntu)
