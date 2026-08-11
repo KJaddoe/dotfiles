@@ -375,6 +375,12 @@ require("lazy").setup({
           lint.try_lint()
         end,
       })
+      -- The lazy event that loaded this plugin has already fired for the current
+      -- buffer, so the autocmd above would not see it until the next write.
+      -- Scheduled because filetype is not set yet while that event is in flight.
+      vim.schedule(function()
+        lint.try_lint()
+      end)
     end,
   },
   {
