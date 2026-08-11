@@ -356,6 +356,28 @@ require("lazy").setup({
     end,
   },
   {
+    -- Only for filetypes no enabled LSP already lints. eslint, bashls (shellcheck),
+    -- roslyn_ls, lua_ls and ansiblels (ansible-lint) cover the rest; duplicating them
+    -- here would double every diagnostic.
+    "mfussenegger/nvim-lint",
+    event = { "BufReadPost", "BufWritePost" },
+    config = function()
+      local lint = require("lint")
+      lint.linters_by_ft = {
+        python = { "pylint" },
+        dockerfile = { "hadolint" },
+        markdown = { "markdownlint-cli2" },
+        yaml = { "yamllint" },
+      }
+      vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost" }, {
+        group = vim.api.nvim_create_augroup("user_nvim_lint", { clear = true }),
+        callback = function()
+          lint.try_lint()
+        end,
+      })
+    end,
+  },
+  {
     "hrsh7th/nvim-cmp",
     dependencies = {
       "hrsh7th/cmp-buffer",
