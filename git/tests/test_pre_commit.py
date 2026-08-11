@@ -276,6 +276,49 @@ class ShellcheckSkipsWhatItCannotParse(HookTestCase):
         self.assertEqual(self.commit()[0], 0)
 
 
+@unittest.skipUnless(shutil.which("selene"), "selene not installed")
+class SeleneGate(HookTestCase):
+    """Lua linting is opt-in per repo and blocks on real findings."""
+
+    def test_clean_lua_passes(self):
+        """Lua with no findings commits normally."""
+        self.stage("selene.toml", 'std = "lua51"\n')
+        self.stage("ok.lua", "local x = 1\nreturn x\n")
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+
+    def test_undefined_global_blocks(self):
+        """A selene finding fails the commit."""
+        self.stage("selene.toml", 'std = "lua51"\n')
+        self.stage("bad.lua", "local x = undefined_thing()\nreturn x\n")
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("selene", err)
+
+    def test_without_config_is_silent(self):
+        """A repo that has not opted into selene is left alone."""
+        self.stage("bad.lua", "local x = undefined_thing()\nreturn x\n")
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+        self.assertNotIn("selene", err)
+
+    def test_topic_folder_config_is_found(self):
+        """This repo keeps the config in selene/, not at the root."""
+        self.stage("selene/selene.toml", 'std = "lua51"\n')
+        self.stage("bad.lua", "local x = undefined_thing()\nreturn x\n")
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("selene", err)
+
+    def test_root_config_wins_over_topic_folder(self):
+        """A root selene.toml is selene's own convention and is preferred."""
+        self.stage("selene.toml", '[lints]\nundefined_variable = "allow"\n')
+        self.stage("selene/selene.toml", 'std = "lua51"\n')
+        self.stage("bad.lua", "local x = undefined_thing()\nreturn x\n")
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+
+
 @unittest.skipUnless(shutil.which("csharpier"), "csharpier not installed")
 class CsharpierGate(HookTestCase):
     """C# formatting is checked by the same tool that formats it on save."""
@@ -301,6 +344,102 @@ class CsharpierGate(HookTestCase):
         code, err = self.commit()
         self.assertEqual(code, 0, err)
         self.assertNotIn("csharpier", err)
+
+
+@unittest.skipUnless(shutil.which("hadolint"), "hadolint not installed")
+class HadolintGate(HookTestCase):
+    """Dockerfiles are linted wherever they appear in the tree."""
+
+    def test_clean_dockerfile_passes(self):
+        """A Dockerfile with no findings commits normally."""
+        self.stage("Dockerfile", 'FROM debian:12\nCMD ["true"]\n')
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+
+    def test_unpinned_base_image_blocks(self):
+        """A latest-tagged base image is a hadolint error."""
+        self.stage("Dockerfile", "FROM debian:latest\n")
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("hadolint", err)
+
+    def test_suffixed_dockerfile_is_matched(self):
+        """Dockerfile.dev is as much a Dockerfile as Dockerfile."""
+        self.stage("Dockerfile.dev", "FROM debian:latest\n")
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("hadolint", err)
+
+
+@unittest.skipUnless(shutil.which("yamllint"), "yamllint not installed")
+class YamllintGate(HookTestCase):
+    """YAML linting is opt-in per repo."""
+
+    def test_without_config_is_silent(self):
+        """A repo that has not opted into yamllint is left alone."""
+        self.stage("bad.yml", "a: 1\na: 2\n")
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+        self.assertNotIn("yamllint", err)
+
+    def test_duplicate_key_blocks(self):
+        """A duplicate mapping key fails the commit."""
+        self.stage(".yamllint", "extends: default\n")
+        self.stage("bad.yml", "a: 1\na: 2\n")
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("yamllint", err)
+
+
+@unittest.skipUnless(shutil.which("markdownlint-cli2"), "markdownlint-cli2 not installed")
+class MarkdownlintGate(HookTestCase):
+    """Markdown linting is opt-in per repo."""
+
+    def test_without_config_is_silent(self):
+        """A repo that has not opted into markdownlint is left alone."""
+        self.stage("doc.md", "## skipped heading level\n")
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+        self.assertNotIn("markdownlint", err)
+
+    def test_violation_blocks(self):
+        """A markdownlint finding fails the commit."""
+        self.stage(".markdownlint.json", '{"default": true}\n')
+        self.stage("doc.md", "### skipped heading level\n")
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("markdownlint", err)
+
+
+@unittest.skipUnless(shutil.which("zsh"), "zsh not installed")
+class ZshSyntaxGate(HookTestCase):
+    """zsh has no linter that can parse it, so syntax is the only available gate."""
+
+    def test_valid_zsh_passes(self):
+        """Well-formed zsh commits normally."""
+        self.stage("aliases.zsh", 'alias l="ls -lAh"\n')
+        code, err = self.commit()
+        self.assertEqual(code, 0, err)
+
+    def test_syntax_error_blocks(self):
+        """An unterminated block fails the commit."""
+        self.stage("aliases.zsh", "if true; then\n  echo hi\n")
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("zsh", err)
+
+    def test_extensionless_zshrc_is_matched(self):
+        """zsh/zshrc carries no .zsh suffix but is still sourced by every shell."""
+        self.stage("zsh/zshrc", "if true; then\n  echo hi\n")
+        code, err = self.commit()
+        self.assertEqual(code, 1)
+        self.assertIn("zsh", err)
+
+    def test_shellcheck_does_not_claim_zsh(self):
+        """A zsh syntax error is reported by zsh, not shellcheck."""
+        self.stage("aliases.zsh", "if true; then\n  echo hi\n")
+        _, err = self.commit()
+        self.assertNotIn("shellcheck", err)
 
 
 if __name__ == "__main__":
