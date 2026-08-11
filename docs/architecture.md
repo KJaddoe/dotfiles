@@ -46,13 +46,20 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
 Hooks are plain Python 3, no third-party runtime dependencies — they must work on a freshly
 bootstrapped machine before anything is installed.
 
-| Task   | Command                                                                            |
-|--------|------------------------------------------------------------------------------------|
-| Test   | `for s in claude/hooks/tests/test_*.py git/tests/test_*.py; do python3 "$s"; done` |
-| Format | `black claude/hooks/ git/tests/`                                                   |
-| Lint   | `pylint claude/hooks/ git/tests/`                                                  |
+| Task      | Command                                                                            |
+|-----------|------------------------------------------------------------------------------------|
+| Test      | `for s in claude/hooks/tests/test_*.py git/tests/test_*.py; do python3 "$s"; done` |
+| Test nvim | `python3 nvim/tests/test_lint.py`                                                  |
+| Format    | `black claude/hooks/ git/tests/ nvim/tests/`                                       |
+| Lint      | `pylint claude/hooks/ git/tests/ nvim/tests/`                                      |
 
 `script/test` runs the hook suites first, before its (destructive) bootstrap steps.
+
+`nvim/tests/` is the exception it does **not** run. Those tests drive a real headless nvim against
+`nvim/config`, so they need nvim, an installed plugin set and pylint on PATH, while the hook suites
+deliberately need nothing but python3 and git — which is what makes them safe to run before the
+bootstrap. They skip cleanly when any of that is missing. They point `XDG_CONFIG_HOME` at the in-repo
+config rather than `~/.config/nvim`, so they cover this repo whether or not dotbot has run.
 
 `git/tests/` covers the shipped git `pre-commit` hook (see below) and `bin/git-gone`. It lives outside
 `git/template/` on purpose: git copies that directory wholesale into every new repo, so a `tests/`
