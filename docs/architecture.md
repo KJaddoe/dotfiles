@@ -161,7 +161,7 @@ tooling present but no repo-level command, so running them over this repo is man
 
 | Language | Tooling present                                    | Configured?                   |
 |----------|----------------------------------------------------|-------------------------------|
-| Shell    | `shellcheck` + `shfmt` (each its own ansible role) | Command below, not gated      |
+| Shell    | `shellcheck` + `shfmt` (each its own ansible role) | Linter gated, shfmt manual    |
 | Lua      | `stylua` (own topic), `selene` (own topic)         | Command below, gated          |
 | zsh      | none exists — `zsh -n` only                        | Syntax gated, never formatted |
 | Ansible  | 32 roles under `_system/`                          | Linted in-editor, not gated   |
