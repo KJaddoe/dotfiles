@@ -156,11 +156,32 @@ tooling present but no repo-level command, so running them over this repo is man
 | Lua      | `stylua` (own topic), `selene` (own topic)         | Command below, gated          |
 | zsh      | none exists — `zsh -n` only                        | Syntax gated, never formatted |
 | Ansible  | 32 roles under `_system/`                          | Linted in-editor, not gated   |
+| Markdown | `markdownlint-cli2` (`.markdownlint-cli2.jsonc`)   | Gated repo-wide               |
 
 109 `ansible-lint` findings remain across `_system/`, so that is reported in the editor but not yet
 gated. zsh is the second-largest filetype here (26 files) and the only one with no formatter and no
 linter in existence — `shfmt` and `shellcheck` both refuse to parse it, so a syntax check is the
 ceiling, not a placeholder for something better.
+
+Markdown is gated because `.markdownlint-cli2.jsonc` at the repo root is what switches the hook's
+markdown check on — it only runs where a project ships a config. The config governs this repo's own
+sources, so like `pyproject.toml` and `.editorconfig` it stays at the root and is not linked into
+`$HOME`.
+
+`ignores` excludes what this repo carries but does not author: vendored `dotbot/`, and
+`claude/memory/` plus `claude/CLAUDE.md`, which are symlinked into `~/.claude/` as payload and
+rewritten constantly. Three rules are off because they contradict conventions here rather than
+catching defects — `MD013` (line length: the skills mix prose wrapped at ~100 with deliberately
+unwrapped lines), `MD025` (the README's `PHILOSOPHY` / `Installation` / `Personalization` headings
+are top-level by design), and `MD041` (`git/PULL_REQUEST_TEMPLATE.md` correctly opens with a form
+field, not a heading). Everything else is on, including `MD060`, which enforces the aligned-table
+convention mechanically.
+
+Lint markdown with:
+
+```sh
+markdownlint-cli2 "**/*.md"
+```
 
 Lint shell with:
 

@@ -1,0 +1,8 @@
+{
+  "ignores": ["dotbot/**", "claude/memory/**", "claude/CLAUDE.md"],
+  "config": {
+    "MD013": false,
+    "MD025": false,
+    "MD041": false
+  }
+}
