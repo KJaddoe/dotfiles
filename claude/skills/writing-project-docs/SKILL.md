@@ -17,11 +17,11 @@ anything — `MISSING` is undefined without it.
 The one question this skill exists to answer. Document the **interface**; never restate the
 **implementation**.
 
-| Document it                                                        | Don't                                            |
-|--------------------------------------------------------------------|--------------------------------------------------|
-| Public API, request/response shapes, CLI flags, exit codes          | Internal control flow, algorithms, how a loop works |
-| Env vars, config keys, defaults                                     | Line-by-line narration of a function             |
-| Why a design was chosen, what it rules out, cross-component wiring  | Anything a reader gets faster by opening the file |
+| Document it                                                        | Don't                                               |
+|--------------------------------------------------------------------|-----------------------------------------------------|
+| Public API, request/response shapes, CLI flags, exit codes         | Internal control flow, algorithms, how a loop works |
+| Env vars, config keys, defaults                                    | Line-by-line narration of a function                |
+| Why a design was chosen, what it rules out, cross-component wiring | Anything a reader gets faster by opening the file   |
 
 "Don't restate the code" means don't narrate internals. Contracts are the code's promise to a
 consumer — they are required even though they are "what". Keep the two apart physically: reference
@@ -29,9 +29,9 @@ material in the README or its own `docs/` page, rationale in `architecture.md` /
 
 ## Three modes
 
-| Mode          | Trigger                                          | Output                                        |
-|---------------|--------------------------------------------------|-----------------------------------------------|
-| **Inline**    | A change hits a doc trigger                      | Doc edits in the same commit as the code      |
+| Mode          | Trigger                                          | Output                                         |
+|---------------|--------------------------------------------------|------------------------------------------------|
+| **Inline**    | A change hits a doc trigger                      | Doc edits in the same commit as the code       |
 | **Audit**     | "Are our docs stale?", pre-release, unknown repo | A findings table. **No writes, no execution.** |
 | **Remediate** | Acting on an audit                               | One commit per doc area, worst class first     |
 
@@ -58,14 +58,14 @@ A repo can be more than one archetype (a published CLI that is also a library). 
 
 2. **Verify claims against code.** The step that gets skipped; it is the whole value.
 
-   | Claim             | Check against                                                                            |
-   |-------------------|------------------------------------------------------------------------------------------|
-   | Env vars          | env reads in source, both directions vs `.env.example` + docs — see exclusions below      |
-   | Commands          | `package.json` scripts, `Makefile`, `*.csproj`, CI workflows — **read them, never run them** |
-   | Tooling versions  | `.nvmrc`, `.tool-versions`, `mise.toml`, `global.json`, `Dockerfile`, CI matrix            |
-   | API contracts     | routes/controllers vs documented endpoints and shapes                                     |
-   | Structure         | documented tree vs actual directories                                                     |
-   | Deploy steps      | CI/CD workflows, deploy scripts, infra manifests                                          |
+   | Claim            | Check against                                                                                |
+   |------------------|----------------------------------------------------------------------------------------------|
+   | Env vars         | env reads in source, both directions vs `.env.example` + docs — see exclusions below         |
+   | Commands         | `package.json` scripts, `Makefile`, `*.csproj`, CI workflows — **read them, never run them** |
+   | Tooling versions | `.nvmrc`, `.tool-versions`, `mise.toml`, `global.json`, `Dockerfile`, CI matrix              |
+   | API contracts    | routes/controllers vs documented endpoints and shapes                                        |
+   | Structure        | documented tree vs actual directories                                                        |
+   | Deploy steps     | CI/CD workflows, deploy scripts, infra manifests                                             |
 
    **Never execute a documented command to test it.** Setup and test scripts overwrite home
    directories, rewrite global git config, and change login shells. Verify by reading the definition.
@@ -78,13 +78,13 @@ A repo can be more than one archetype (a published CLI that is also a library). 
 
 4. **Classify.**
 
-   | Class      | Means                                                                  |
-   |------------|------------------------------------------------------------------------|
-   | `WRONG`    | Doc contradicts the code today                                         |
-   | `CONFLICT` | Doc and code disagree and a human must choose which one changes        |
-   | `STALE`    | Doc was right; the code moved and it didn't (incl. lists that grew)    |
+   | Class      | Means                                                                     |
+   |------------|---------------------------------------------------------------------------|
+   | `WRONG`    | Doc contradicts the code today                                            |
+   | `CONFLICT` | Doc and code disagree and a human must choose which one changes           |
+   | `STALE`    | Doc was right; the code moved and it didn't (incl. lists that grew)       |
    | `MISSING`  | Coverage-floor gap, or undocumented behaviour that would surprise someone |
-   | `THIN`     | Present but not enough to act on without reading the source            |
+   | `THIN`     | Present but not enough to act on without reading the source               |
 
    `CONFLICT` is usually the most valuable finding — never silently "fix" the doc to match the code
    when the code may be what is wrong.
