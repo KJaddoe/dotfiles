@@ -89,7 +89,7 @@ find_zsh() {
 }
 
 setup_gitconfig
-install_dotfiles
+install_dotfiles "$@"
 
 info "installing dependencies"
 if ./bin/dot_update; then
