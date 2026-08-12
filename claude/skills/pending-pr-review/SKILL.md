@@ -25,7 +25,7 @@ Walk through PR findings one at a time, attaching each as an inline comment to a
 
 `POST /repos/{owner}/{repo}/pulls/{n}/comments` looks like the right endpoint to add a single inline comment, but it implicitly tries to create its own pending review. If a pending review already exists for the same user on the same PR, it fails with:
 
-```
+```text
 422 Validation Failed
 "user_id can only have one pending review per pull request"
 ```
@@ -41,6 +41,7 @@ gh api -X POST repos/{OWNER}/{REPO}/pulls/{N}/reviews --input review-init.json
 ```
 
 `review-init.json`:
+
 ```json
 {
   "commit_id": "<HEAD SHA of the PR>",
@@ -91,6 +92,7 @@ mutation AddThread($body: String!) {
 ```
 
 Invoke:
+
 ```bash
 BODY=$(cat comment-body.txt) && \
   gh api graphql -F query=@add-thread.graphql -F body="$BODY"

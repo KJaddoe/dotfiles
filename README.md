@@ -119,7 +119,7 @@ The `claude` topic installs [Claude Code][claude-code] and restores the global c
 ## Issues
 
 When having issues installing on wsl some of the following links helped me to get it working:
-https://github.com/MicrosoftDocs/WSL/issues/457#issuecomment-730731900 (deamon not running or can't get deamon status)
+<https://github.com/MicrosoftDocs/WSL/issues/457#issuecomment-730731900> (deamon not running or can't get deamon status)
 
 # Personalization
 
