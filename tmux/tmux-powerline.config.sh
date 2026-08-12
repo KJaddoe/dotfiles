@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Default configuration file for tmux-powerline.
 
 # General {
@@ -48,10 +49,10 @@ export TMUX_POWERLINE_SEG_AIR_UPDATE_PERIOD="600"
 export TMUX_POWERLINE_SEG_AIR_JSON="jq"
 # Your location
 # Latitude and Longitude:
-TMUX_POWERLINE_SEG_AIR_LAT=""
-TMUX_POWERLINE_SEG_AIR_LON=""
+export TMUX_POWERLINE_SEG_AIR_LAT=""
+export TMUX_POWERLINE_SEG_AIR_LON=""
 # Your Open Weather API Key:
-TMUX_POWERLINE_SEG_AIR_OPEN_WEATHER_API_KEY=""
+export TMUX_POWERLINE_SEG_AIR_OPEN_WEATHER_API_KEY=""
 # }
 
 # battery.sh {
