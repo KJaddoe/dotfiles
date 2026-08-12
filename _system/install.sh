@@ -13,7 +13,7 @@ setup_brew_env() {
         fi
     elif [ "$OS" = "Linux" ]; then
         if [ -x "$HOME/.linuxbrew/bin/brew" ]; then
-            eval "$($HOME/.linuxbrew/bin/brew shellenv)"
+            eval "$("$HOME"/.linuxbrew/bin/brew shellenv)"
         elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
             eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         fi
@@ -24,16 +24,6 @@ install_xcode_macos() {
     if ! command -v gcc >/dev/null 2>&1; then
         echo "Installing Xcode Command Line Tools..."
         xcode-select --install
-    fi
-}
-
-install_ansible_macos() {
-    if ! command -v ansible >/dev/null 2>&1; then
-        echo "Installing Ansible..."
-        brew install ansible
-    else
-        echo "Upgrading Ansible..."
-        brew upgrade ansible
     fi
 }
 
