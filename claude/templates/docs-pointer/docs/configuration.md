@@ -6,8 +6,8 @@ Record where a value lives — **never the value itself**. No real secrets here.
 
 ## Environment variables
 
-| Variable | Purpose | Required | Default | Example |
-|----------|---------|----------|---------|---------|
+| Variable | Purpose            | Required | Default         | Example            |
+|----------|--------------------|----------|-----------------|--------------------|
 | `{NAME}` | {what it controls} | {Yes/No} | {default, or —} | {safe placeholder} |
 
 For each, state **where the real value comes from**: which vault/1Password item, cloud secret
