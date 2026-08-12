@@ -52,8 +52,9 @@ A repo can be more than one archetype (a published CLI that is also a library). 
 ## Audit procedure
 
 1. **Inventory** — `README*`, `docs/`, ADRs, per-package READMEs, `.env.example`, `CHANGELOG*`,
-   `CLAUDE.md`, doc-site sources, CI configs that tell a human or machine how to build/run/test,
-   and any doc template this repo ships to other repos (a defect there propagates).
+   `CLAUDE.md` (its own section below), doc-site sources, CI configs that tell a human or machine
+   how to build/run/test, and any doc template this repo ships to other repos (a defect there
+   propagates).
 
 2. **Verify claims against code.** The step that gets skipped; it is the whole value.
 
@@ -121,6 +122,44 @@ Field list is in `~/.claude/CLAUDE.md`. Two cases it doesn't cover:
   not an apologetic paragraph.
 
 Record the **location** of a real value, never the value.
+
+## CLAUDE.md
+
+A project `CLAUDE.md` is a rule **budget**, not a backlog. Audit it to shrink it: the healthy
+outcome is rules deleted or sharpened, and an audit that only adds has failed.
+
+**Identify the target first.** Only a `CLAUDE.md` that governs *this repo* is in scope. A repo can
+also carry one it does not own:
+
+| File                                 | Is                                  | Audit?                        |
+|--------------------------------------|-------------------------------------|-------------------------------|
+| Repo root / package root             | This project's rules                | Yes                           |
+| Symlinked out to a tool's config dir | Someone's **global** rules; payload | No                            |
+| `*.template` shipped to other repos  | A template                          | No — a defect there is step 1 |
+
+Check the repo's linking manifest (`dotbot.conf.yaml` `link:` entries, a stow/chezmoi layout, an
+install script) and whether the path is already a symlink. Editing a linked-out global file under a
+project audit applies project-scoped tests to global rules.
+
+**Never propose a new rule.** Origination is reserved to the user (`~/.claude/CLAUDE.md` → Working
+method). An audit reports; it does not write rules. `MISSING` here means a convention the repo
+demonstrably follows is undocumented — report it and stop.
+
+Per rule, stopping at the first hit:
+
+| Class         | Means                                                               |
+|---------------|---------------------------------------------------------------------|
+| `ENFORCEABLE` | A hook, linter/formatter config, test or CI check could enforce it  |
+| `DUPLICATE`   | Another rule — here or global — already covers it; sharpen that one |
+| `MISPLACED`   | A fact, rationale or history, not an imperative → memory            |
+
+The five general classes still apply: a rule naming a command, tool or path that no longer exists is
+`WRONG`; one whose convention moved is `STALE`; one too vague to act on is `THIN`. Report in the
+step 5 table.
+
+`ENFORCEABLE` is the most valuable finding and the one to hunt hardest — a rule is the weakest
+enforcement available. It is not fixed by editing `CLAUDE.md`: it is a proposal to build the check,
+raised one at a time, and the rule goes only once the check lands.
 
 ## CHANGELOG
 
