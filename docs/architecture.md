@@ -75,6 +75,15 @@ no dependency to install. `black` and `pylint` are dev-only; neither is needed t
 `git/template/hooks/pre-commit` ships via `init.templateDir` (`~/.git-template`), so **every repo
 created with `git init` from this machine** gets it — existing repos do not, copy it in manually.
 
+This repo is always one of those, on every machine. `init.templateDir` is set by
+`git/gitconfig.local`, which dotbot links only once the clone already exists, so the dotfiles clone
+is made before the setting exists and never picks the hook up. Part of bootstrapping a fresh
+machine is therefore:
+
+```sh
+cp ~/.git-template/hooks/pre-commit .git/hooks/pre-commit
+```
+
 It enforces the format+lint half of the definition of done on staged files: whitespace errors, then
 betterleaks, prettier/eslint, black/pylint, shellcheck, `zsh -n`, stylua/selene, csharpier, hadolint,
 markdownlint and yamllint. Each tool runs only when it is **installed AND the project configures it**,
