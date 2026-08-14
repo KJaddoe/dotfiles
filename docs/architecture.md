@@ -177,9 +177,12 @@ markdown check on — it only runs where a project ships a config. The config go
 sources, so like `pyproject.toml` and `.editorconfig` it stays at the root and is not linked into
 `$HOME`.
 
-`ignores` excludes what this repo carries but does not author: vendored `dotbot/`, and
-`claude/memory/` plus `claude/CLAUDE.md`, which are symlinked into `~/.claude/` as payload and
-rewritten constantly. Three rules are off because they contradict conventions here rather than
+`ignores` excludes only what this repo carries but does not author: vendored `dotbot/`.
+`claude/memory/` and `claude/CLAUDE.md` are symlinked into `~/.claude/` as payload, but they are
+authored here, so they are linted like everything else — the files that state the conventions are
+held to them. The cost is that a memory rewrite now has to pass the gate to be committed.
+
+Three rules are off because they contradict conventions here rather than
 catching defects — `MD013` (line length: the skills mix prose wrapped at ~100 with deliberately
 unwrapped lines), `MD025` (the README's `PHILOSOPHY` / `Installation` / `Personalization` headings
 are top-level by design), and `MD041` (`git/PULL_REQUEST_TEMPLATE.md` correctly opens with a form
