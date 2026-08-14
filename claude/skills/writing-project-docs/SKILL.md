@@ -32,7 +32,7 @@ material in the README or its own `docs/` page, rationale in `architecture.md` /
 | Mode          | Trigger                                          | Output                                         |
 |---------------|--------------------------------------------------|------------------------------------------------|
 | **Inline**    | A change hits a doc trigger                      | Doc edits in the same commit as the code       |
-| **Audit**     | "Are our docs stale?", pre-release, unknown repo | A findings table. **No writes, no execution.** |
+| **Audit**     | "Are our docs stale?", pre-release, unknown repo | A findings table. **No writes**; step 3 only   |
 | **Remediate** | Acting on an audit                               | One commit per doc area, worst class first     |
 
 If a task is both (changing code in an unfamiliar repo), do Inline. Audit is a task in its own
@@ -73,7 +73,24 @@ A repo can be more than one archetype (a published CLI that is also a library). 
    Env var exclusions, or every audit drowns: skip platform vars (`PATH`, `HOME`, `NODE_ENV`, `CI`,
    …) and test/fixture paths, which legitimately contain invented names.
 
-3. **Scope.** Verify every claim in the coverage-floor docs. Sample elsewhere and **say what you
+3. **Floor first, then scope.** The floor lives in `~/.claude/CLAUDE.md` while the classes live
+   here, and a floor item in another file gets skipped — "how to roll back" was absent from three
+   audited deployed services and went unreported in all three. So walk it mechanically before
+   anything else:
+
+   ```sh
+   python3 ~/.claude/hooks/docs-coverage-floor.py --path .
+   ```
+
+   It prints the repo's detected kind(s) and every floor topic no doc mentions. **Each line it
+   prints is a `MISSING` row** unless you can name the doc that covers it. Detection is coarse — a
+   passing mention counts as covered — so it under-reports and is a floor, never a quality bar; a
+   topic it passes can still be `THIN`. If it cannot run, walk the floor by hand instead.
+
+   This is the one command an audit runs. It ships with the skill, only reads, and executes
+   nothing belonging to the repo; step 2's ban is on running the **project's** commands.
+
+   Then verify every claim in the coverage-floor docs. Sample elsewhere and **say what you
    sampled** — an unbounded "verify everything" over a large repo silently becomes partial anyway.
 
 4. **Classify.**
@@ -83,7 +100,7 @@ A repo can be more than one archetype (a published CLI that is also a library). 
    | `WRONG`    | Doc contradicts the code today                                            |
    | `CONFLICT` | Doc and code disagree and a human must choose which one changes           |
    | `STALE`    | Doc was right; the code moved and it didn't (incl. lists that grew)       |
-   | `MISSING`  | Coverage-floor gap, or undocumented behaviour that would surprise someone |
+   | `MISSING`  | Coverage-floor gap (step 3), or undocumented behaviour that surprises     |
    | `THIN`     | Present but not enough to act on without reading the source               |
 
    `CONFLICT` is usually the most valuable finding — never silently "fix" the doc to match the code
