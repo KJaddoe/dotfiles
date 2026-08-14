@@ -5,6 +5,7 @@ live instruction outranks them. `~/.claude/memory/general.md` holds the rational
 for these rules as FYI reference only; the binding text is HERE.
 
 ### Working method
+
 - Before claiming what a component/SP/function does — or recommending one for a job — VERIFY against the
   actual code: read the body, trace the live call path. Don't reason from plausible assumptions or names.
   If a claim rests on an unverified assumption, check it or flag it explicitly as unverified.
@@ -32,6 +33,7 @@ for these rules as FYI reference only; the binding text is HERE.
   never a menu to adopt wholesale. This file is a budget, not a backlog.
 
 ### Git & GitHub
+
 - NEVER add Claude attribution to anything: no "Co-Authored-By: Claude", no "Generated with Claude
   Code", no 🤖 trailer — commits, PR/issue bodies, comments, or any generated artifact.
 - NEVER pass `--gpg-sign` to `git commit`/`--amend` (the passphrase prompt hangs the UI; the user signs
@@ -48,6 +50,7 @@ for these rules as FYI reference only; the binding text is HERE.
   approval. Don't edit working-tree files as the "fix" path. Use the `pending-pr-review` skill.
 
 ### Acting as the user (public / attributed actions)
+
 - Before any PUBLIC, identity-attributed action (GitHub issue/PR/comment/review/release, push to a shared
   remote, Slack/email), draft it and get explicit sign-off on the exact content first. Authorization for
   the task is not authorization for the content. Local-only actions (file edits, local commits/branches
@@ -56,6 +59,7 @@ for these rules as FYI reference only; the binding text is HERE.
   Status back to "To Be Refined" AND post a comment noting Claude made changes a human must review.
 
 ### Code & artifacts
+
 - Document every function, class, and method with a structured doc-comment covering its purpose, params,
   and return value, in the language's convention (JSDoc/TSDoc, C# XML `///`, Python docstrings) and
   matching the project's existing doc style. Do NOT add inline narration comments explaining what a
@@ -73,6 +77,7 @@ for these rules as FYI reference only; the binding text is HERE.
   raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
 
 ### Project documentation
+
 - Update the project's own docs as PART of the change — same commit/PR, never a later pass. Triggers:
   behaviour; setup/install; commands/scripts; env vars or config keys; API/interface contracts;
   dependencies or tooling/versions; the data model; structure/architecture; deploy/release steps; a
@@ -106,6 +111,7 @@ for these rules as FYI reference only; the binding text is HERE.
 - Use the `writing-project-docs` skill for the audit/remediate procedure and per-doc-type guidance.
 
 ### Code quality (all languages)
+
 - Format and lint every change: use the project's configured tooling, or a locally available tool for
   the language when it defines none. Only format code you actually touched — never mass-reformat
   untouched lines or files (it buries the real change in noise). If the project has NO linting or test
@@ -137,6 +143,7 @@ for these rules as FYI reference only; the binding text is HERE.
   meaningfully, log with context, and prefer failing loud/early over hiding it.
 
 ### Confidentiality & secrets
+
 - NEVER write client/customer names, private repo names, app/package ids, device ids, or other
   identifying details into git-tracked memory or any committed dotfiles file (the dotfiles repo is
   PUBLIC). Keep tracked content generic ("a client RN app", "the project"); put client-specific notes in
@@ -147,6 +154,7 @@ for these rules as FYI reference only; the binding text is HERE.
   compose.yml, per-session), never the value itself.
 
 ### Stack-specific (apply only when it fits)
+
 - Don't run a one-off build/type-check (`ng build`, `dotnet build`, …) just to verify changes while a
   watch dev-server is already running — it's redundant and contends on caches. Let the running server
   surface errors, or ask.
@@ -201,6 +209,7 @@ Maintain a structured memory system rooted at .claude/memory/
 ### Maintenance
 
 When I say "reorganize memory":
+
 1. Read all memory files
 2. Remove duplicates and outdated entries
 3. Merge entries that belong together
@@ -222,8 +231,8 @@ here or in a project MEMORY.md; one index, or they drift.
 
 ## Global Memory Reference Rule
 
-Whenever you work in a project and read (or create) its MEMORY.md, check that it contains a
-## Global Memory section. If it does not, add it near the top, after the H1.
+Whenever you work in a project and read (or create) its MEMORY.md, check that it contains
+a `## Global Memory` section. If it does not, add it near the top, after the H1.
 
 The section must be a SHORT POINTER only. Do NOT duplicate the topic file list into project
 MEMORY.md. The list lives in `~/.claude/memory/memory.md` (single source of truth). Project MEMORY.md has a
@@ -231,19 +240,23 @@ MEMORY.md. The list lives in `~/.claude/memory/memory.md` (single source of trut
 
 Canonical template for project MEMORY.md:
 
+```markdown
 ## Global Memory
 
 Read ~/.claude/CLAUDE.md for memory rules and topic files.
 
 When a new file is added to ~/.claude/memory/:
+
 - Add it to the index table in ~/.claude/memory/memory.md only
 - Do NOT update individual project MEMORY.md files
+```
 
 ## Repo Memory Auto-Init
 
 At session start in any project, check for MEMORY.md in the project memory directory
 (~/.claude/projects/{mapped-path}/memory/). If it does not exist, create it:
 
+```markdown
 # {Project Name} - Project Memory
 
 ## Global Memory
@@ -253,6 +266,7 @@ Read ~/.claude/CLAUDE.md for memory rules and topic files.
 ## Project Notes
 
 (Populated as you work in this project)
+```
 
 ## Domain Knowledge Lifecycle
 

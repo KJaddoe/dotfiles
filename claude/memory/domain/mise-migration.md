@@ -6,6 +6,7 @@ Then enabled React Native Android dev CLI-only (no Android Studio, run on a USB 
 narrative lives in git history; only the durable don't-regress lessons are kept below.
 
 ## Decisions (from the user)
+
 - All four runtimes → mise (one fast Rust binary, per-project pinning, asdf-compatible escape hatch).
   dotnet stays as-is (weakest fit, fine on its own install.sh + brew).
 - Python *runtime* on mise, Python *global tooling* on **uv** (`uv tool install`) not pip — uv is the
@@ -13,6 +14,7 @@ narrative lives in git history; only the durable don't-regress lessons are kept 
 - Sequencing: full mise migration first (Java early = JDK-17 provider), RN Android second.
 
 ## mise gotchas (don't rediscover)
+
 - mise verifies GitHub artifact attestations; old python 3.11.9 standalone build (2024-08) has none and
   fails. Fix = pin a current patch (e.g. 3.11.15) — keep verification on, don't disable it.
 - Idempotent pin: guard `mise use -g` on `mise current <tool>` output, NOT `mise ls --installed`
@@ -30,6 +32,7 @@ narrative lives in git history; only the durable don't-regress lessons are kept 
   `ruby` (now 100% on mise). neovim links luajit + vendored LuaJIT, never brew ruby/lua — unaffected.
 
 ## Android SDK / RN gotchas
+
 - `_system/roles/android` bootstraps cmdline-tools into `cmdline-tools/latest/` manually. Do NOT ALSO
   list `cmdline-tools;latest` in the sdkmanager package list — it installs a 2nd copy into `latest-2/`.
   Bootstrap into `latest/` manually XOR let sdkmanager manage it, never both. Run sdkmanager via
@@ -46,6 +49,7 @@ narrative lives in git history; only the durable don't-regress lessons are kept 
   in the client repo (user commits/gitignores it).
 
 ## End state
+
 node/python/ruby/java all on mise, dotnet untouched. Old managers (nvm/pyenv/pyenv-virtualenv/
 openjdk@17/pipx) uninstalled + dropped from Brewfile, all their shell hooks removed. classic vim +
 brew ruby removed (neovim provisioned on both OSes via a neovim role). p10k dead segments
