@@ -3,7 +3,7 @@
 Read this file at session start. Load specific topic files only when relevant.
 
 | File | Description | Last updated |
-|------|-------------|--------------|
+| ------ | ------------- | -------------- |
 | `general.md` | Cross-project conventions and preferences (commit/PR/branch/review rules, code quality gate: doc-comments + format/lint/test + 3-kinds-of-case tests, mac/linux parity, project-docs-updated-in-same-commit, generated-specs-stay-out-of-repo, GitHub issue status→To Be Refined, plan-execution inline default, Angular reactive forms, SCSS nesting, terminal=plain CLI not TUIs) | 2026-08-05 |
 | `tools/gh-pending-pr-reviews.md` | Pointer — promoted to the `pending-pr-review` skill (`claude/skills/`) | 2026-06-01 |
 | `tools/gh-projects-v2.md` | Org Projects v2 gotchas: issue numbers collide across repos on a shared board (disambiguate item lookup by repo!); field-mutation patterns (number/iteration/clear); stacked-PR link limitation | 2026-07-21 |
@@ -16,6 +16,7 @@ Read this file at session start. Load specific topic files only when relevant.
 ## Cross-Memory Sync Rule
 
 At session start, after reading this file:
+
 1. Note the Last updated dates in the table above
 2. If any project MEMORY.md has content worth promoting to a global tools/ or domain/ file, flag it
 3. Update the Last updated date on this file after any changes

@@ -56,8 +56,8 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
   and force-push a scrubbed history. How to apply: keep tracked memory generic ("a client RN app",
   "the project") — describe the *technique/gotcha*, not *whose* project. Put any genuinely needed
   client-specific notes in an untracked/gitignored location, not the public repo. When unsure whether
-  a detail is identifying, leave it out. Scrub recipe if it recurs: `git filter-repo --replace-text`
-  + force-push (the repo stays public by the user's choice).
+  a detail is identifying, leave it out. Scrub recipe if it recurs:
+  `git filter-repo --replace-text` + force-push (the repo stays public by the user's choice).
 
 ## Cross-Platform Parity (dotfiles)
 
@@ -104,8 +104,9 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
   deploy/release, CHANGELOG for versioned projects, project `CLAUDE.md` on convention changes. Filled
   in when work touches that area (report what's still missing) — NOT backfilled wholesale unasked.
   Also added: removals must delete the docs for the removed thing; docs must state what the code
-  ACTUALLY does (verified, not aspirational); env vars need name/purpose/required/default/placeholder
-  + where the real value lives — the LOCATION, never the value (ties to Confidentiality & secrets).
+  ACTUALLY does (verified, not aspirational); env vars need
+  name/purpose/required/default/placeholder + where the real value lives — the LOCATION, never the
+  value (ties to Confidentiality & secrets).
   How to apply: treat the docs edit as the same unit of work as the code edit. Do NOT confuse with
   "Generated specs & docs" above — project docs ARE a repo deliverable and get committed.
   Binding copy in CLAUDE.md → Project documentation.
