@@ -87,7 +87,8 @@ for these rules as FYI reference only; the binding text is HERE.
 - Docs state what the code ACTUALLY does, verified against it — never intended or aspirational
   behaviour, and never invented to fill a gap (mark `TODO(owner)` and ask instead).
 - Coverage floor — EVERY project's docs answer: what it is; setup/install (incl. tooling + versions);
-  how to run; how to test; structure/architecture. Then by kind:
+  how to run; how to test; structure/architecture; who to ask (ownership/escalation); the domain
+  glossary, unless the project has no business domain. Then by kind:
 
   | Kind                 | Also needs                                                |
   |----------------------|-----------------------------------------------------------|
@@ -98,6 +99,8 @@ for these rules as FYI reference only; the binding text is HERE.
 
   If one is MISSING, fill it in when your work touches that area and tell me what else is missing —
   don't silently skip it, don't backfill the whole set unasked. Say what you added.
+  `python3 ~/.claude/hooks/docs-coverage-floor.py --path .` checks this floor mechanically; it
+  detects the topic nobody thought about, not the topic covered badly.
 - Write an ADR when a choice is non-obvious AND hard to reverse — reversibility is the test, and it
   overrides the examples: a load-bearing dependency or service, a new architectural pattern, a schema
   or data-model change, an auth/security boundary, or an option you REJECTED for a reason people will
