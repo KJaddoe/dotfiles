@@ -44,6 +44,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/undocumented-env-vars.py",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/docs-coverage-floor.py",
+            "timeout": 15
           }
         ]
       }
