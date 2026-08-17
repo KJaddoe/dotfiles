@@ -2,27 +2,19 @@
 
 Read this file at session start. Load specific topic files only when relevant.
 
-| File | Description | Last updated |
-| ------ | ------------- | -------------- |
-| `general.md` | Cross-project conventions and preferences (commit/PR/branch/review rules, code quality gate: doc-comments + format/lint/test + 3-kinds-of-case tests, mac/linux parity, project-docs-updated-in-same-commit, generated-specs-stay-out-of-repo, GitHub issue status→To Be Refined, plan-execution inline default, Angular reactive forms, SCSS nesting, terminal=plain CLI not TUIs) | 2026-08-05 |
-| `tools/gh-pending-pr-reviews.md` | Pointer — promoted to the `pending-pr-review` skill (`claude/skills/`) | 2026-06-01 |
-| `tools/gh-projects-v2.md` | Org Projects v2 gotchas: issue numbers collide across repos on a shared board (disambiguate item lookup by repo!); field-mutation patterns (number/iteration/clear); stacked-PR link limitation | 2026-07-21 |
-| `tools/zsh-startup.md` | zsh startup perf: single-compinit architecture in `zsh/zshrc` (fpath→compinit→aliases→completion order), ng-completion caching. Cut ~2.1s→~0.35s. | 2026-06-11 |
-| `tools/docker-sql-server.md` | Local Docker SQL Server: backups live in `~/Projects/Docker/SQL_Server/backups/` (mounted `/var/opt/mssql/backup`); restore to original DB name; suggest DROP when done | 2026-06-07 |
-| `tools/macos-doc-conversion.md` | docx/md/pdf conversion: `textutil` drops images → use headless Chrome `--print-to-pdf` (abs `file://` paths) or `brew install pandoc`; md→pdf via python-markdown; extract docx images with `unzip word/media/*` | 2026-06-17 |
-| `tools/docs-pointer-template.md` | `claude/templates/docs-pointer/` — repo `CLAUDE.md`→`docs/` pointer template (index + precedence). Trialled in this repo. Promote to a skill if copied to ~3+ repos. | 2026-06-29 |
-| `domain/mise-migration.md` | COMPLETE: migrated node/python/ruby/java to mise (+uv), Android SDK/watchman/neovim roles, RN Android verified CLI-only on a physical phone. Trimmed to durable mise/SDK/RN gotchas (per-commit log in git history). | 2026-07-13 |
+Memory rules, the Domain Knowledge Lifecycle, and the routing test (rule → `CLAUDE.md`, fact →
+memory) all live in `~/.claude/CLAUDE.md` → Memory Management. They are deliberately **not**
+restated here — one owner per fact, or the two copies drift.
 
-## Cross-Memory Sync Rule
-
-At session start, after reading this file:
-
-1. Note the Last updated dates in the table above
-2. If any project MEMORY.md has content worth promoting to a global tools/ or domain/ file, flag it
-3. Update the Last updated date on this file after any changes
-
-## Domain Knowledge Lifecycle
-
-1. Staging — knowledge accumulates in domain/{name}/
-2. Promotion — enough knowledge exists to package as a plugin/skill
-3. Pointer — after promotion, the memory file becomes a pointer to the plugin
+| File                             | Description                                                                                                                                                                                                                                                                                                                    | Last updated |
+|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| `general.md`                     | Cross-project conventions and preferences — the date/why/how behind each binding rule in `CLAUDE.md`, plus environment facts (Claude config ⇄ dotfiles topology, commit/PR/branch/review rules, code-quality gate, mac/linux parity, docs-in-the-same-commit, generated-specs-stay-out-of-repo, plan-execution inline default) | 2026-08-17   |
+| `domain/verification-lessons.md` | Cross-project lessons on proving work is actually done: verify at the layer the user judges, tick criteria only on named evidence, assert the whole invariant not the delta, question inherited premises, compare against the real reference, and don't file a cheap gap as a hard constraint                                  | 2026-08-17   |
+| `tools/github-accounts.md`       | Two GitHub identities (personal + org) and how each tool picks one: `gh auth switch`, the SSH host alias for org repos, and why a push can succeed while `gh` 404s                                                                                                                                                             | 2026-08-17   |
+| `tools/gh-projects-v2.md`        | Org Projects v2 gotchas: issue numbers collide across repos on a shared board; `Status=Done` auto-closes the issue; an item stays invisible until its Sprint is set; shared Status option ids; field-mutation patterns; stacked-PR link limitation                                                                             | 2026-08-17   |
+| `tools/gh-pending-pr-reviews.md` | Pointer — promoted to the `pending-pr-review` skill (`claude/skills/`)                                                                                                                                                                                                                                                         | 2026-06-01   |
+| `tools/zsh-startup.md`           | zsh startup perf: single-compinit architecture in `zsh/zshrc` (fpath→compinit→aliases→completion order), ng-completion caching. Cut ~2.1s→~0.35s                                                                                                                                                                               | 2026-06-11   |
+| `tools/docker-sql-server.md`     | Local Docker SQL Server: backups live in the mounted `backups/` folder; restore to the original DB name; suggest DROP when done. Canonical owner of these facts — project memories link here                                                                                                                                   | 2026-08-17   |
+| `tools/macos-doc-conversion.md`  | docx/md/pdf conversion: `textutil` drops images → use headless Chrome `--print-to-pdf` (abs `file://` paths) or `brew install pandoc`; md→pdf via python-markdown; extract docx images with `unzip word/media/*`                                                                                                               | 2026-06-17   |
+| `tools/docs-pointer-template.md` | `claude/templates/docs-pointer/` — repo `CLAUDE.md`→`docs/` pointer template (index + precedence). Tracks the promotion trigger toward a scaffolding skill                                                                                                                                                                     | 2026-08-17   |
+| `tools/mise.md`                  | Runtime management on mise (+ uv) and CLI-only React Native Android: the pin/idempotency gotchas, Android SDK cmdline-tools trap, and RN-on-a-physical-phone recipe. Migration completed 2026-06-11                                                                                                                            | 2026-08-17   |
