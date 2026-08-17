@@ -11,6 +11,33 @@ first match and can hit the **wrong repo's issue**.
 `select(.content.number==14 and .content.repository.name=="<repo>")`. After ANY board
 mutation, verify by reading the field back (this is how the wrong-item write above was caught).
 
+## Status = Done AUTO-CLOSES the issue (verified 2026-08-17)
+
+Setting a board item's Status to **Done** closes the underlying GitHub issue immediately — the
+board write and the issue state are not independent. Never set Done to mean merely "the code
+merged" unless the issue should genuinely close; an issue that must stay open for a follow-up
+(a guard that hasn't landed, criteria not yet verified) will be closed out from under you.
+
+Undoing it takes **two** steps, not one: `gh issue reopen <n>` **and** restoring the board Status.
+Reopening alone leaves the board showing Done.
+
+The reverse also happens: closing an issue moves its board item to Done by **automation**, so no
+manual field write is needed after a `Closes #n` merge. Check the item before mutating it.
+
+## An item stays invisible until its Sprint is set (learned 2026-08-17)
+
+Status alone is not enough to make an item appear on a working board view — the view filters on
+the **Sprint** iteration field. An item created with labels, milestone, epic link and Status but
+no Sprint is on the board and findable by nobody. After `gh project item-add` + Status, also set
+the Sprint iteration and propose a Size.
+
+## Status option ids are shared across boards
+
+The Status single-select option ids turn out to be **identical across different org boards**
+(verified on three). So an option id read once can be reused on another board — but do NOT infer
+the same for **project** or **field** ids, which are per-board. The literal ids live in each
+project's own (untracked) memory, not here.
+
 ## Field-mutation patterns
 
 - Number field (e.g. Size): `updateProjectV2ItemFieldValue(... value:{number:3})`
