@@ -1,9 +1,12 @@
-# Runtime migration to mise (+ uv) and CLI-only React Native Android
+# mise (+ uv) runtimes and CLI-only React Native Android
 
-COMPLETE (2026-06-10 → 06-11). Migrated node/python/ruby/java off four managers
-(NVM/pyenv/rbenv/fixed-brew-JDK) onto **mise**; Python global tooling onto **uv**; dotnet untouched.
-Then enabled React Native Android dev CLI-only (no Android Studio, run on a USB phone). Per-commit
-narrative lives in git history; only the durable don't-regress lessons are kept below.
+Runtime management runs on **mise**; Python global tooling on **uv**; dotnet is deliberately outside
+both. React Native Android dev works CLI-only (no Android Studio, running on a USB phone).
+
+The migration off the four old managers (NVM/pyenv/rbenv/fixed-brew-JDK) completed 2026-06-11; its
+per-commit narrative lives in git history. What follows is the durable don't-regress set.
+(Moved here from `domain/` on 2026-08-17 — the migration is finished, so this is tool knowledge,
+not staging toward a plugin.)
 
 ## Decisions (from the user)
 
