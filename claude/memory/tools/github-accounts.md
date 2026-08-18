@@ -42,8 +42,36 @@ The alias and the identity file it points at are defined in the untracked `~/.ss
 read the real alias name there. When cloning or adding a remote for an org repo, set the alias form
 deliberately; `gh repo clone` will not do it.
 
+## The GitHub login is not the git author name (2026-08-18)
+
+`git config user.name` — and the "Git user:" line in a session's environment context — is a
+**display name for commit authorship**. It is frequently *not* the GitHub login: an org account's
+login can carry a suffix the commit name does not.
+
+Inferring a username from it produces a plausible-but-wrong login, and the failure is **silent**:
+
+> `gh issue edit --add-assignee <bad-login>` exits **0**, prints the issue URL, and assigns nobody.
+
+GitHub's REST API drops assignees it cannot resolve instead of erroring; `--add-label` does the same
+for a label that does not exist. An `&&` chain therefore carries straight on as though it worked,
+and the board looks set while the field is empty.
+
+```bash
+gh api user -q .login                         # the login of the ACTIVE gh account
+gh api repos/<org>/<repo>/assignees/<login>   # 404 = not assignable, so it will be dropped
+gh issue view <n> --json assignees            # read back — the only proof it landed
+```
+
+Only repo collaborators are assignable, so even a *correct* login for a non-member is dropped.
+
+**How to apply:** never infer a GitHub login from git config, a commit author, or session context —
+resolve it with `gh api user -q .login`. After any `gh issue edit` write, read the field back. Exit
+code 0 is not evidence here.
+
 ## Symptom → cause
 
 - 404 from `gh` on a repo you can see in the browser → wrong active `gh` account.
 - "Repository not found" on `git push` → remote uses plain `github.com:` instead of the alias.
 - Can push but `gh` 404s → both of the above at once; they are separate fixes.
+- `gh issue edit` reported success but the assignee/label is empty → the value was unresolvable and
+  was silently dropped; check the login with `gh api user -q .login`.

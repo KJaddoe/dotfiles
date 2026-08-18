@@ -47,6 +47,10 @@ project's own (untracked) memory, not here.
 - Clear a value (revert): `clearProjectV2ItemFieldValue(input:{projectId,itemId,fieldId})`.
 - Need projectId + fieldId + itemId; fetch fields via `projectV2.fields`, items via
   `projectV2.items` (paginate with `--paginate`).
+- Assignee/label are **issue** fields, not board fields: set them with `gh issue edit`, which fails
+  **silently** on an unresolvable value (exit 0, nothing assigned) — see `github-accounts.md`. The
+  read-back rule above applies to these too, and they are easy to miss because the board mutation
+  beside them fails loudly.
 
 ## PR↔issue linking on the board
 
