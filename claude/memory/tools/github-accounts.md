@@ -45,24 +45,31 @@ deliberately; `gh repo clone` will not do it.
 ## The GitHub login is not the git author name (2026-08-18)
 
 `git config user.name` — and the "Git user:" line in a session's environment context — is a
-**display name for commit authorship**. It is frequently *not* the GitHub login: an org account's
-login can carry a suffix the commit name does not.
+**display name for commit authorship**, not a GitHub login. With two accounts the org one's login
+typically carries a suffix the commit name does not.
 
-Inferring a username from it produces a plausible-but-wrong login, and the failure is **silent**:
+The trap is worse than a name that simply does not exist. Corrected 2026-08-18: the commit author
+name matched the **personal** account's real login exactly. So the guessed name resolved to a
+genuine GitHub user — it was just not a collaborator on the org repo, and **assignability is
+per-repository**. A wrong-but-real login is indistinguishable from a right one until you check it
+against the repo.
 
-> `gh issue edit --add-assignee <bad-login>` exits **0**, prints the issue URL, and assigns nobody.
+Either way the failure is **silent**:
 
-GitHub's REST API drops assignees it cannot resolve instead of erroring; `--add-label` does the same
-for a label that does not exist. An `&&` chain therefore carries straight on as though it worked,
-and the board looks set while the field is empty.
+> `gh issue edit --add-assignee <login>` exits **0**, prints the issue URL, and assigns nobody.
+
+GitHub's REST API drops assignees it cannot resolve *on that repo* instead of erroring;
+`--add-label` does the same for a label that does not exist. An `&&` chain therefore carries
+straight on as though it worked, and the board looks set while the field is empty.
 
 ```bash
 gh api user -q .login                         # the login of the ACTIVE gh account
-gh api repos/<org>/<repo>/assignees/<login>   # 404 = not assignable, so it will be dropped
+gh api repos/<org>/<repo>/assignees/<login>   # 404 = not assignable HERE, so it will be dropped
 gh issue view <n> --json assignees            # read back — the only proof it landed
 ```
 
-Only repo collaborators are assignable, so even a *correct* login for a non-member is dropped.
+Note the middle check is repo-scoped on purpose: a login that is valid globally still 404s here if
+that account is not a collaborator.
 
 **How to apply:** never infer a GitHub login from git config, a commit author, or session context —
 resolve it with `gh api user -q .login`. After any `gh issue edit` write, read the field back. Exit
@@ -70,7 +77,10 @@ code 0 is not evidence here.
 
 ## Symptom → cause
 
-- 404 from `gh` on a repo you can see in the browser → wrong active `gh` account.
+- 404 from `gh` on a repo you can see in the browser → wrong active `gh` account. **The active
+  account can change mid-session**: calls that worked earlier in the same shell later failed with
+  `Could not resolve to a Repository` (2026-08-18). Re-check `gh auth status` on a sudden 404
+  rather than assuming permissions changed.
 - "Repository not found" on `git push` → remote uses plain `github.com:` instead of the alias.
 - Can push but `gh` 404s → both of the above at once; they are separate fixes.
 - `gh issue edit` reported success but the assignee/label is empty → the value was unresolvable and
