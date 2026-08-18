@@ -42,9 +42,10 @@ for these rules as FYI reference only; the binding text is HERE.
   changes. Prefer several scoped commits over one large mixed one, even within a single task.
 - Issue work, in this order: for non-trivial or customer-reported work create a tracked issue (with the
   right board fields) BEFORE editing code, confirming scope first — skip only for trivial/throwaway
-  changes or repos with no tracker. Set its board Status to "In Progress" before editing, including for
-  issues already on the board. Create the branch with `gh issue develop <n> … --checkout` using GitHub's
-  default name — never `--name`, never a bare `git checkout -b`.
+  changes or repos with no tracker. Set its board Status to "In Progress" AND assign the issue to me
+  before editing, including for issues already on the board. Create the branch with
+  `gh issue develop <n> … --checkout` using GitHub's default name — never `--name`, never a bare
+  `git checkout -b`.
 - Reviewing a PR ("review" / "add comments" / "leave feedback"): build ONE pending GitHub review, present
   each inline comment/`suggestion` for sign-off BEFORE attaching it, and submit only on explicit
   approval. Don't edit working-tree files as the "fix" path. Use the `pending-pr-review` skill.
