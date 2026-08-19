@@ -239,6 +239,13 @@ Closing the remaining gaps means adding the config and a command here, not just 
 
 - **mac/Linux parity** — every change must work on both; never add a mac-only assumption without
   a Linux path. Ansible keys off `ansible_pkg_mgr` (`brew` vs not) / `ansible_facts.os_family`.
+- **tmux status bar** — native tmux config in `tmux/tmux.conf`, with no status-bar plugin (see
+  ADR 0003). It sits **after** the `run '~/.tmux/plugins/tpm/tpm'` line, because TPM loads plugins
+  at that point and styling set before it can be overridden. Parts that need a shell are standalone
+  scripts in `bin/` (`tmux-battery`, `tmux-git-branch`), invoked by name from `#()` and so resolved
+  through `$PATH` — they render empty rather than erroring if the tmux server's environment lacks
+  `bin/`. Colours are tokyonight-night hexes, matching nvim's colorscheme and Ghostty's built-in
+  `TokyoNight Night` theme.
 
 ## Adding a tool
 
