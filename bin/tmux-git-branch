@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# tmux-git-branch
+#
+# Print the current git branch for the tmux status line, prefixed with a branch
+# glyph, or print nothing when the directory is not inside a work tree. Falls
+# back to the short commit sha on a detached HEAD. Takes the directory to
+# inspect as its only argument, defaulting to the working directory.
+
+set -uo pipefail
+
+directory="${1:-$PWD}"
+
+branch=$(git -C "$directory" branch --show-current 2>/dev/null)
+
+if [ -z "$branch" ]; then
+    branch=$(git -C "$directory" rev-parse --short HEAD 2>/dev/null)
+fi
+
+if [ -n "$branch" ]; then
+    printf ' %s' "$branch"
+fi
