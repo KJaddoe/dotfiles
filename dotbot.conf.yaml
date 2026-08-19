@@ -19,7 +19,6 @@
     ~/.zshrc: zsh/zshrc
     ~/.zsh_plugins.txt: antidote/zsh_plugins.txt
     ~/.bashrc: bash/bashrc
-    ~/.config/tmux-powerline/config.sh: tmux/tmux-powerline.config.sh
     ~/.config/ghostty/config:
       path: ghostty/config
       create: true
