@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# tmux-battery
+#
+# Print the battery charge as a percentage for the tmux status line, or print
+# nothing at all on a machine that has no battery. Reads pmset on macOS and
+# the first sysfs power supply reporting a capacity on Linux.
+
+set -uo pipefail
+
+percentage=""
+
+case "$(uname -s)" in
+Darwin)
+    percentage=$(pmset -g batt 2>/dev/null | grep -Eo '[0-9]+%' | head -1)
+    ;;
+Linux)
+    for capacity in /sys/class/power_supply/BAT*/capacity; do
+        if [ -r "$capacity" ]; then
+            percentage="$(<"$capacity")%"
+            break
+        fi
+    done
+    ;;
+esac
+
+if [ -n "$percentage" ]; then
+    printf '%s' "$percentage"
+fi
