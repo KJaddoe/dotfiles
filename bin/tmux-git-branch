@@ -4,10 +4,15 @@
 #
 # Print the current git branch for the tmux status line, prefixed with a branch
 # glyph, or print nothing when the directory is not inside a work tree. Falls
-# back to the short commit sha on a detached HEAD. Takes the directory to
-# inspect as its only argument, defaulting to the working directory.
+# back to the short commit sha on a detached HEAD. Long names are shortened to
+# their first and last twelve characters around an ellipsis, matching the
+# truncation powerlevel10k applies to the same branch in the prompt. Takes the
+# directory to inspect as its only argument, defaulting to the working directory.
 
 set -uo pipefail
+
+max_length=32
+keep=12
 
 directory="${1:-$PWD}"
 
@@ -17,6 +22,10 @@ if [ -z "$branch" ]; then
     branch=$(git -C "$directory" rev-parse --short HEAD 2>/dev/null)
 fi
 
+if [ "${#branch}" -gt "$max_length" ]; then
+    branch="${branch:0:keep}…${branch: -keep}"
+fi
+
 if [ -n "$branch" ]; then
-    printf ' %s' "$branch"
+    printf ' %s' "$branch"
 fi
