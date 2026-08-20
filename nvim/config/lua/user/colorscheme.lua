@@ -1,33 +1,40 @@
-require("tokyonight").setup({
-  on_highlights = function(hl, c)
-    local prompt = "#2d3149"
-    hl.TelescopeNormal = {
-      bg = c.bg_dark,
-      fg = c.fg_dark,
-    }
-    hl.TelescopeBorder = {
-      bg = c.bg_dark,
-      fg = c.bg_dark,
-    }
-    hl.TelescopePromptNormal = {
-      bg = prompt,
-    }
-    hl.TelescopePromptBorder = {
-      bg = prompt,
-      fg = prompt,
-    }
-    hl.TelescopePromptTitle = {
-      bg = prompt,
-      fg = prompt,
-    }
-    hl.TelescopePreviewTitle = {
-      bg = c.bg_dark,
-      fg = c.bg_dark,
-    }
-    hl.TelescopeResultsTitle = {
-      bg = c.bg_dark,
-      fg = c.bg_dark,
+require("kanagawa").setup({
+  overrides = function(colors)
+    local theme = colors.theme
+    local panel = theme.ui.bg_m1
+    local prompt = theme.ui.bg_p1
+    return {
+      DapStoppedLine = {
+        bg = colors.palette.winterYellow,
+      },
+      TelescopeNormal = {
+        bg = panel,
+        fg = theme.ui.fg_dim,
+      },
+      TelescopeBorder = {
+        bg = panel,
+        fg = panel,
+      },
+      TelescopePromptNormal = {
+        bg = prompt,
+      },
+      TelescopePromptBorder = {
+        bg = prompt,
+        fg = prompt,
+      },
+      TelescopePromptTitle = {
+        bg = prompt,
+        fg = prompt,
+      },
+      TelescopePreviewTitle = {
+        bg = panel,
+        fg = panel,
+      },
+      TelescopeResultsTitle = {
+        bg = panel,
+        fg = panel,
+      },
     }
   end,
 })
-vim.cmd.colorscheme("tokyonight-night")
+vim.cmd.colorscheme("kanagawa-wave")

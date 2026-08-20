@@ -247,8 +247,7 @@ Closing the remaining gaps means adding the config and a command here, not just 
   `bin/`. `tmux-git-branch` shortens a name over 32 characters to its first and last twelve around
   an ellipsis, mirroring powerlevel10k's truncation of the same branch so the prompt and the bar
   agree, and so one long branch cannot consume the whole `status-right-length` budget. Colours are
-  tokyonight-night hexes, matching nvim's colorscheme and Ghostty's built-in `TokyoNight Night`
-  theme.
+  kanagawa-wave hexes, matching nvim's colorscheme and Ghostty's built-in `Kanagawa Wave` theme.
 
 ## Adding a tool
 

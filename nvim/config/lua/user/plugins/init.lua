@@ -14,7 +14,7 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   -- UI --
   {
-    "folke/tokyonight.nvim",
+    "rebelot/kanagawa.nvim",
     lazy = false,
     priority = 1000,
     opts = {},
@@ -50,7 +50,7 @@ require("lazy").setup({
     config = function()
       require("lualine").setup({
         options = {
-          theme = "tokyonight",
+          theme = "kanagawa",
           component_separators = "",
           section_separators = "",
         },

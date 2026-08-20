@@ -215,10 +215,10 @@ end
 dap.listeners.before.event_terminated["dapui_config"] = close_ui_on_root_exit
 dap.listeners.before.event_exited["dapui_config"] = close_ui_on_root_exit
 
--- Signs. nvim-dap highlights the stopped line with `debugPC`, which tokyonight
--- renders darker than the background (invisible); re-point it at tokyonight's
--- brighter `DapStoppedLine` and give every marker a visible colour instead of
--- the default low-contrast `SignColumn`.
+-- Signs. nvim-dap highlights the stopped line with `debugPC`, which renders
+-- darker than the background (invisible); re-point it at `DapStoppedLine`,
+-- defined in `user.colorscheme`, and give every marker a visible colour
+-- instead of the default low-contrast `SignColumn`.
 vim.fn.sign_define("DapStopped", {
   text = "→",
   texthl = "DiagnosticWarn",
