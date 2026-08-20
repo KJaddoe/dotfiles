@@ -22,18 +22,19 @@ As a CLI it always reports:
 
 exiting 1 when anything is missing, which is what a CI job wants.
 
-The git helpers are duplicated from undocumented-env-vars.py rather than shared: each hook has to
-stay runnable on its own as `python3 ~/.claude/hooks/<name>.py`, and a shared module would only
-resolve when the hooks directory happens to lead sys.path.
+The git helpers come from _hookutil.py. They were duplicated across the hooks until it was
+verified that a script's own directory always leads sys.path, so `python3 ~/.claude/hooks/<name>.py`
+resolves the import from any cwd and each hook stays runnable on its own.
 """
 
 import argparse
 import json
 import os
 import re
-import subprocess
 import sys
 from pathlib import Path
+
+from _hookutil import repo_root, run_git
 
 LOG_PATH = Path.home() / ".claude" / "logs" / "docs-floor-hook.log"
 
@@ -150,36 +151,6 @@ ARCHETYPE_TOPICS = {
 # A base topic that stops making sense for a kind. An infra/dotfiles repo has no business
 # domain, so asking it for a glossary reports noise rather than a gap.
 ARCHETYPE_EXEMPTIONS = {"infra": ["glossary"]}
-
-
-def run_git(repo, *args):
-    """Run a git command in `repo`, returning stdout or "" if git fails.
-
-    :param repo: repository root path
-    :param args: git arguments following the subcommand
-    :return: decoded stdout, empty on any failure
-    """
-    try:
-        out = subprocess.run(
-            ["git", "-C", str(repo), *args],
-            capture_output=True,
-            text=True,
-            timeout=8,
-            check=False,
-        )
-        return out.stdout if out.returncode == 0 else ""
-    except (OSError, subprocess.SubprocessError):
-        return ""
-
-
-def repo_root(cwd):
-    """Resolve the git repository root containing `cwd`.
-
-    :param cwd: directory to resolve from
-    :return: Path to the repo root, or None when not inside a git repo
-    """
-    top = run_git(cwd, "rev-parse", "--show-toplevel").strip()
-    return Path(top) if top else None
 
 
 def has_uncommitted_work(repo):

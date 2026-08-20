@@ -40,7 +40,8 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   can check mechanically rather than trusting the model to remember — see `docs/configuration.md` for
   their switches (ADR 0002 covers why hooks rather than prose alone). `docs-coverage-floor.py` is
   the one that also runs standalone (`--path`), because the documentation coverage floor is a
-  repo property rather than a session event, so CI can gate it too. The repo-root `CLAUDE.md`
+  repo property rather than a session event, so CI can gate it too. `_hookutil.py` holds the git helpers the Stop hooks share; the leading underscore marks it as
+  internal to the directory, and `settings.json` never invokes it. The repo-root `CLAUDE.md`
   (this trial) is separate: it is repo-level project instructions, not the global config.
 
 ## Python tooling (hooks)
