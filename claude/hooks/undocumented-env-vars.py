@@ -17,9 +17,10 @@ recorded, so a secret VALUE sitting in the diff cannot leak into the log.
 import json
 import os
 import re
-import subprocess
 import sys
 from pathlib import Path
+
+from _hookutil import repo_root, run_git
 
 LOG_PATH = Path.home() / ".claude" / "logs" / "env-doc-hook.log"
 
@@ -73,36 +74,6 @@ EXCLUDED_PATH = re.compile(
     r"|[._-](test|spec)\.[A-Za-z]+$",
     re.IGNORECASE,
 )
-
-
-def run_git(repo, *args):
-    """Run a git command in `repo`, returning stdout or "" if git fails.
-
-    :param repo: repository root path
-    :param args: git arguments following the subcommand
-    :return: decoded stdout, empty on any failure
-    """
-    try:
-        out = subprocess.run(
-            ["git", "-C", str(repo), *args],
-            capture_output=True,
-            text=True,
-            timeout=8,
-            check=False,
-        )
-        return out.stdout if out.returncode == 0 else ""
-    except (OSError, subprocess.SubprocessError):
-        return ""
-
-
-def repo_root(cwd):
-    """Resolve the git repository root containing `cwd`.
-
-    :param cwd: directory to resolve from
-    :return: Path to the repo root, or None when not inside a git repo
-    """
-    top = run_git(cwd, "rev-parse", "--show-toplevel").strip()
-    return Path(top) if top else None
 
 
 def is_excluded(path):

@@ -16,6 +16,10 @@ from pathlib import Path
 
 HOOK_PATH = Path(__file__).resolve().parents[1] / "docs-coverage-floor.py"
 
+# Loading by file path does not put the hooks directory on sys.path, so the hook's
+# `from _hookutil import ...` would fail without this.
+sys.path.insert(0, str(HOOK_PATH.parent))
+
 spec = importlib.util.spec_from_file_location("docs_coverage_floor", HOOK_PATH)
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
