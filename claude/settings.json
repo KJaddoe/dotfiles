@@ -49,6 +49,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/docs-coverage-floor.py",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/duplicate-symbols.py",
+            "timeout": 15
           }
         ]
       }
