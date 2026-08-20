@@ -244,8 +244,11 @@ Closing the remaining gaps means adding the config and a command here, not just 
   at that point and styling set before it can be overridden. Parts that need a shell are standalone
   scripts in `bin/` (`tmux-battery`, `tmux-git-branch`), invoked by name from `#()` and so resolved
   through `$PATH` — they render empty rather than erroring if the tmux server's environment lacks
-  `bin/`. Colours are tokyonight-night hexes, matching nvim's colorscheme and Ghostty's built-in
-  `TokyoNight Night` theme.
+  `bin/`. `tmux-git-branch` shortens a name over 32 characters to its first and last twelve around
+  an ellipsis, mirroring powerlevel10k's truncation of the same branch so the prompt and the bar
+  agree, and so one long branch cannot consume the whole `status-right-length` budget. Colours are
+  tokyonight-night hexes, matching nvim's colorscheme and Ghostty's built-in `TokyoNight Night`
+  theme.
 
 ## Adding a tool
 
