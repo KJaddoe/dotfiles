@@ -11,6 +11,12 @@ for these rules as FYI reference only; the binding text is HERE.
   If a claim rests on an unverified assumption, check it or flag it explicitly as unverified.
 - Keep responses and documents tight and well-scoped. Prefer incremental Edits over full rewrites, split
   large artifacts into smaller targeted files, and confirm scope before producing a very large deliverable.
+  Every hunk must trace to the request or to a gate it must pass (format/lint/test/docs). Working code you
+  weren't asked to touch stays untouched — no drive-by refactors, renames, or "while I'm here" cleanups.
+  When something out of scope looks wrong or worth changing, do NOT bury it in prose where it is lost in a
+  wall of text: raise it as an AskUserQuestion prompt and wait for my answer. No permission mode —
+  auto/auto-accept included — is ever that answer; only I am. Read your own diff before committing and
+  drop what doesn't trace.
 - Before a destructive or hard-to-reverse operation (DB restore/overwrite, bulk file delete, git history
   rewrite, a migration against a shared/production DB), state the plan, VERIFY the target and inputs first
   (confirm you have the right backup/file/DB), and get explicit confirmation — even for purely local actions.
@@ -134,9 +140,18 @@ for these rules as FYI reference only; the binding text is HERE.
   the docs the change touches — and you report the actual results honestly, saying so if anything failed
   or was skipped. Evidence before assertions. On a large/slow suite run the changed-scope (affected)
   tests and state which scope was run; run the full suite when it's cheap or before a merge/release.
+  Green tests are evidence about the tests, not about the system. Anything that crosses a real boundary
+  — HTTP/API call, DB query, cache/CDN or conditional-request headers, auth, queue, filesystem — counts
+  as working only once you have EXERCISED it and seen the actual response, and you quote that evidence
+  (status, headers, rows, output). If you can't run it, say "unverified — needs a real call", never
+  "working".
 - Follow the codebase's existing conventions: read the surrounding code before writing, mirror its
   patterns, naming, and already-chosen libraries, and reuse existing helpers. Don't add a new dependency
-  or introduce a parallel way of doing something that already exists without sign-off.
+  or introduce a parallel way of doing something that already exists without sign-off. Before writing a
+  function, SEARCH for one that already does the job — by behaviour, not by name, and outside the current
+  folder (shared/common/utils, the core lib). Never write your own alongside one you found. If none
+  exists and you need it a second time, extract it to where the project already keeps shared code rather
+  than writing a second copy.
 - Audit dependencies before a release; the pre-commit hook prompts it when a manifest changes. Report
   findings with severity and don't silently auto-bump majors. Before ADDING a dependency, check what it
   pulls in transitively, when it was last released, and whether the stdlib or an existing dep covers it.
