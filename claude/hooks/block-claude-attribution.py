@@ -11,13 +11,23 @@ am, rebase, notes, stash), not the substring "commit" — so read-only history i
 (`git log … | grep`, and prose like "commits ahead") is never blocked, while attribution can
 no longer slip through `git merge -m` or `git tag -a -m`. The gpg check stays scoped to
 `git commit`, which is what the rule names.
+
+Which subcommand is being INVOKED is decided from the command with heredoc bodies stripped, so
+writing a script or document that merely mentions one of them is not treated as running it. The
+attribution scan itself still reads the ORIGINAL text, because a heredoc is a normal way to pass
+a multi-line commit message — exactly where a trailer would hide.
 """
 
-import json
 import re
 import sys
 
-from _hookutil import COMMIT_SUBCOMMAND, GIT_FLAGS, short_flag
+from _hookutil import (
+    COMMIT_SUBCOMMAND,
+    GIT_FLAGS,
+    read_bash_payload,
+    short_flag,
+    strip_heredocs,
+)
 
 WRITE_SUBCOMMAND = re.compile(
     rf"\bgit\b{GIT_FLAGS}\s+(commit|merge|tag|revert|cherry-pick|am|rebase|notes|stash)\b",
@@ -41,18 +51,14 @@ def writes_history(cmd):
 
 def main():
     """Block a git invocation that would record Claude attribution or gpg-sign a commit."""
-    try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, UnicodeDecodeError):
+    data, cmd = read_bash_payload()
+    if data is None:
         sys.exit(0)
 
-    if data.get("tool_name") != "Bash":
-        sys.exit(0)
-
-    cmd = (data.get("tool_input") or {}).get("command") or ""
     low = cmd.lower()
+    code = strip_heredocs(cmd)
 
-    if not writes_history(cmd):
+    if not writes_history(code):
         sys.exit(0)
 
     attribution = [
@@ -66,7 +72,7 @@ def main():
     # --gpg-sign, or -S in a short-flag cluster (-S, -Sm, -amS). Case-sensitive: -s is
     # --signoff, allowed. Scoped to `git commit` — the rule names commit/--amend, not
     # tag or merge signing.
-    gpg = bool(COMMIT_SUBCOMMAND.search(cmd)) and (("--gpg-sign" in cmd) or short_flag(cmd, "S"))
+    gpg = bool(COMMIT_SUBCOMMAND.search(code)) and (("--gpg-sign" in code) or short_flag(code, "S"))
 
     if hit or gpg:
         reasons = []

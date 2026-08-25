@@ -43,6 +43,43 @@ def stop_hook_scripts():
     ]
 
 
+class CommandPatterns(unittest.TestCase):
+    """The patterns two PreToolUse guards now share."""
+
+    def test_short_flag_matches_clusters(self):
+        """A letter is found bare and inside a cluster."""
+        self.assertTrue(hookutil.short_flag("git commit -a -m x", "a"))
+        self.assertTrue(hookutil.short_flag("git commit -am x", "a"))
+
+    def test_short_flag_ignores_long_flags(self):
+        """A long flag containing the letter is not that short flag."""
+        self.assertFalse(hookutil.short_flag("git commit --amend", "a"))
+
+    def test_short_flag_is_case_sensitive(self):
+        """Signing and sign-off must not be confused."""
+        self.assertTrue(hookutil.short_flag("git commit -S", "S"))
+        self.assertFalse(hookutil.short_flag("git commit -s", "S"))
+
+    def test_strip_heredocs_removes_the_body(self):
+        """The body goes, the surrounding command stays."""
+        stripped = hookutil.strip_heredocs("cat <<'EOF'\nsecret line\nEOF\nls -la")
+        self.assertNotIn("secret line", stripped)
+        self.assertIn("ls -la", stripped)
+        self.assertIn("cat <<'EOF'", stripped)
+
+    def test_strip_heredocs_handles_dash_form(self):
+        """The `<<-` indented form is recognised."""
+        self.assertNotIn("body", hookutil.strip_heredocs("cat <<-EOF\n\tbody\n\tEOF"))
+
+    def test_strip_heredocs_leaves_plain_commands(self):
+        """A command with no heredoc is returned unchanged."""
+        self.assertEqual(hookutil.strip_heredocs("ls -la"), "ls -la")
+
+    def test_strip_heredocs_survives_an_unterminated_body(self):
+        """A missing delimiter must not raise or lose the opening line."""
+        self.assertIn("cat <<'EOF'", hookutil.strip_heredocs("cat <<'EOF'\ndangling"))
+
+
 class GitHelpers(unittest.TestCase):
     """run_git and repo_root against real repositories and real failures."""
 

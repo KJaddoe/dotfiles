@@ -6,9 +6,11 @@ user sees what is about to be committed and approves it BEFORE the commit is mad
 carries the user's name into branches colleagues review, so "it is only local" is not a reason
 to skip sign-off — a change that has to be rewritten later costs the reviewer, not the author.
 
-Every commit invocation is intercepted, amends included, and what is about to land goes INTO the
-approval prompt (`--stat` of the staged tree, plus the tracked-but-unstaged changes that `-a`
-would sweep in). The user approves a change, not a command line.
+Every commit invocation is intercepted, amends included — decided from the command with heredoc
+bodies stripped, so writing a script that merely mentions committing does not raise a prompt.
+What is about to land goes INTO the approval prompt (`--stat` of the staged tree, plus the
+tracked-but-unstaged changes that `-a` would sweep in). The user approves a change, not a
+command line.
 
 Permission mode decides how that is delivered, because "ask" is only honoured where a prompt can
 actually render:
@@ -26,7 +28,14 @@ Deliberately unconfigurable — no env switch. An off-switch is the failure it e
 import json
 import sys
 
-from _hookutil import COMMIT_SUBCOMMAND, repo_root, run_git, short_flag
+from _hookutil import (
+    COMMIT_SUBCOMMAND,
+    read_bash_payload,
+    repo_root,
+    run_git,
+    short_flag,
+    strip_heredocs,
+)
 
 PROMPTING_MODES = {"default", "plan"}
 
@@ -111,19 +120,15 @@ def decide(mode, summary):
 
 def main():
     """Turn a commit invocation into an approval decision the user controls."""
-    try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, UnicodeDecodeError):
+    data, cmd = read_bash_payload()
+    if data is None:
         sys.exit(0)
 
-    if data.get("tool_name") != "Bash":
+    code = strip_heredocs(cmd)
+    if not COMMIT_SUBCOMMAND.search(code):
         sys.exit(0)
 
-    cmd = (data.get("tool_input") or {}).get("command") or ""
-    if not COMMIT_SUBCOMMAND.search(cmd):
-        sys.exit(0)
-
-    summary = pending_summary(repo_root(data.get("cwd") or "."), cmd)
+    summary = pending_summary(repo_root(data.get("cwd") or "."), code)
     decision, reason = decide(data.get("permission_mode") or "default", summary)
 
     print(

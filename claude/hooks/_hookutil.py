@@ -16,8 +16,10 @@ The leading underscore marks it as internal to the hooks directory: it is not a 
 `settings.json` never invokes it.
 """
 
+import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 GIT_TIMEOUT_SECONDS = 8
@@ -25,6 +27,61 @@ GIT_TIMEOUT_SECONDS = 8
 GIT_FLAGS = r"(?:\s+-{1,2}[\w-]+(?:[= ]\S+)?)*"
 
 COMMIT_SUBCOMMAND = re.compile(rf"\bgit\b{GIT_FLAGS}\s+commit\b", re.IGNORECASE)
+
+HEREDOC_START = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
+
+
+def read_bash_payload():
+    """Read a PreToolUse payload from stdin, for the guards that only care about Bash.
+
+    Every PreToolUse(Bash) guard opens the same way: parse stdin, ignore other tools, pull the
+    command out. A malformed payload is treated as "not for us" rather than raised, so a guard
+    can never take a tool call down with it.
+
+    :return: (payload, command) for a Bash tool call, or (None, "") for anything else
+    """
+    try:
+        data = json.load(sys.stdin)
+    except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
+        return None, ""
+
+    if data.get("tool_name") != "Bash":
+        return None, ""
+
+    return data, (data.get("tool_input") or {}).get("command") or ""
+
+
+def strip_heredocs(cmd):
+    """Return `cmd` with heredoc bodies removed, leaving the commands themselves.
+
+    A heredoc body is data the shell feeds to a program — a script being written, a document,
+    a payload — not something the shell executes. Matching command patterns against it is how a
+    guard ends up blocking a script that merely *mentions* the thing it guards against.
+
+    The delimiter lines are kept so the surrounding command text stays intact. Callers that care
+    about the CONTENT of a command (a commit message passed on stdin, say) must scan the original
+    string; this is for deciding what is being INVOKED.
+
+    :param cmd: full shell command, possibly multi-line
+    :return: the command with heredoc bodies elided
+    """
+    lines = cmd.split("\n")
+    kept = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        kept.append(line)
+        match = HEREDOC_START.search(line)
+        index += 1
+        if not match:
+            continue
+        delimiter = match.group(2)
+        while index < len(lines) and lines[index].strip() != delimiter:
+            index += 1
+        if index < len(lines):
+            kept.append(lines[index])
+            index += 1
+    return "\n".join(kept)
 
 
 def short_flag(cmd, letter):
