@@ -31,6 +31,73 @@ COMMIT_SUBCOMMAND = re.compile(rf"\bgit\b{GIT_FLAGS}\s+commit\b", re.IGNORECASE)
 HEREDOC_START = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
 
 
+PROMPTING_MODES = {"default", "plan"}
+
+SUMMARY_LINE_LIMIT = 40
+
+RULE_REFERENCE = "~/.claude/CLAUDE.md -> Working Preferences"
+
+
+def clip_summary(text):
+    """Trim a summary to a length that stays readable inside a permission prompt.
+
+    :param text: full summary text
+    :return: the text, truncated with a count of the omitted lines
+    """
+    lines = text.splitlines()
+    if len(lines) <= SUMMARY_LINE_LIMIT:
+        return text
+    hidden = len(lines) - SUMMARY_LINE_LIMIT
+    return "\n".join(lines[:SUMMARY_LINE_LIMIT] + [f"... {hidden} more lines"])
+
+
+def approval_decision(mode, action, summary):
+    """Build the PreToolUse decision that puts an action to the user for approval.
+
+    "ask" is only honoured where a prompt can render. In the modes that auto-approve, asking
+    would silently become allowing — precisely where the model runs unsupervised — so the action
+    is denied instead, with instructions to get approval in the conversation and re-run from
+    `default`. Allowing is never an outcome.
+
+    :param mode: the session's reported permission mode
+    :param action: what is being gated, named for the user ("commit", "push")
+    :param summary: summary of what the action would do
+    :return: (permissionDecision, permissionDecisionReason) pair
+    """
+    if mode in PROMPTING_MODES:
+        return "ask", (
+            f"This {action} needs your explicit approval ({RULE_REFERENCE}).\n\n{summary}\n\n"
+            "Approve only if this is what you reviewed."
+        )
+
+    return "deny", (
+        f"BLOCKED: permission mode is '{mode}', where an approval prompt is auto-approved, so "
+        f"this {action} cannot be put to the user ({RULE_REFERENCE}).\n\n"
+        f"{summary}\n\n"
+        f"Show this to the user, get explicit approval in the conversation, and re-run the "
+        f"{action} in 'default' permission mode."
+    )
+
+
+def emit_decision(decision, reason):
+    """Print a PreToolUse decision in the shape the harness expects.
+
+    :param decision: "ask", "deny" or "allow"
+    :param reason: text shown to the user, or fed back to the model on a denial
+    """
+    print(
+        json.dumps(
+            {
+                "hookSpecificOutput": {
+                    "hookEventName": "PreToolUse",
+                    "permissionDecision": decision,
+                    "permissionDecisionReason": reason,
+                }
+            }
+        )
+    )
+
+
 def read_bash_payload():
     """Read a PreToolUse payload from stdin, for the guards that only care about Bash.
 
