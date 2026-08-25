@@ -1,4 +1,4 @@
-# Ghostty config — managed via dotfiles, linked to ~/.config/ghostty/config
+# Ghostty config, managed via dotfiles, linked to ~/.config/ghostty/config
 # Options: https://ghostty.org/docs/config
 
 theme = Kanagawa Wave

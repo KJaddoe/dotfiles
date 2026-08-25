@@ -154,7 +154,7 @@ class NoFalsePositives(HookTestCase):
         self.assertNotIn("dependencies changed", err)
 
     def test_similarly_named_file_is_silent(self):
-        """mypackage.json is not package.json — the pattern is anchored."""
+        """mypackage.json is not package.json: the pattern is anchored."""
         self.stage("mypackage.json", "{}\n")
         code, err = self.commit()
         self.assertEqual(code, 0)
@@ -450,7 +450,7 @@ class SecretsNeverCommit(HookTestCase):
 
     # Generated rather than written literally: betterleaks scans this file too, so a
     # credential-shaped literal here would block its own commit. The seed keeps it
-    # deterministic, and the entropy is what the github-pat rule actually matches on —
+    # deterministic, and the entropy is what the github-pat rule actually matches on,
     # a low-entropy stand-in like "ghp_AAA..." is not detected and would test nothing.
     FAKE_TOKEN = "ghp_" + "".join(
         random.Random(0).choices(string.ascii_letters + string.digits, k=36)

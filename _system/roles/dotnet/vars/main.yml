@@ -1,5 +1,5 @@
 ---
-# Single canonical .NET location — a user-owned dir (no sudo to install/manage),
+# Single canonical .NET location: a user-owned dir (no sudo to install/manage),
 # matching DOTNET_ROOT in dotnet/path.zsh so every consumer (shell, nvim, Rider,
 # VS Code) resolves the same install.
 dotnet_install_dir: "{{ ansible_env.HOME }}/.dotnet"

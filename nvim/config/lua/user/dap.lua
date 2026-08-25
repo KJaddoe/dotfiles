@@ -80,7 +80,7 @@ end
 --- A runnable app (not a class library) ships a sibling
 --- `<name>.runtimeconfig.json`, so we scan the solution's Debug output for
 --- those and keep only assemblies whose name matches their owning project
---- folder — which drops copied dependencies and tooling such as roslyn's
+--- folder, which drops copied dependencies and tooling such as roslyn's
 --- BuildHost. Test assemblies are skipped, the app the current buffer belongs
 --- to wins, and we prompt only when several candidates still remain.
 ---@return string|nil program Absolute path to the dll, or nil when none is built
