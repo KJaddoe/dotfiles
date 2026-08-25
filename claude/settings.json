@@ -37,6 +37,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/require-generated-release-notes.py",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/require-commit-approval.py",
+            "timeout": 10
           }
         ]
       }
