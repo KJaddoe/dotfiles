@@ -98,6 +98,18 @@ every `install.sh` via `script/install`, and updates the zsh plugins.
 `dot_update` **every two hours**, logging to `$TMPDIR/dot_update.log` — so a machine pulls and
 re-applies dotfiles changes on its own. Remove the entry with `crontab -e` if you don't want that.
 
+Because it runs unattended, the update **fast-forwards or does nothing** — it never rewrites
+history or touches work in progress. It skips the pull, and says so in the log, when:
+
+- you are not on the default branch;
+- the working tree is not clean;
+- the update channel is unreachable;
+- local commits would have to be replayed onto upstream ones.
+
+That last case is a real rebase, and it stays a decision for a human at a terminal. Run
+`dot_update` yourself, or rebase by hand, when you see it skipped. The rest of the update
+(submodules, `script/install`, zsh plugins) runs either way.
+
 ## Testing
 
 `script/test` is the end-to-end check. It is **destructive** — it copies the repo over `~/dotfiles`,

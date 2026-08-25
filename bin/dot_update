@@ -21,9 +21,35 @@ PATH="$(command -p getconf PATH):/usr/local/bin"
 echo "› setting up update channel"
 git remote add updates https://github.com/KJaddoe/dotfiles.git 2>/dev/null
 
-# Update repo
+# Update repo.
+#
+# This runs unattended from cron every two hours, so it must never rewrite history or touch work
+# in progress. It fast-forwards or it does nothing, and says which: a rebase that replays local
+# commits is a decision for a human at a terminal, not a background job.
 echo "› git update"
-git pull --rebase --stat updates "$(git rev-parse --abbrev-ref HEAD)"
+branch=$(git rev-parse --abbrev-ref HEAD)
+default_branch=$(git symbolic-ref --quiet --short refs/remotes/updates/HEAD 2>/dev/null)
+default_branch=${default_branch#updates/}
+: "${default_branch:=main}"
+
+if [ "$branch" != "$default_branch" ]; then
+    echo "  skipped: on '$branch', not '$default_branch'"
+elif [ -n "$(git status --porcelain)" ]; then
+    echo "  skipped: working tree is not clean"
+elif ! git fetch --quiet updates "$default_branch"; then
+    echo "  skipped: could not reach the update channel"
+else
+    ahead=$(git rev-list --count FETCH_HEAD..HEAD)
+    behind=$(git rev-list --count HEAD..FETCH_HEAD)
+    if [ "$behind" -eq 0 ]; then
+        echo "  already up to date"
+    elif [ "$ahead" -gt 0 ]; then
+        echo "  skipped: $ahead local commit(s) would be replayed onto $behind upstream one(s);"
+        echo "           rebase by hand so you can see what happens"
+    else
+        git merge --ff-only --stat FETCH_HEAD
+    fi
+fi
 
 # Update submodules
 echo "› submodules update"
