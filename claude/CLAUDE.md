@@ -44,6 +44,10 @@ for these rules as FYI reference only; the binding text is HERE.
   Code", no 🤖 trailer — commits, PR/issue bodies, comments, or any generated artifact.
 - NEVER pass `--gpg-sign` to `git commit`/`--amend` (the passphrase prompt hangs the UI; the user signs
   manually via the `gcs` alias).
+- NEVER commit without my explicit approval of the change: show me the diff (or a precise summary of it)
+  and wait for my yes — every commit, amends included, whatever the permission mode. A commit carries my
+  name into a branch colleagues review, so "it is only local" is no exemption.
+  `claude/hooks/require-commit-approval.py` enforces this.
 - Make small, focused, easy-to-revert commits: one logical change per commit, never bundle unrelated
   changes. Prefer several scoped commits over one large mixed one, even within a single task.
 - Issue work, in this order: for non-trivial or customer-reported work create a tracked issue (with the
@@ -61,8 +65,8 @@ for these rules as FYI reference only; the binding text is HERE.
 
 - Before any PUBLIC, identity-attributed action (GitHub issue/PR/comment/review/release, push to a shared
   remote, Slack/email), draft it and get explicit sign-off on the exact content first. Authorization for
-  the task is not authorization for the content. Local-only actions (file edits, local commits/branches
-  not yet pushed) are exempt.
+  the task is not authorization for the content. Local file edits and branch creation are exempt;
+  commits are NOT — see Git & GitHub.
 - New issue on a project board → set Status = "To Be Refined". Editing an existing board issue → set
   Status back to "To Be Refined" AND post a comment noting Claude made changes a human must review.
 

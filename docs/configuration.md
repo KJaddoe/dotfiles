@@ -111,9 +111,14 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   a CI command
 - `claude/hooks/duplicate-symbols.py` — the duplicate-symbol check; a Stop hook and, with `--path`,
   a CI command
-- `claude/hooks/_hookutil.py` — git helpers shared by the Stop hooks; internal, never invoked by
-  `settings.json`
+- `claude/hooks/_hookutil.py` — git helpers and command patterns shared by the Stop hooks and the
+  commit-approval gate; internal, never invoked by `settings.json`
 - `claude/hooks/block-claude-attribution.py` — PreToolUse guard, no configuration
+- `claude/hooks/require-commit-approval.py` — PreToolUse gate that puts every commit to the user for
+  approval; deliberately unconfigurable, since an off-switch is the failure it prevents. It prompts in
+  `default`/`plan` mode and denies outright in `auto`, `acceptEdits`, `dontAsk` and `bypassPermissions`,
+  where a prompt would be auto-approved — so committing from those modes means switching to `default`
+  first. `bypassPermissions` ignores hook decisions entirely and cannot be gated by any hook
 - `claude/hooks/pre-tool-memory.sh` — the wrapper `settings.json` invokes for PreToolUse; it execs
   `pre-tool-memory.py`, which SessionStart calls directly
 - `claude/hooks/tests/` — run every suite:
