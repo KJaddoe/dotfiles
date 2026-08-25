@@ -98,21 +98,30 @@ def emit_decision(decision, reason):
     )
 
 
+def read_payload():
+    """Read a PreToolUse payload from stdin.
+
+    A malformed payload is reported as absent rather than raised, so a guard can never take a
+    tool call down with it.
+
+    :return: the parsed payload, or None when stdin does not carry one
+    """
+    try:
+        return json.load(sys.stdin)
+    except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
+        return None
+
+
 def read_bash_payload():
     """Read a PreToolUse payload from stdin, for the guards that only care about Bash.
 
     Every PreToolUse(Bash) guard opens the same way: parse stdin, ignore other tools, pull the
-    command out. A malformed payload is treated as "not for us" rather than raised, so a guard
-    can never take a tool call down with it.
+    command out.
 
     :return: (payload, command) for a Bash tool call, or (None, "") for anything else
     """
-    try:
-        data = json.load(sys.stdin)
-    except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
-        return None, ""
-
-    if data.get("tool_name") != "Bash":
+    data = read_payload()
+    if data is None or data.get("tool_name") != "Bash":
         return None, ""
 
     return data, (data.get("tool_input") or {}).get("command") or ""
