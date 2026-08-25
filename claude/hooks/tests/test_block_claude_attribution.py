@@ -2,10 +2,10 @@
 """Tests for the block-claude-attribution PreToolUse hook.
 
 Run: python3 claude/hooks/tests/test_block_claude_attribution.py
-Uses stdlib unittest only — no third-party dependencies, identical on macOS and Linux.
+Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 
 Trigger strings are assembled from fragments so this file never contains the literal text
-the hook blocks on — otherwise editing it would trip the hook on its own test data.
+the hook blocks on, otherwise editing it would trip the hook on its own test data.
 """
 
 import importlib.util

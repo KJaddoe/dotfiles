@@ -2,10 +2,10 @@
 """Tests for the require-gh-approval PreToolUse hook.
 
 Run: python3 claude/hooks/tests/test_require_gh_approval.py
-Uses stdlib unittest only — no third-party dependencies, identical on macOS and Linux.
+Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 
 Two properties matter: nothing that writes to GitHub reaches the API unapproved, and reading
-GitHub stays friction-free — a gate that fires on `gh pr view` is a gate that gets switched off.
+GitHub stays friction-free: a gate that fires on `gh pr view` is a gate that gets switched off.
 """
 
 import importlib.util

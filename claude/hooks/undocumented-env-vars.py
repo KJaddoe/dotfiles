@@ -2,7 +2,7 @@
 """Stop hook: flag env vars introduced this session that no doc mentions.
 
 Enforces the binding rule in ~/.claude/CLAUDE.md ("Project documentation"): an env var is not
-done until it's documented — name, purpose, required/optional, default, placeholder, and where
+done until it's documented: name, purpose, required/optional, default, placeholder, and where
 the real value lives.
 
 Modes (DOCS_ENV_HOOK_MODE):
@@ -124,7 +124,7 @@ def added_lines(repo):
 def extract_env_vars(lines):
     """Extract env var names referenced in the given source lines.
 
-    Captures the name only — never the surrounding line — so secret values cannot escape.
+    Captures the name only, never the surrounding line, so secret values cannot escape.
 
     :param lines: source lines to scan
     :return: set of candidate env var names, minus well-known platform vars
@@ -193,7 +193,7 @@ def build_message(missing):
     return (
         f"Undocumented env var(s) introduced: {', '.join(missing)}.\n"
         "Per ~/.claude/CLAUDE.md (Project documentation), each needs: name, purpose, required vs "
-        "optional, default, a safe placeholder, and WHERE the real value comes from — the "
+        "optional, default, a safe placeholder, and WHERE the real value comes from: the "
         "location, never the value. Add them to .env.example (if present) and the project docs.\n"
         "Use the `writing-project-docs` skill for the format."
     )

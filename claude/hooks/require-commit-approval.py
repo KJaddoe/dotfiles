@@ -4,9 +4,9 @@
 Enforces the binding rule in ~/.claude/CLAUDE.md ("Working Preferences" -> Git & GitHub): the
 user sees what is about to be committed and approves it BEFORE the commit is made. A commit
 carries the user's name into branches colleagues review, so "it is only local" is not a reason
-to skip sign-off — a change that has to be rewritten later costs the reviewer, not the author.
+to skip sign-off. A change that has to be rewritten later costs the reviewer, not the author.
 
-Every commit invocation is intercepted, amends included — decided from the command with heredoc
+Every commit invocation is intercepted, amends included, decided from the command with heredoc
 bodies stripped, so writing a script that merely mentions committing does not raise a prompt.
 What is about to land goes INTO the approval prompt (`--stat` of the staged tree, plus the
 tracked-but-unstaged changes that `-a` would sweep in). The user approves a change, not a
@@ -15,14 +15,14 @@ command line.
 Permission mode decides how that is delivered, because "ask" is only honoured where a prompt can
 actually render:
 
-- `default` / `plan`: permissionDecision "ask" — the prompt carries the summary.
+- `default` / `plan`: permissionDecision "ask", and the prompt carries the summary.
 - anything else (`auto`, `acceptEdits`, `dontAsk`, `bypassPermissions`): the prompt would be
   auto-approved, so the call is DENIED instead, with instructions to get approval in the
   conversation and re-run from `default`. Silently allowing is the one outcome the rule forbids.
 
 `bypassPermissions` ignores hook decisions outright; nothing this file does can gate that mode.
 
-Deliberately unconfigurable — no env switch. An off-switch is the failure it exists to prevent.
+Deliberately unconfigurable, with no env switch. An off-switch is the failure it exists to prevent.
 """
 
 import sys
@@ -60,7 +60,7 @@ def pending_summary(repo, cmd):
     :return: human-readable summary of the pending change
     """
     if repo is None:
-        return "Not inside a git repository — cannot show what would be committed."
+        return "Not inside a git repository, cannot show what would be committed."
 
     sections = []
     staged = run_git(repo, "diff", "--cached", "--stat").rstrip()
@@ -73,7 +73,7 @@ def pending_summary(repo, cmd):
             sections.append(f"Tracked but unstaged, swept in by -a:\n{unstaged}")
 
     if not sections:
-        return "Nothing staged — git reports no pending changes."
+        return "Nothing staged: git reports no pending changes."
     return clip_summary("\n\n".join(sections))
 
 

@@ -2,7 +2,7 @@
 """Tests for the require-generated-release-notes PreToolUse hook.
 
 Run: python3 claude/hooks/tests/test_require_generated_release_notes.py
-Uses stdlib unittest only — no third-party dependencies, identical on macOS and Linux.
+Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 """
 
 import importlib.util

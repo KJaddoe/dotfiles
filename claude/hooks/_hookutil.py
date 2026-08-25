@@ -2,12 +2,12 @@
 """Git helpers and command patterns shared by the hooks in this directory.
 
 The hooks keep needing the same handful of things: run a git command without letting a failure
-escape, resolve the repository root for the session's cwd, and recognise a commit invocation —
-and its short flags — inside a shell command. Each was duplicated across hooks before this
+escape, resolve the repository root for the session's cwd, and recognise a commit invocation,
+and its short flags, inside a shell command. Each was duplicated across hooks before this
 module existed.
 
 Importing this works because Python puts a script's OWN directory at the front of `sys.path`,
-and the hooks are invoked as `python3 ~/.claude/hooks/<name>.py` — so `~/.claude/hooks` leads
+and the hooks are invoked as `python3 ~/.claude/hooks/<name>.py`, so `~/.claude/hooks` leads
 the path regardless of the cwd git happens to be run from. Loading a hook by file path instead
 (`importlib.util.spec_from_file_location`, as the tests do) does NOT do that, so a caller taking
 that route has to put this directory on `sys.path` itself.
@@ -55,7 +55,7 @@ def approval_decision(mode, action, summary):
     """Build the PreToolUse decision that puts an action to the user for approval.
 
     "ask" is only honoured where a prompt can render. In the modes that auto-approve, asking
-    would silently become allowing — precisely where the model runs unsupervised — so the action
+    would silently become allowing, precisely where the model runs unsupervised, so the action
     is denied instead, with instructions to get approval in the conversation and re-run from
     `default`. Allowing is never an outcome.
 
@@ -130,8 +130,8 @@ def read_bash_payload():
 def strip_heredocs(cmd):
     """Return `cmd` with heredoc bodies removed, leaving the commands themselves.
 
-    A heredoc body is data the shell feeds to a program — a script being written, a document,
-    a payload — not something the shell executes. Matching command patterns against it is how a
+    A heredoc body is data the shell feeds to a program (a script being written, a document,
+    a payload), not something the shell executes. Matching command patterns against it is how a
     guard ends up blocking a script that merely *mentions* the thing it guards against.
 
     The delimiter lines are kept so the surrounding command text stays intact. Callers that care

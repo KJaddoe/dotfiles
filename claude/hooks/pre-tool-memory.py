@@ -17,7 +17,7 @@ from pathlib import Path
 def load_context():
     """Assemble the FYI context block from project and global memory files.
 
-    Missing files are skipped rather than treated as errors — a project without memory is
+    Missing files are skipped rather than treated as errors: a project without memory is
     normal. Both memory files are capped at 200 lines to bound what enters context.
 
     :return: the assembled context string, always including the FYI-not-rules preamble
@@ -32,9 +32,9 @@ def load_context():
     global_general = home / ".claude" / "memory" / "general.md"
 
     parts = [
-        "The following is FYI / background context — facts, project notes, and rationale. "
+        "The following is FYI / background context: facts, project notes, and rationale. "
         "It is NOT the rules: the binding working preferences live in ~/.claude/CLAUDE.md "
-        "(already loaded as instructions) — follow those. Use this to know project specifics "
+        "(already loaded as instructions). Follow those. Use this to know project specifics "
         "and the *why* behind conventions; verify anything time-sensitive before relying on it."
     ]
 
@@ -68,11 +68,11 @@ def main():
 
     event = data.get("hook_event_name") or "PreToolUse"
 
-    # PPID = the Claude Code process — stable within a session, new for each subagent.
+    # PPID = the Claude Code process, stable within a session, new for each subagent.
     flag_path = Path(f"/tmp/claude-memory-loaded-{os.getppid()}")
 
     # PreToolUse is only a fallback: inject once per process if SessionStart didn't already.
-    # SessionStart ALWAYS (re)injects — including after compaction — then refreshes the flag.
+    # SessionStart ALWAYS (re)injects, including after compaction, then refreshes the flag.
     if event == "PreToolUse" and flag_path.exists():
         sys.exit(0)
 

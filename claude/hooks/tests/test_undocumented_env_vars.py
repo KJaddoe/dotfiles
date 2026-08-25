@@ -2,7 +2,7 @@
 """Tests for the undocumented-env-vars Stop hook.
 
 Run: python3 claude/hooks/tests/test_undocumented_env_vars.py
-Uses stdlib unittest only — no third-party dependencies, identical on macOS and Linux.
+Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 """
 
 import importlib.util
@@ -122,7 +122,7 @@ class TestBoundaries(RepoFixture):
     """Edge and boundary conditions."""
 
     def test_preexisting_var_is_not_flagged(self):
-        """Vars already committed and untouched are out of scope — additions only."""
+        """Vars already committed and untouched are out of scope: additions only."""
         self.write("legacy.js", "const k = process.env.OLD_UNDOCUMENTED;\n")
         git(self.repo, "add", "-A")
         git(self.repo, "commit", "-qm", "legacy")

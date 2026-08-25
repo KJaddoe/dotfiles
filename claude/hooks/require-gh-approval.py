@@ -4,7 +4,7 @@
 Enforces the binding rule in ~/.claude/CLAUDE.md ("Working Preferences" -> Acting as the user):
 a GitHub issue, PR, comment, review or release is PUBLIC and identity-attributed. Authorization
 for the task is not authorization for the content, and unlike a local commit it cannot be quietly
-amended away — colleagues are notified the moment it lands.
+amended away: colleagues are notified the moment it lands.
 
 Classification is an ALLOWLIST, not a denylist of write verbs. `gh` gains subcommands regularly,
 and a denylist fails open on every one of them; an allowlist fails closed, which is the right
@@ -20,12 +20,12 @@ creates a real issue with no write verb anywhere in it. `gh api` defaults to GET
 
 `gh issue develop` is deliberately allowed: it publishes only a branch name for an issue the user
 already decided to work on, notifies nobody, and ~/.claude/CLAUDE.md mandates it for every tracked
-issue — gating a step the rules require on every issue would only teach the user to ignore prompts.
+issue. Gating a step the rules require on every issue would only teach the user to ignore prompts.
 
-Mode handling matches the commit and push gates — see `approval_decision` in `_hookutil`: prompt
+Mode handling matches the commit and push gates. See `approval_decision` in `_hookutil`: prompt
 where a prompt renders, deny where it would be auto-approved, never allow.
 
-Deliberately unconfigurable — no env switch. An off-switch is the failure it exists to prevent.
+Deliberately unconfigurable, with no env switch. An off-switch is the failure it exists to prevent.
 """
 
 import re
@@ -96,7 +96,7 @@ READ_ONLY_VERBS = {
     "watch",
 }
 
-# `gh issue develop` publishes a branch name and nothing else — see the module docstring.
+# `gh issue develop` publishes a branch name and nothing else. See the module docstring.
 ALLOWED_PAIRS = {("issue", "develop")}
 
 API_PAYLOAD_FLAGS = {"-f", "--raw-field", "-F", "--field", "--input"}
@@ -195,10 +195,10 @@ def target_repo(repo, tokens):
             return token.split("=", 1)[1]
 
     if repo is None:
-        return "unknown — not inside a git repository"
+        return "unknown, not inside a git repository"
 
     origin = run_git(repo, "remote", "get-url", "origin").strip()
-    return origin or "unknown — no origin remote"
+    return origin or "unknown, no origin remote"
 
 
 def gh_summary(repo, invocations):
