@@ -123,6 +123,14 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   cannot be amended away afterwards. The prompt names the branch, the baseline it is compared against,
   the commits that would be published, and whether history is being rewritten. `--dry-run` publishes
   nothing and is not gated. Also unconfigurable
+- `claude/hooks/require-gh-approval.py` — the same gate for `gh` commands that write to GitHub. It
+  classifies by ALLOWLIST, so an unrecognised subcommand gates rather than slips through, and it
+  classifies `gh api` by method (`--method` non-GET, or `-f`/`-F`/`--input` implying a POST) rather
+  than by verb — otherwise `gh api … -f title=…` would open an issue with no write verb in it.
+  Read commands (`view`, `list`, `diff`, `checks`, `download`, `clone`, `checkout`, `watch`,
+  `search`, `status`, `browse`, and `gh project`'s `item-list`/`field-list`) pass through untouched,
+  as does `gh issue develop` — it publishes only a branch name for an issue already being worked on.
+  Also unconfigurable
 - `claude/hooks/pre-tool-memory.sh` — the wrapper `settings.json` invokes for PreToolUse; it execs
   `pre-tool-memory.py`, which SessionStart calls directly
 - `claude/hooks/tests/` — run every suite:
