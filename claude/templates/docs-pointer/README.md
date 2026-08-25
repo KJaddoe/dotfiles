@@ -1,7 +1,7 @@
 # docs-pointer template
 
 A repo-level `CLAUDE.md` that points Claude at a `docs/` folder for durable project knowledge,
-plus a `docs/` skeleton. `CLAUDE.md` auto-loads; `docs/` does not — the pointer bridges them.
+plus a `docs/` skeleton. `CLAUDE.md` auto-loads; `docs/` does not; the pointer bridges them.
 
 ## Apply
 
@@ -11,4 +11,4 @@ plus a `docs/` skeleton. `CLAUDE.md` auto-loads; `docs/` does not — the pointe
    that don't apply (e.g. `erd.md` for non-DB projects).
 
 Keep `CLAUDE.md` an index (what exists, when to consult it); put heavy content in `docs/`.
-Favor "why" docs — rationale, cross-repo relations, ADRs — over what's reconstructable from code.
+Favor "why" docs (rationale, cross-repo relations, ADRs) over what's reconstructable from code.
