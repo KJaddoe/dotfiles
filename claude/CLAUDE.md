@@ -1,61 +1,61 @@
 ## Working Preferences (binding)
 
-These are standing instructions — follow them as if stated in the current message; only a conflicting
+These are standing instructions: follow them as if stated in the current message; only a conflicting
 live instruction outranks them. `~/.claude/memory/general.md` holds the rationale (the why/how/history)
 for these rules as FYI reference only; the binding text is HERE.
 
 ### Working method
 
-- Before claiming what a component/SP/function does — or recommending one for a job — VERIFY against the
+- Before claiming what a component/SP/function does, or recommending one for a job, VERIFY against the
   actual code: read the body, trace the live call path. Don't reason from plausible assumptions or names.
   If a claim rests on an unverified assumption, check it or flag it explicitly as unverified.
 - Keep responses and documents tight and well-scoped. Prefer incremental Edits over full rewrites, split
   large artifacts into smaller targeted files, and confirm scope before producing a very large deliverable.
   Every hunk must trace to the request or to a gate it must pass (format/lint/test/docs). Working code you
-  weren't asked to touch stays untouched — no drive-by refactors, renames, or "while I'm here" cleanups.
+  weren't asked to touch stays untouched: no drive-by refactors, renames, or "while I'm here" cleanups.
   When something out of scope looks wrong or worth changing, do NOT bury it in prose where it is lost in a
-  wall of text: raise it as an AskUserQuestion prompt and wait for my answer. No permission mode —
-  auto/auto-accept included — is ever that answer; only I am. Read your own diff before committing and
+  wall of text: raise it as an AskUserQuestion prompt and wait for my answer. No permission mode,
+  auto/auto-accept included, is ever that answer; only I am. Read your own diff before committing and
   drop what doesn't trace.
 - Before a destructive or hard-to-reverse operation (DB restore/overwrite, bulk file delete, git history
   rewrite, a migration against a shared/production DB), state the plan, VERIFY the target and inputs first
-  (confirm you have the right backup/file/DB), and get explicit confirmation — even for purely local actions.
+  (confirm you have the right backup/file/DB), and get explicit confirmation, even for purely local actions.
 - When executing an implementation plan, DEFAULT to inline execution (executing-plans skill) over
   subagent-driven; only go subagent-driven if the user asks for it.
-- Terminal tooling: the shell stays command-driven — plain `git`/`gh`/`kubectl` etc. Don't propose or
+- Terminal tooling: the shell stays command-driven with plain `git`/`gh`/`kubectl` etc. Don't propose or
   install standalone TUIs (lazygit, k9s, gh-dash, …); interactive/visual tooling belongs in nvim.
 - A new rule for this file may ONLY originate from: (a) you explicitly asking for one, or (b) a
-  pattern I observed — you telling me to do something a particular way more than once, correcting
+  pattern I observed: you telling me to do something a particular way more than once, correcting
   me, or changing something I did. **Your answer to a question I asked is not a rule.** If I raised
   the topic, proposed the options, and you picked from them, that is my initiative wearing your
-  name — it does not become a standing instruction. When in doubt, record it in memory as a
+  name; it does not become a standing instruction. When in doubt, record it in memory as a
   preference and let it earn rule status by recurring.
 - Once a rule legitimately originates, work down this list and stop at the first hit: (1) can a hook,
-  linter/formatter config, test, or CI check enforce it? — build that instead, a rule is the weakest
-  option; (2) does an existing rule already cover it? — sharpen that one, don't add; (3) is it
-  project- or stack-specific? — project `CLAUDE.md`, and only promote to global once it recurs across
-  3+ projects; (4) is it a fact, rationale, or history rather than an imperative? — memory. Only then
-  propose it, saying which existing rule it does NOT duplicate. Propose ONE at a time and recommend —
+  linter/formatter config, test, or CI check enforce it? Build that instead, a rule is the weakest
+  option; (2) does an existing rule already cover it? Sharpen that one, don't add; (3) is it
+  project- or stack-specific? Project `CLAUDE.md`, and only promote to global once it recurs across
+  3+ projects; (4) is it a fact, rationale, or history rather than an imperative? Memory. Only then
+  propose it, saying which existing rule it does NOT duplicate. Propose ONE at a time and recommend,
   never a menu to adopt wholesale. This file is a budget, not a backlog.
 
 ### Git & GitHub
 
 - NEVER add Claude attribution to anything: no "Co-Authored-By: Claude", no "Generated with Claude
-  Code", no 🤖 trailer — commits, PR/issue bodies, comments, or any generated artifact.
+  Code", no 🤖 trailer, in commits, PR/issue bodies, comments, or any generated artifact.
 - NEVER pass `--gpg-sign` to `git commit`/`--amend` (the passphrase prompt hangs the UI; the user signs
   manually via the `gcs` alias).
 - NEVER commit without my explicit approval of the change: show me the diff (or a precise summary of it)
-  and wait for my yes — every commit, amends included, whatever the permission mode. A commit carries my
+  and wait for my yes, on every commit, amends included, whatever the permission mode. A commit carries my
   name into a branch colleagues review, so "it is only local" is no exemption.
   `claude/hooks/require-commit-approval.py` enforces this.
 - Make small, focused, easy-to-revert commits: one logical change per commit, never bundle unrelated
   changes. Prefer several scoped commits over one large mixed one, even within a single task.
 - Issue work, in this order: for non-trivial or customer-reported work create a tracked issue (with the
-  right board fields) BEFORE editing code, confirming scope first — skip only for trivial/throwaway
+  right board fields) BEFORE editing code, confirming scope first. Skip only for trivial/throwaway
   changes or repos with no tracker. Set its board Status to "In Progress" AND assign the issue to me
   before editing, including for issues already on the board. Assignment tracks ACTIVE work: an issue
   I create or refine but do not start stays unassigned. Create the branch with
-  `gh issue develop <n> … --checkout` using GitHub's default name — never `--name`, never a bare
+  `gh issue develop <n> … --checkout` using GitHub's default name: never `--name`, never a bare
   `git checkout -b`.
 - Reviewing a PR ("review" / "add comments" / "leave feedback"): build ONE pending GitHub review, present
   each inline comment/`suggestion` for sign-off BEFORE attaching it, and submit only on explicit
@@ -66,7 +66,7 @@ for these rules as FYI reference only; the binding text is HERE.
 - Before any PUBLIC, identity-attributed action (GitHub issue/PR/comment/review/release, push to a shared
   remote, Slack/email), draft it and get explicit sign-off on the exact content first. Authorization for
   the task is not authorization for the content. Local file edits and branch creation are exempt;
-  commits are NOT — see Git & GitHub. `claude/hooks/require-push-approval.py` and
+  commits are NOT; see Git & GitHub. `claude/hooks/require-push-approval.py` and
   `require-gh-approval.py` enforce the push and `gh` halves.
 - New issue on a project board → set Status = "To Be Refined". Editing an existing board issue → set
   Status back to "To Be Refined" AND post a comment noting Claude made changes a human must review.
@@ -76,7 +76,7 @@ for these rules as FYI reference only; the binding text is HERE.
 - Document every function, class, and method with a structured doc-comment covering its purpose, params,
   and return value, in the language's convention (JSDoc/TSDoc, C# XML `///`, Python docstrings) and
   matching the project's existing doc style. Do NOT add inline narration comments explaining what a
-  single line does — keep line-level code self-explanatory. Config files stay comment-free (only what's
+  single line does; keep line-level code self-explanatory. Config files stay comment-free (only what's
   functionally required, e.g. shebangs); commit messages stay terse.
 - Keep non-deliverables OUT of the repo. Generated planning artifacts (specs, design docs, plans) go to
   the untracked session dir `~/.claude/projects/<mapped-path>/specs/`, overriding the brainstorming
@@ -84,25 +84,25 @@ for these rules as FYI reference only; the binding text is HERE.
   scratchpad; namespace `/tmp` scripts per-project, and never overwrite or `rm` a temp file you didn't
   create this session without asking. Anything built "to test" / "to try out" / "for me to test" is
   LOCAL scratch (working tree or stash). Commit only what was explicitly named as a deliverable and
-  don't bundle unrequested refactors — "commit X and build Y to test" means: commit X, build Y
+  don't bundle unrequested refactors, so "commit X and build Y to test" means: commit X, build Y
   locally, nothing more.
 - NEVER use an em dash or an en dash, in prose or in files: a plain hyphen, or reword the sentence.
   This covers your chat replies too, which is where I notice it.
   `claude/hooks/block-typographic-dashes.py` enforces the file half; nothing can enforce the prose.
-- In Markdown, align table columns — pad every cell with trailing spaces so the pipes line up and the
+- In Markdown, align table columns: pad every cell with trailing spaces so the pipes line up and the
   raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
 
 ### Project documentation
 
-- Update the project's own docs as PART of the change — same commit/PR, never a later pass. Triggers:
+- Update the project's own docs as PART of the change: same commit/PR, never a later pass. Triggers:
   behaviour; setup/install; commands/scripts; env vars or config keys; API/interface contracts;
   dependencies or tooling/versions; the data model; structure/architecture; deploy/release steps; a
   documented decision; or a convention (which also updates the project's own `CLAUDE.md`). Removing a
   feature, endpoint, env var, flag, or command DELETES its docs in the same commit. Also fix docs you
   notice have already drifted.
-- Docs state what the code ACTUALLY does, verified against it — never intended or aspirational
+- Docs state what the code ACTUALLY does, verified against it, never intended or aspirational
   behaviour, and never invented to fill a gap (mark `TODO(owner)` and ask instead).
-- Coverage floor — EVERY project's docs answer: what it is; setup/install (incl. tooling + versions);
+- Coverage floor: EVERY project's docs answer: what it is; setup/install (incl. tooling + versions);
   how to run; how to test; structure/architecture; who to ask (ownership/escalation); the domain
   glossary, unless the project has no business domain. Then by kind:
 
@@ -113,51 +113,51 @@ for these rules as FYI reference only; the binding text is HERE.
   | CLI tool             | commands & flags; config file/env; exit codes             |
   | Infra / dotfiles     | what it manages; bootstrap on a fresh machine; OS parity  |
 
-  If one is MISSING, fill it in when your work touches that area and tell me what else is missing —
+  If one is MISSING, fill it in when your work touches that area and tell me what else is missing;
   don't silently skip it, don't backfill the whole set unasked. Say what you added.
   `python3 ~/.claude/hooks/docs-coverage-floor.py --path .` checks this floor mechanically; it
   detects the topic nobody thought about, not the topic covered badly.
-- Write an ADR when a choice is non-obvious AND hard to reverse — reversibility is the test, and it
+- Write an ADR when a choice is non-obvious AND hard to reverse: reversibility is the test, and it
   overrides the examples: a load-bearing dependency or service, a new architectural pattern, a schema
   or data-model change, an auth/security boundary, or an option you REJECTED for a reason people will
-  re-propose later. A swappable library (date formatting, a lint plugin) is routine — no ADR. Capture
+  re-propose later. A swappable library (date formatting, a lint plugin) is routine, no ADR. Capture
   context, the decision, alternatives weighed, and consequences. Never edit a past ADR to match new
   reality: it records what was decided then. Supersede it with a new one and link back.
 - Env vars/config/secrets/flags need name, purpose, required vs optional, default, safe placeholder, and
-  WHERE the real value lives — the LOCATION, never the value (see Confidentiality & secrets).
+  WHERE the real value lives: the LOCATION, never the value (see Confidentiality & secrets).
 - Use the project's existing docs layout, or `~/.claude/templates/docs-pointer/` if it has none. Project
-  docs are a repo deliverable and GET committed — unlike generated planning artifacts (above).
+  docs are a repo deliverable and GET committed, unlike generated planning artifacts (above).
 - Use the `writing-project-docs` skill for the audit/remediate procedure and per-doc-type guidance.
 
 ### Code quality (all languages)
 
 - Format and lint every change: use the project's configured tooling, or a locally available tool for
-  the language when it defines none. Only format code you actually touched — never mass-reformat
+  the language when it defines none. Only format code you actually touched, never mass-reformat
   untouched lines or files (it buries the real change in noise). If the project has NO linting or test
   setup at all, notify me and propose options rather than silently skipping; when you introduce one,
   commit its config so it's reproducible across machines, keeping macOS/Linux parity.
-- Drive lint messages as close to zero as possible — fix as many warnings as you can. Fix the root cause;
+- Drive lint messages as close to zero as possible: fix as many warnings as you can. Fix the root cause;
   don't silence warnings with blanket disables (`eslint-disable`, `#pragma warning disable`, `any` casts).
   If a suppression is genuinely unavoidable, justify it.
 - Write tests whenever possible. Every suite covers three kinds of case, each at the layer where it's
-  real: the happy path; edge/boundary cases; and what must NOT work and must stay broken — authorization/access denials, invalid
+  real: the happy path; edge/boundary cases; and what must NOT work and must stay broken: authorization/access denials, invalid
   or malformed input rejection, and abuse/injection (SQL injection + authz bypass server-side;
   output-escaping/XSS, authz-gated UI, and input rejection client-side). When you find a bug or a bad input,
   lock it out with a regression test asserting it stays rejected.
-- Definition of done: before claiming work complete, every gate above passes — format, lint, tests, and
-  the docs the change touches — and you report the actual results honestly, saying so if anything failed
+- Definition of done: before claiming work complete, every gate above passes: format, lint, tests, and
+  the docs the change touches, and you report the actual results honestly, saying so if anything failed
   or was skipped. Evidence before assertions. On a large/slow suite run the changed-scope (affected)
   tests and state which scope was run; run the full suite when it's cheap or before a merge/release.
   Green tests are evidence about the tests, not about the system: passing tests earn "should work",
-  never "it works". Anything that crosses a real boundary — HTTP/API call, DB query, cache/CDN or
-  conditional-request headers, auth, queue, filesystem — earns "it works" only once you have EXERCISED
+  never "it works". Anything that crosses a real boundary (HTTP/API call, DB query, cache/CDN or
+  conditional-request headers, auth, queue, filesystem) earns "it works" only once you have EXERCISED
   the whole path your change touches, end to end and not one boundary along it, seen the actual result,
-  and quoted that evidence (status, headers, rows, output). If you can't run it, say "unverified —
+  and quoted that evidence (status, headers, rows, output). If you can't run it, say "unverified:
   needs a real call", never "working".
 - Follow the codebase's existing conventions: read the surrounding code before writing, mirror its
   patterns, naming, and already-chosen libraries, and reuse existing helpers. Don't add a new dependency
   or introduce a parallel way of doing something that already exists without sign-off. Before writing a
-  function, SEARCH for one that already does the job — by behaviour, not by name, and outside the current
+  function, SEARCH for one that already does the job: by behaviour, not by name, and outside the current
   folder (shared/common/utils, the core lib). Never write your own alongside one you found. If none
   exists and you need it a second time, extract it to where the project already keeps shared code rather
   than writing a second copy.
@@ -165,10 +165,10 @@ for these rules as FYI reference only; the binding text is HERE.
   findings with severity and don't silently auto-bump majors. Before ADDING a dependency, check what it
   pulls in transitively, when it was last released, and whether the stdlib or an existing dep covers it.
 - Leave the tree clean: delete dead code, commented-out code, and debug artifacts you introduced (stray
-  logging, `debugger`/`console.log`, throwaway TODOs) rather than shipping them — git keeps the history.
+  logging, `debugger`/`console.log`, throwaway TODOs) rather than shipping them; git keeps the history.
 - Guard external input: validate/sanitize it, use parameterized queries (never string-concatenated SQL),
   and escape output.
-- Don't swallow errors: no empty `catch` blocks or silent fallbacks — surface or handle a failure
+- Don't swallow errors: no empty `catch` blocks or silent fallbacks: surface or handle a failure
   meaningfully, log with context, and prefer failing loud/early over hiding it.
 
 ### Confidentiality & secrets
@@ -178,25 +178,25 @@ for these rules as FYI reference only; the binding text is HERE.
   PUBLIC). Keep tracked content generic ("a client RN app", "the project"); put client-specific notes in
   an untracked location.
 - NEVER put real secrets (passwords, tokens, TOTP/2FA secrets, API keys) or customer PII in ANY memory
-  file — public OR local, since local memory still auto-injects into context — nor hardcode them in
+  file, public OR local, since local memory still auto-injects into context, nor hardcode them in
   source, where env vars, config, or a secret store are the answer. Record where the value lives (e.g.
   compose.yml, per-session), never the value itself.
 
 ### Stack-specific (apply only when it fits)
 
 - Don't run a one-off build/type-check (`ng build`, `dotnet build`, …) just to verify changes while a
-  watch dev-server is already running — it's redundant and contends on caches. Let the running server
+  watch dev-server is already running: it's redundant and contends on caches. Let the running server
   surface errors, or ask.
 - When building Angular UI: generate components/services via the Angular CLI (own folder, separate files,
   keep the spec), organize by feature, use signals + `inject()` + `input()`/`output()`, use reactive forms
-  (`FormGroup`/`FormControl` with `nonNullable`, `[formGroup]`/`formControlName`) — NOT template-driven
-  `ngModel` — follow the current Angular style guide, lean on Material/built-in layout over custom CSS, and
+  (`FormGroup`/`FormControl` with `nonNullable`, `[formGroup]`/`formControlName`), NOT template-driven
+  `ngModel`. Follow the current Angular style guide, lean on Material/built-in layout over custom CSS, and
   give every component/service a real test. Match the conventions of the existing Angular projects in the
   workspace.
-- Write SCSS with nesting that mirrors the component's DOM hierarchy — nest child selectors inside their
+- Write SCSS with nesting that mirrors the component's DOM hierarchy: nest child selectors inside their
   parent's block following the real element tree, use `&` for states/variants, and don't write flat
   top-level selectors for elements that are actually nested. When one style would otherwise be
-  duplicated across two DOM branches, don't flatten it to a shared top-level class — factor it into a
+  duplicated across two DOM branches, don't flatten it to a shared top-level class. Factor it into a
   grouped selector that lists both parent chains and nests the shared declarations
   (`.wrapperA, .wrapperB { .inner { .child { … } } }`), keeping each branch's unique styles in its own
   nested block.
@@ -216,22 +216,22 @@ Maintain a structured memory system rooted at .claude/memory/
 
 ### Structure
 
-- memory.md — index of all memory files, updated whenever you create or modify one
-- general.md — cross-project facts, preferences, environment setup
-- domain/{topic}.md — domain-specific knowledge (one file per topic)
-- tools/{tool}.md — tool configs, CLI patterns, workarounds
+- memory.md: index of all memory files, updated whenever you create or modify one
+- general.md: cross-project facts, preferences, environment setup
+- domain/{topic}.md: domain-specific knowledge (one file per topic)
+- tools/{tool}.md: tool configs, CLI patterns, workarounds
 
 ### Rules
 
 1. When you learn something worth remembering, write it to the right file immediately
 2. Keep memory.md as a current index with one-line descriptions
-3. Entries: date, what, why — nothing more
+3. Entries: date, what, why, nothing more
 4. Read memory.md at session start. Load other files only when relevant
 5. If a file doesn't exist yet, create it
 6. Before removing or modifying any existing memory entry, use AskUserQuestion to confirm
-   with the user — show the current content and the proposed change
+   with the user: show the current content and the proposed change
 7. Route by type: a new standing RULE (an imperative I must follow) goes in CLAUDE.md
-   (Working Preferences) as terse text — NOT in memory; a new FACT / context / rationale goes
+   (Working Preferences) as terse text, NOT in memory; a new FACT / context / rationale goes
    in memory (FYI). Trim shipped work-logs to durable "don't-regress" nuggets. If a rule recurs
    across 3+ projects, promote it to the global CLAUDE.md and delete the per-project copies.
 
@@ -250,12 +250,12 @@ When I say "reorganize memory":
 ## Global Memory
 
 Project MEMORY.md, this index, and general.md are auto-injected as **FYI/background context** (not
-as rules — the binding rules are in "Working Preferences" above) at SessionStart
+as rules; the binding rules are in "Working Preferences" above) at SessionStart
 (startup/resume/compact/clear) and as a PreToolUse fallback for subagents. SessionStart runs
 `pre-tool-memory.py` directly; PreToolUse goes through the `pre-tool-memory.sh` wrapper, which
 execs the same script. Load other topic files only when relevant.
 
-The topic file index is `~/.claude/memory/memory.md` — read it there. Do NOT restate the list
+The topic file index is `~/.claude/memory/memory.md`; read it there. Do NOT restate the list
 here or in a project MEMORY.md; one index, or they drift.
 
 ## Global Memory Reference Rule
@@ -265,7 +265,7 @@ a `## Global Memory` section. If it does not, add it near the top, after the H1.
 
 The section must be a SHORT POINTER only. Do NOT duplicate the topic file list into project
 MEMORY.md. The list lives in `~/.claude/memory/memory.md` (single source of truth). Project MEMORY.md has a
-200-line budget — use it for project knowledge, not boilerplate.
+200-line budget: use it for project knowledge, not boilerplate.
 
 Canonical template for project MEMORY.md:
 
@@ -299,9 +299,9 @@ Read ~/.claude/CLAUDE.md for memory rules and topic files.
 
 ## Domain Knowledge Lifecycle
 
-1. Staging — knowledge accumulates in ~/.claude/memory/domain/{name}/
-2. Promotion — enough knowledge exists to package as a plugin/skill
-3. Pointer — after promotion, the memory file becomes a pointer to the plugin;
+1. Staging: knowledge accumulates in ~/.claude/memory/domain/{name}/
+2. Promotion: enough knowledge exists to package as a plugin/skill
+3. Pointer: after promotion, the memory file becomes a pointer to the plugin;
    content lives in the plugin
 
 When an update is needed to a promoted domain, note it in the memory file so an issue
