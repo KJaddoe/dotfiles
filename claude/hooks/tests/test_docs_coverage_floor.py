@@ -93,6 +93,8 @@ class RepoFixture(unittest.TestCase):
         """
         self.repo = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.repo, ignore_errors=True)
+        self.home = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.home, ignore_errors=True)
         empty_template = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, empty_template, ignore_errors=True)
         git(self.repo, "init", "-q", f"--template={empty_template}")
@@ -128,7 +130,10 @@ class RepoFixture(unittest.TestCase):
         :param stdin: raw stdin override, bypassing JSON construction
         :return: CompletedProcess
         """
-        env = {"HOME": str(self.repo), "PATH": subprocess.os.environ.get("PATH", "")}
+        # HOME must sit OUTSIDE the repo: Python caches bytecode under
+        # $HOME/Library/Caches on macOS, and inside the repo those files read as untracked
+        # work, so a tree the test just committed would look dirty to the hook.
+        env = {"HOME": str(self.home), "PATH": subprocess.os.environ.get("PATH", "")}
         if mode:
             env["DOCS_FLOOR_HOOK_MODE"] = mode
         payload = json.dumps({"cwd": str(self.repo), "stop_hook_active": stop_hook_active})
@@ -341,7 +346,7 @@ class TestHookBehaviour(RepoFixture):
         """The log carries topic slugs, never documentation text."""
         self.make_gap_with_uncommitted_work()
         self.run_hook()
-        log = self.repo / ".claude" / "logs" / "docs-floor-hook.log"
+        log = self.home / ".claude" / "logs" / "docs-floor-hook.log"
         self.assertTrue(log.exists())
         self.assertIn("what-it-is", log.read_text(encoding="utf-8"))
         self.assertNotIn("Angular CLI", log.read_text(encoding="utf-8"))
