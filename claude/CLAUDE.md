@@ -144,11 +144,12 @@ for these rules as FYI reference only; the binding text is HERE.
   the docs the change touches — and you report the actual results honestly, saying so if anything failed
   or was skipped. Evidence before assertions. On a large/slow suite run the changed-scope (affected)
   tests and state which scope was run; run the full suite when it's cheap or before a merge/release.
-  Green tests are evidence about the tests, not about the system. Anything that crosses a real boundary
-  — HTTP/API call, DB query, cache/CDN or conditional-request headers, auth, queue, filesystem — counts
-  as working only once you have EXERCISED it and seen the actual response, and you quote that evidence
-  (status, headers, rows, output). If you can't run it, say "unverified — needs a real call", never
-  "working".
+  Green tests are evidence about the tests, not about the system: passing tests earn "should work",
+  never "it works". Anything that crosses a real boundary — HTTP/API call, DB query, cache/CDN or
+  conditional-request headers, auth, queue, filesystem — earns "it works" only once you have EXERCISED
+  the whole path your change touches, end to end and not one boundary along it, seen the actual result,
+  and quoted that evidence (status, headers, rows, output). If you can't run it, say "unverified —
+  needs a real call", never "working".
 - Follow the codebase's existing conventions: read the surrounding code before writing, mirror its
   patterns, naming, and already-chosen libraries, and reuse existing helpers. Don't add a new dependency
   or introduce a parallel way of doing something that already exists without sign-off. Before writing a
