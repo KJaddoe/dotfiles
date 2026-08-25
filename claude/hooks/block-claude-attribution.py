@@ -17,14 +17,12 @@ import json
 import re
 import sys
 
-GIT_FLAGS = r"(?:\s+-{1,2}[\w-]+(?:[= ]\S+)?)*"
+from _hookutil import COMMIT_SUBCOMMAND, GIT_FLAGS, short_flag
 
 WRITE_SUBCOMMAND = re.compile(
     rf"\bgit\b{GIT_FLAGS}\s+(commit|merge|tag|revert|cherry-pick|am|rebase|notes|stash)\b",
     re.IGNORECASE,
 )
-
-COMMIT_SUBCOMMAND = re.compile(rf"\bgit\b{GIT_FLAGS}\s+commit\b", re.IGNORECASE)
 
 
 def writes_history(cmd):
@@ -68,9 +66,7 @@ def main():
     # --gpg-sign, or -S in a short-flag cluster (-S, -Sm, -amS). Case-sensitive: -s is
     # --signoff, allowed. Scoped to `git commit` — the rule names commit/--amend, not
     # tag or merge signing.
-    gpg = bool(COMMIT_SUBCOMMAND.search(cmd)) and (
-        ("--gpg-sign" in cmd) or bool(re.search(r"(?<![\w-])-[A-Za-z]*S[A-Za-z]*(?![\w-])", cmd))
-    )
+    gpg = bool(COMMIT_SUBCOMMAND.search(cmd)) and (("--gpg-sign" in cmd) or short_flag(cmd, "S"))
 
     if hit or gpg:
         reasons = []
