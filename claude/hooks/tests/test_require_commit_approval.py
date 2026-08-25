@@ -2,7 +2,7 @@
 """Tests for the require-commit-approval PreToolUse hook.
 
 Run: python3 claude/hooks/tests/test_require_commit_approval.py
-Uses stdlib unittest only — no third-party dependencies, identical on macOS and Linux.
+Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 
 The property under test is that a commit can never reach git unapproved: prompting modes must
 ask, and every non-prompting mode must deny. "allow" is not a legal outcome of this hook.

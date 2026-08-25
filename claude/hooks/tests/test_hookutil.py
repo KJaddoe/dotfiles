@@ -2,7 +2,7 @@
 """Tests for the shared hook git helpers, and for the import they depend on.
 
 Run: python3 claude/hooks/tests/test_hookutil.py
-Uses stdlib unittest only — no third-party dependencies, identical on macOS and Linux.
+Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 
 The standalone-invocation tests are the point of this file. Extracting `_hookutil.py` made every
 Stop hook depend on Python placing a script's own directory at the front of `sys.path`. That is

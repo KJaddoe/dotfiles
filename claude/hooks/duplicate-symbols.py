@@ -9,7 +9,7 @@ reviewed file-by-file, and read as canonical from either side.
 Two tiers, deliberately different in confidence:
 
   exact  the same exported symbol name declared in two different files. Near-certain
-         duplication — measured at 1 hit across 175 exported symbols on a real repo, and that
+         duplication, measured at 1 hit across 175 exported symbols on a real repo, and that
          hit was a genuine duplicated abstraction.
   near   names >= 0.85 similar, declared in different files OF THE SAME DIRECTORY, with the
          same casing style. Measured at ~33% precision on that repo (6 pairs, 2 real), so it
@@ -18,7 +18,7 @@ Two tiers, deliberately different in confidence:
 The WHOLE repo is indexed every run (~0.1-0.5s for ~200 files), so a brand-new file duplicating
 an untouched symbol is still caught; only the REPORT is filtered to pairs involving this
 session's work. Collisions in code the session never touched are summarised as a count rather
-than listed, so a repo with a known duplicate does not nag on every turn — pass --all to list
+than listed, so a repo with a known duplicate does not nag on every turn. Pass --all to list
 them.
 
 Detection is name-based by design, which bounds it: it catches a second `Page<T>` cold, but not
@@ -108,8 +108,8 @@ CONST_CASE = re.compile(r"^[A-Z0-9_]+$")
 def is_excluded(path):
     """Report whether a repo-relative path is test, fixture, migration or ambient code.
 
-    Those legitimately repeat names — a spec redeclaring the type it exercises, a generated
-    migration class — so scanning them produces false positives.
+    Those legitimately repeat names (a spec redeclaring the type it exercises, a generated
+    migration class), so scanning them produces false positives.
 
     :param path: repo-relative path
     :return: True when the path should be skipped
@@ -296,7 +296,7 @@ def build_message(result):
         skipped.append(f"{result['other_near']} near")
     if skipped:
         lines.append(
-            f"({' and '.join(skipped)} more in code this session did not touch — "
+            f"({' and '.join(skipped)} more in code this session did not touch, "
             "run with --all to list them.)"
         )
     if result["truncated"]:
@@ -315,7 +315,7 @@ def build_message(result):
 def write_log(repo, result):
     """Append a dry-run finding to the hook log, creating the log directory as needed.
 
-    Only symbol names and paths are recorded — never source lines.
+    Only symbol names and paths are recorded, never source lines.
 
     :param repo: repository root path
     :param result: the dict returned by analyse

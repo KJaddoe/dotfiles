@@ -2,7 +2,7 @@
 """Tests for the docs-coverage-floor Stop hook.
 
 Run: python3 claude/hooks/tests/test_docs_coverage_floor.py
-Uses stdlib unittest only — no third-party dependencies, identical on macOS and Linux.
+Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 """
 
 import importlib.util

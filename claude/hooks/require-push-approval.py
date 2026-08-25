@@ -3,7 +3,7 @@
 
 Enforces the binding rule in ~/.claude/CLAUDE.md ("Working Preferences" -> Acting as the user):
 a push is a PUBLIC, identity-attributed action, so the user signs off on what is being published
-before it leaves the machine. Unlike a commit, a push cannot be quietly amended away afterwards —
+before it leaves the machine. Unlike a commit, a push cannot be quietly amended away afterwards:
 colleagues, CI and the branch's public history all see it immediately.
 
 `push.autoSetupRemote = true` in this repo's git config makes the gap sharper: a bare `git push`
@@ -13,10 +13,10 @@ command line says "publish", which is exactly the shape of action that should no
 The prompt carries the branch, the resolved target, the commits that would be published, and a
 loud warning when history is being rewritten (`--force`, `-f`, `--force-with-lease`).
 
-Mode handling matches the commit gate — see `approval_decision` in `_hookutil`: prompt where a
+Mode handling matches the commit gate. See `approval_decision` in `_hookutil`: prompt where a
 prompt renders, deny where it would be auto-approved, never allow.
 
-Deliberately unconfigurable — no env switch. An off-switch is the failure it exists to prevent.
+Deliberately unconfigurable, with no env switch. An off-switch is the failure it exists to prevent.
 """
 
 import re
@@ -75,7 +75,7 @@ def publish_base(repo):
     """Find the ref the pushed commits should be compared against.
 
     The upstream is the honest baseline when one exists. A branch that has never been pushed has
-    none — and that is the case worth showing most clearly — so fall back to the default branch,
+    none, and that is the case worth showing most clearly, so fall back to the default branch,
     and report when even that cannot be resolved rather than listing the entire history.
 
     :param repo: repository root path
@@ -100,14 +100,14 @@ def push_summary(repo, cmd):
     :return: human-readable summary of what would leave the machine
     """
     if repo is None:
-        return "Not inside a git repository — cannot show what would be pushed."
+        return "Not inside a git repository, cannot show what would be pushed."
 
     branch = current_branch(repo) or "a detached HEAD"
     base, note = publish_base(repo)
 
     lines = [f"Branch: {branch} ({note})"]
     if rewrites_history(cmd):
-        lines.append("FORCE PUSH — this overwrites history already on the remote.")
+        lines.append("FORCE PUSH: this overwrites history already on the remote.")
 
     if not base:
         lines.append("Commits: cannot be determined without a baseline.")
@@ -118,7 +118,7 @@ def push_summary(repo, cmd):
     if commits:
         lines.append(f"Commits that would be published:\n{commits}")
     else:
-        lines.append("Nothing new to publish — the remote is already up to date.")
+        lines.append("Nothing new to publish: the remote is already up to date.")
 
     return clip_summary("\n".join(lines))
 

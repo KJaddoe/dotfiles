@@ -2,7 +2,7 @@
 """Tests for the require-push-approval PreToolUse hook.
 
 Run: python3 claude/hooks/tests/test_require_push_approval.py
-Uses stdlib unittest only — no third-party dependencies, identical on macOS and Linux.
+Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 
 The property under test is that nothing reaches a remote unapproved: prompting modes must ask,
 every other mode must deny, and "allow" is not a legal outcome for a real push.

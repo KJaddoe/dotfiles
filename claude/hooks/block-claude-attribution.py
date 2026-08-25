@@ -7,7 +7,7 @@ Enforces the binding rules in ~/.claude/CLAUDE.md ("Working Preferences"):
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model.
 
 Scope is the git subcommands that record a message (commit, merge, tag, revert, cherry-pick,
-am, rebase, notes, stash), not the substring "commit" — so read-only history inspection
+am, rebase, notes, stash), not the substring "commit", so read-only history inspection
 (`git log … | grep`, and prose like "commits ahead") is never blocked, while attribution can
 no longer slip through `git merge -m` or `git tag -a -m`. The gpg check stays scoped to
 `git commit`, which is what the rule names.
@@ -15,7 +15,7 @@ no longer slip through `git merge -m` or `git tag -a -m`. The gpg check stays sc
 Which subcommand is being INVOKED is decided from the command with heredoc bodies stripped, so
 writing a script or document that merely mentions one of them is not treated as running it. The
 attribution scan itself still reads the ORIGINAL text, because a heredoc is a normal way to pass
-a multi-line commit message — exactly where a trailer would hide.
+a multi-line commit message, exactly where a trailer would hide.
 """
 
 import re
@@ -38,8 +38,8 @@ WRITE_SUBCOMMAND = re.compile(
 def writes_history(cmd):
     """Report whether a shell command invokes a git subcommand that records a message.
 
-    Read-only subcommands (log, show, diff, …) are excluded so that inspecting history —
-    including grepping it for attribution — is never blocked. Matching the subcommand
+    Read-only subcommands (log, show, diff, …) are excluded so that inspecting history,
+    including grepping it for attribution, is never blocked. Matching the subcommand
     rather than the bare substring "commit" also stops prose like "commits ahead" from
     tripping the guard.
 
@@ -70,7 +70,7 @@ def main():
     hit = next((p for p in attribution if p in low), None)
 
     # --gpg-sign, or -S in a short-flag cluster (-S, -Sm, -amS). Case-sensitive: -s is
-    # --signoff, allowed. Scoped to `git commit` — the rule names commit/--amend, not
+    # --signoff, allowed. Scoped to `git commit`: the rule names commit/--amend, not
     # tag or merge signing.
     gpg = bool(COMMIT_SUBCOMMAND.search(code)) and (("--gpg-sign" in code) or short_flag(code, "S"))
 

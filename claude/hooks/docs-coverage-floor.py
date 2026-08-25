@@ -8,7 +8,7 @@ measured against it.
 
 Detection is deliberately coarse: a topic counts as covered when the docs mention it at all.
 That yields false "covered" on a passing mention, and the check is therefore a floor, never a
-quality bar — it catches the topic nobody thought about, not the topic covered badly.
+quality bar: it catches the topic nobody thought about, not the topic covered badly.
 
 Modes (DOCS_FLOOR_HOOK_MODE):
   dry-run  default. Never blocks; appends findings to ~/.claude/logs/docs-floor-hook.log.
@@ -51,7 +51,7 @@ DOC_GLOBS = [
 ]
 
 # Generator boilerplate. A README still carrying one of these has never been told what the
-# project is, whatever else it says — the highest-precision signal available here.
+# project is, whatever else it says. The highest-precision signal available here.
 SCAFFOLD_MARKERS = [
     re.compile(r"this project was generated (with|using)", re.IGNORECASE),
     re.compile(r"framework typescript starter repository", re.IGNORECASE),

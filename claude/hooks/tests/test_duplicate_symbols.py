@@ -2,7 +2,7 @@
 """Tests for the duplicate-symbols Stop hook.
 
 Run: python3 claude/hooks/tests/test_duplicate_symbols.py
-Uses stdlib unittest only — no third-party dependencies, identical on macOS and Linux.
+Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 """
 
 import importlib.util
@@ -145,7 +145,7 @@ class ExactTier(RepoFixture):
 
 
 class ExactTierMustNotFire(RepoFixture):
-    """Cases that must stay unflagged — the noise this tier would otherwise drown in."""
+    """Cases that must stay unflagged: the noise this tier would otherwise drown in."""
 
     def test_declarations_in_one_file_are_not_a_collision(self):
         """Overloads and merged declarations share a file and are deliberate."""
