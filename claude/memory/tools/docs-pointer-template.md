@@ -1,16 +1,16 @@
 # docs-pointer template
 
-2026-06-29 — Added `claude/templates/docs-pointer/`: a reusable repo-level `CLAUDE.md` that
+2026-06-29: Added `claude/templates/docs-pointer/`: a reusable repo-level `CLAUDE.md` that
 points at a `docs/` folder for durable project knowledge (architecture, cross-repo relations,
 ADRs, optional ERD), since `CLAUDE.md` auto-loads but `docs/` doesn't. Design: `CLAUDE.md` stays
 an index, heavy content in `docs/`, precedence clause = code wins / docs can go stale / verify
 first. Trialled in this repo: root `CLAUDE.md` + `docs/` (architecture.md, decisions/0001).
 
-Chose option 3 (static template now, YAGNI) over a scaffolding skill — it overlaps
+Chose option 3 (static template now, YAGNI) over a scaffolding skill, since it overlaps
 claude-md-management. **Promotion trigger:** if the template gets copied into ~3+ repos, promote
 it to a scaffolding skill in `claude/skills/` and turn this file into a pointer (mirror the
 `gh-pending-pr-reviews.md` → `pending-pr-review` skill pattern).
 
-**Repos using it:** (1) dotfiles trial; (2) a client project (2026-07-01 — root CLAUDE.md +
+**Repos using it:** (1) dotfiles trial; (2) a client project (2026-07-01: root CLAUDE.md +
 docs/ {README, architecture, erd, decisions/0000}, filled with real content not placeholders).
 One more repo hits the promotion trigger.

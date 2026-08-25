@@ -16,7 +16,7 @@ Reusable pipeline for turning Markdown/HTML into shareable docs on this mac. No 
 ```
 
 Chrome embeds images referenced by **absolute `file://`** URLs. Relative `src="mockups/x.png"` won't resolve
-in headless — rewrite to `file:///abs/.../mockups/x.png` before rendering.
+in headless, so rewrite to `file:///abs/.../mockups/x.png` before rendering.
 
 ## Markdown → PDF (with inline images)
 

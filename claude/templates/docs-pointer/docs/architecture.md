@@ -4,7 +4,7 @@
 
 ## Overview
 
-{1–2 paragraphs: what this repo is and how its pieces fit.}
+{1-2 paragraphs: what this repo is and how its pieces fit.}
 
 ## Components
 

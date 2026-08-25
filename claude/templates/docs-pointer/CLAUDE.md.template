@@ -2,7 +2,7 @@
 
 ## Project docs
 
-Durable project knowledge lives in `docs/`. `docs/` is **not** auto-loaded — consult it by
+Durable project knowledge lives in `docs/`. `docs/` is **not** auto-loaded, so consult it by
 relevance before working in an unfamiliar area; don't read it wholesale for trivial changes.
 
 | Doc | Read when |
@@ -11,7 +11,7 @@ relevance before working in an unfamiliar area; don't read it wholesale for triv
 | `docs/architecture.md` | Touching structure, data flow, or how components wire together |
 | `docs/configuration.md` | Adding or changing an env var or config key |
 | `docs/decisions/` | Changing or questioning a past design decision (ADRs) |
-| `docs/erd.md` | (DB projects) touching the schema — verify against migrations/models |
+| `docs/erd.md` | (DB projects) touching the schema - verify against migrations/models |
 
 Precedence: code is the source of truth; `docs/` is a map that can go stale. Verify specifics
 against the code before relying on them, and fix docs that contradict the code.

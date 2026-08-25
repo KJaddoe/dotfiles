@@ -1,6 +1,6 @@
 ---
 name: pending-pr-review
-description: Build a pending GitHub PR review — attach inline comments and `suggestion` blocks one at a time, get sign-off on each, then submit only after explicit approval. Use when asked to review a pull request, add review comments, leave feedback on a PR, or "review"/"add comments" on a GitHub PR.
+description: Build a pending GitHub PR review: attach inline comments and `suggestion` blocks one at a time, get sign-off on each, then submit only after explicit approval. Use when asked to review a pull request, add review comments, leave feedback on a PR, or "review"/"add comments" on a GitHub PR.
 user-invocable: true
 argument-hint: "[owner/repo#number]"
 allowed-tools:
@@ -12,13 +12,13 @@ allowed-tools:
 
 # Pending PR Review
 
-Walk through PR findings one at a time, attaching each as an inline comment to a single *pending* review, then submit once the user approves. The naive REST path doesn't work — this skill records the gh + GraphQL workflow that does.
+Walk through PR findings one at a time, attaching each as an inline comment to a single *pending* review, then submit once the user approves. The naive REST path doesn't work, and this skill records the gh + GraphQL workflow that does.
 
 ## Workflow rules (how to conduct the review)
 
 - Build a **pending** review with inline comments + `suggestion` blocks. Walk findings **one at a time**.
 - Present each draft comment for sign-off **before** attaching it (do not bulk-attach).
-- Do **not** edit working-tree files as the "fix" path — the deliverable is review comments, not local commits, unless the user later asks to push fixes.
+- Do **not** edit working-tree files as the "fix" path: the deliverable is review comments, not local commits, unless the user later asks to push fixes.
 - Submit (`…/events`) **only** after the user explicitly approves.
 
 ## Why the obvious REST path fails
@@ -30,7 +30,7 @@ Walk through PR findings one at a time, attaching each as an inline comment to a
 "user_id can only have one pending review per pull request"
 ```
 
-There is **no** `POST /repos/{owner}/{repo}/pulls/{n}/reviews/{review_id}/comments` REST endpoint either — confirmed against the docs.
+There is **no** `POST /repos/{owner}/{repo}/pulls/{n}/reviews/{review_id}/comments` REST endpoint either, confirmed against the docs.
 
 ## The working workflow
 
@@ -106,7 +106,7 @@ Pass the body through `-F` from a shell variable (loaded from a file) so backtic
 gh api -X PUT repos/{OWNER}/{REPO}/pulls/{N}/reviews/{REVIEW_ID} -f body="$NEW_BODY"
 ```
 
-The summary stays PENDING — only the body text changes.
+The summary stays PENDING: only the body text changes.
 
 ### 5. Submit
 

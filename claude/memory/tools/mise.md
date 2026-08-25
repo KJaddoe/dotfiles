@@ -5,39 +5,39 @@ both. React Native Android dev works CLI-only (no Android Studio, running on a U
 
 The migration off the four old managers (NVM/pyenv/rbenv/fixed-brew-JDK) completed 2026-06-11; its
 per-commit narrative lives in git history. What follows is the durable don't-regress set.
-(Moved here from `domain/` on 2026-08-17 — the migration is finished, so this is tool knowledge,
+(Moved here from `domain/` on 2026-08-17, when the migration finished, so this is tool knowledge,
 not staging toward a plugin.)
 
 ## Decisions (from the user)
 
 - All four runtimes → mise (one fast Rust binary, per-project pinning, asdf-compatible escape hatch).
   dotnet stays as-is (weakest fit, fine on its own install.sh + brew).
-- Python *runtime* on mise, Python *global tooling* on **uv** (`uv tool install`) not pip — uv is the
+- Python *runtime* on mise, Python *global tooling* on **uv** (`uv tool install`) not pip; uv is the
   2026 default and far faster. Superseded pipx.
 - Sequencing: full mise migration first (Java early = JDK-17 provider), RN Android second.
 
 ## mise gotchas (don't rediscover)
 
 - mise verifies GitHub artifact attestations; old python 3.11.9 standalone build (2024-08) has none and
-  fails. Fix = pin a current patch (e.g. 3.11.15) — keep verification on, don't disable it.
+  fails. Fix = pin a current patch (e.g. 3.11.15), and keep verification on, don't disable it.
 - Idempotent pin: guard `mise use -g` on `mise current <tool>` output, NOT `mise ls --installed`
-  (installed ≠ pinned — the installed-list guard silently skipped the python pin and fell through to
+  (installed ≠ pinned: the installed-list guard silently skipped the python pin and fell through to
   pyenv 3.11.9). java/node roles still use the older `mise ls --installed` guard; retrofit to
   `mise current` when touched.
 - Each runtime migration removed its own old `path.zsh` hook in the same commit. The java migration
-  MISSED this once — the stale `java/path.zsh` ran `/usr/libexec/java_home -v 17` at shell init and
+  MISSED this once: the stale `java/path.zsh` ran `/usr/libexec/java_home -v 17` at shell init and
   errored loudly ("Unable to locate a Java Runtime") on every new shell once brew-openjdk was removed.
   mise already exports JAVA_HOME + puts java on PATH, so the hook must be deleted.
 - Run a single ansible role: temp playbook `{hosts: localhost, connection: local, roles: [X]}` +
   `ANSIBLE_ROLES_PATH=.../_system/roles ansible-playbook`. Verify in a real shell with `zsh -ic '...'`.
 - `otool -L` is ground truth for native link deps, not `brew deps`: brew `vim`'s formula under-reported
   that the binary hard-links `libruby` via `+ruby`. Removing classic vim was what finally freed brew
-  `ruby` (now 100% on mise). neovim links luajit + vendored LuaJIT, never brew ruby/lua — unaffected.
+  `ruby` (now 100% on mise). neovim links luajit + vendored LuaJIT, never brew ruby/lua, so unaffected.
 
 ## Android SDK / RN gotchas
 
 - `_system/roles/android` bootstraps cmdline-tools into `cmdline-tools/latest/` manually. Do NOT ALSO
-  list `cmdline-tools;latest` in the sdkmanager package list — it installs a 2nd copy into `latest-2/`.
+  list `cmdline-tools;latest` in the sdkmanager package list: it installs a 2nd copy into `latest-2/`.
   Bootstrap into `latest/` manually XOR let sdkmanager manage it, never both. Run sdkmanager via
   `mise exec --` to give it mise's java17 (no JAVA_HOME plumbing).
 - `android/config.zsh`: scope the WSL adb-socket override to real WSL (`grep -qi microsoft /proc/version`)

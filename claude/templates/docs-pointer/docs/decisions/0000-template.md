@@ -5,7 +5,7 @@
 
 ## Context
 
-{What forced a decision — constraints, the problem, alternatives considered.}
+{What forced a decision: constraints, the problem, alternatives considered.}
 
 ## Decision
 

@@ -10,7 +10,7 @@ write or keep must be verified against the code; anything you cannot verify gets
 
 The binding obligation and the coverage floor live in `~/.claude/CLAUDE.md` → **Project
 documentation**. If that section is not in your context, read it off disk before classifying
-anything — `MISSING` is undefined without it.
+anything: `MISSING` is undefined without it.
 
 ## Interface vs implementation
 
@@ -24,7 +24,7 @@ The one question this skill exists to answer. Document the **interface**; never 
 | Why a design was chosen, what it rules out, cross-component wiring | Anything a reader gets faster by opening the file   |
 
 "Don't restate the code" means don't narrate internals. Contracts are the code's promise to a
-consumer — they are required even though they are "what". Keep the two apart physically: reference
+consumer: they are required even though they are "what". Keep the two apart physically: reference
 material in the README or its own `docs/` page, rationale in `architecture.md` / ADRs.
 
 ## Three modes
@@ -39,19 +39,19 @@ If a task is both (changing code in an unfamiliar repo), do Inline. Audit is a t
 right, not a prerequisite for unrelated work.
 
 **Drift you notice mid-change:** fix it in the same commit when it is in the area you touched.
-Outside that blast radius, report it — "never bundle unrelated changes" wins.
+Outside that blast radius, report it: "never bundle unrelated changes" wins.
 
 ## Layout
 
 Use what the project already has. Starting from nothing, follow the Apply steps in
-`~/.claude/templates/docs-pointer/README.md` — do not copy the directory wholesale, or you ship
+`~/.claude/templates/docs-pointer/README.md`: do not copy the directory wholesale, or you ship
 `CLAUDE.md.template`, the template's own README, and unreplaced `{Project Name}` placeholders.
 
 A repo can be more than one archetype (a published CLI that is also a library). Union the rows.
 
 ## Audit procedure
 
-1. **Inventory** — `README*`, `docs/`, ADRs, per-package READMEs, `.env.example`, `CHANGELOG*`,
+1. **Inventory**: `README*`, `docs/`, ADRs, per-package READMEs, `.env.example`, `CHANGELOG*`,
    `CLAUDE.md` (its own section below), doc-site sources, CI configs that tell a human or machine
    how to build/run/test, and any doc template this repo ships to other repos (a defect there
    propagates).
@@ -60,8 +60,8 @@ A repo can be more than one archetype (a published CLI that is also a library). 
 
    | Claim            | Check against                                                                                |
    |------------------|----------------------------------------------------------------------------------------------|
-   | Env vars         | env reads in source, both directions vs `.env.example` + docs — see exclusions below         |
-   | Commands         | `package.json` scripts, `Makefile`, `*.csproj`, CI workflows — **read them, never run them** |
+   | Env vars         | env reads in source, both directions vs `.env.example` + docs - see exclusions below         |
+   | Commands         | `package.json` scripts, `Makefile`, `*.csproj`, CI workflows - **read them, never run them** |
    | Tooling versions | `.nvmrc`, `.tool-versions`, `mise.toml`, `global.json`, `Dockerfile`, CI matrix              |
    | API contracts    | routes/controllers vs documented endpoints and shapes                                        |
    | Structure        | documented tree vs actual directories                                                        |
@@ -74,7 +74,7 @@ A repo can be more than one archetype (a published CLI that is also a library). 
    …) and test/fixture paths, which legitimately contain invented names.
 
 3. **Floor first, then scope.** The floor lives in `~/.claude/CLAUDE.md` while the classes live
-   here, and a floor item in another file gets skipped — "how to roll back" was absent from three
+   here, and a floor item in another file gets skipped: "how to roll back" was absent from three
    audited deployed services and went unreported in all three. So walk it mechanically before
    anything else:
 
@@ -83,15 +83,15 @@ A repo can be more than one archetype (a published CLI that is also a library). 
    ```
 
    It prints the repo's detected kind(s) and every floor topic no doc mentions. **Each line it
-   prints is a `MISSING` row** unless you can name the doc that covers it. Detection is coarse — a
-   passing mention counts as covered — so it under-reports and is a floor, never a quality bar; a
+   prints is a `MISSING` row** unless you can name the doc that covers it. Detection is coarse: a
+   passing mention counts as covered, so it under-reports and is a floor, never a quality bar; a
    topic it passes can still be `THIN`. If it cannot run, walk the floor by hand instead.
 
    This is the one command an audit runs. It ships with the skill, only reads, and executes
    nothing belonging to the repo; step 2's ban is on running the **project's** commands.
 
    Then verify every claim in the coverage-floor docs. Sample elsewhere and **say what you
-   sampled** — an unbounded "verify everything" over a large repo silently becomes partial anyway.
+   sampled**: an unbounded "verify everything" over a large repo silently becomes partial anyway.
 
 4. **Classify.**
 
@@ -103,7 +103,7 @@ A repo can be more than one archetype (a published CLI that is also a library). 
    | `MISSING`  | Coverage-floor gap (step 3), or undocumented behaviour that surprises     |
    | `THIN`     | Present but not enough to act on without reading the source               |
 
-   `CONFLICT` is usually the most valuable finding — never silently "fix" the doc to match the code
+   `CONFLICT` is usually the most valuable finding: never silently "fix" the doc to match the code
    when the code may be what is wrong.
 
 5. **Report**, one row each, then stop:
@@ -111,12 +111,12 @@ A repo can be more than one archetype (a published CLI that is also a library). 
    | # | Class | Location (file:line) | Finding | Verified against |
    |---|-------|----------------------|---------|------------------|
 
-   Also list what you checked and found correct — a bare complaint list doesn't show coverage.
+   Also list what you checked and found correct: a bare complaint list doesn't show coverage.
 
 ## Remediation
 
 Fix `WRONG` and `CONFLICT` first (raise `CONFLICT`, don't decide it), then `STALE`, then `MISSING`,
-then `THIN` — but a severe item outranks a trivial one in a higher class. Deleting a doc for a
+then `THIN`, but a severe item outranks a trivial one in a higher class. Deleting a doc for a
 subsystem that no longer exists is a valid fix, not a cop-out.
 
 **Never invent.** Deploy targets, credential locations and who-to-ask are rarely derivable from a
@@ -127,15 +127,15 @@ and ask. Don't guess a plausible answer.
 artifact the next build overwrites is worse than leaving it stale.
 
 **Docs outside the repo** (Confluence, Notion, a separate docs site): "same commit" is impossible.
-Make the change, and report what needs updating externally — never assume someone else will.
+Make the change, and report what needs updating externally: never assume someone else will.
 
 ## Env vars & config
 
 Field list is in `~/.claude/CLAUDE.md`. Two cases it doesn't cover:
 
-- **Harness/platform-set vars** (set by the tooling, not the user) — say so explicitly and skip
+- **Harness/platform-set vars** (set by the tooling, not the user): say so explicitly and skip
   "where the value comes from"; the answer is "you don't set this".
-- **Local behaviour switches** with safe defaults — no provenance needed. Say that in one clause,
+- **Local behaviour switches** with safe defaults, no provenance needed. Say that in one clause,
   not an apologetic paragraph.
 
 Record the **location** of a real value, never the value.
@@ -152,7 +152,7 @@ also carry one it does not own:
 |--------------------------------------|-------------------------------------|-------------------------------|
 | Repo root / package root             | This project's rules                | Yes                           |
 | Symlinked out to a tool's config dir | Someone's **global** rules; payload | No                            |
-| `*.template` shipped to other repos  | A template                          | No — a defect there is step 1 |
+| `*.template` shipped to other repos  | A template                          | No - a defect there is step 1 |
 
 Check the repo's linking manifest (`dotbot.conf.yaml` `link:` entries, a stow/chezmoi layout, an
 install script) and whether the path is already a symlink. Editing a linked-out global file under a
@@ -160,38 +160,38 @@ project audit applies project-scoped tests to global rules.
 
 **Never propose a new rule.** Origination is reserved to the user (`~/.claude/CLAUDE.md` → Working
 method). An audit reports; it does not write rules. `MISSING` here means a convention the repo
-demonstrably follows is undocumented — report it and stop.
+demonstrably follows is undocumented: report it and stop.
 
 Per rule, stopping at the first hit:
 
 | Class         | Means                                                               |
 |---------------|---------------------------------------------------------------------|
 | `ENFORCEABLE` | A hook, linter/formatter config, test or CI check could enforce it  |
-| `DUPLICATE`   | Another rule — here or global — already covers it; sharpen that one |
+| `DUPLICATE`   | Another rule - here or global - already covers it; sharpen that one |
 | `MISPLACED`   | A fact, rationale or history, not an imperative → memory            |
 
 The five general classes still apply: a rule naming a command, tool or path that no longer exists is
 `WRONG`; one whose convention moved is `STALE`; one too vague to act on is `THIN`. Report in the
 step 5 table.
 
-`ENFORCEABLE` is the most valuable finding and the one to hunt hardest — a rule is the weakest
+`ENFORCEABLE` is the most valuable finding and the one to hunt hardest: a rule is the weakest
 enforcement available. It is not fixed by editing `CLAUDE.md`: it is a proposal to build the check,
 raised one at a time, and the rule goes only once the check lands.
 
 ## CHANGELOG
 
-A changelog records history for an audience, so it never drifts — it can only be incomplete, and a
+A changelog records history for an audience, so it never drifts: it can only be incomplete, and a
 missed entry is unrecoverable. One entry per **user-visible change**, not per commit; a feature
 delivered in fourteen commits is one entry. Internal refactors get none.
 
 In-flight entries accumulate under `Unreleased`, promoted and dated when a release is cut.
 
 Auditing: **skip entirely if the project is changelog-exempt** (personal/infra, no consumers) or has
-no releases. Otherwise compare entries against the range since the last release —
+no releases. Otherwise compare entries against the range since the last release:
 `git describe --tags --abbrev=0` gives the last tag, but **it errors when there are no tags**; fall
 back to the whole history or the last release commit. Watch for per-package tag prefixes in
 monorepos and for shallow CI clones with no tags fetched.
 
-Write entries from the consumer's side — what they can now do, what broke, what to migrate to.
+Write entries from the consumer's side: what they can now do, what broke, what to migrate to.
 Backfilling old entries from commit messages produces plausible fiction; reconstruct only what the
 commits genuinely support and flag the rest.
