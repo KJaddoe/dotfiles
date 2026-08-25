@@ -8,13 +8,13 @@
 The status bar was `tmux-powerline` running its bundled `default` theme, whose segment colours
 (148/33/24/29/89/167/137/37/136) bear no relation to anything else on the machine. nvim runs
 `tokyonight-night`. The obvious fix was a `tmux-powerline` user theme in matching colours, and that
-was built first — it worked, and it exposed why the plugin was the wrong foundation.
+was built first: it worked, and it exposed why the plugin was the wrong foundation.
 
 Three limits, each verified against the plugin's source rather than assumed:
 
 - **It owns only a third of the surface.** `tmux-powerline` sets `status-left`, `status-right` and
   the two window formats. `pane-border-style`, `pane-active-border-style`, `mode-style` and
-  `copy-mode-current-match-style` were never touched, so they sat at tmux's ANSI defaults — a green
+  `copy-mode-current-match-style` were never touched, so they sat at tmux's ANSI defaults, a green
   pane border, a yellow copy-mode selection, a magenta search match. The bar could match the editor
   exactly while every other tmux surface clashed with it.
 - **Config is split and silently coupled.** Settings live in `config.sh`, colours and segments in a
@@ -29,14 +29,14 @@ One assumption did not survive checking, and it was not a reason to leave: `tmux
 side. Performance was never the problem.
 
 Meanwhile tmux is 3.5a, whose native formats express everything the bar displays, and
-`tokyonight.nvim` ships `extras/tmux/tokyonight_night.tmux` — plain tmux options generated from the
+`tokyonight.nvim` ships `extras/tmux/tokyonight_night.tmux`, plain tmux options generated from the
 same palette source as the editor colorscheme.
 
 ## Decision
 
 The status bar is native tmux configuration in `tmux/tmux.conf`, placed after the `run` line that
 loads TPM so that plugin defaults cannot override it. Anything requiring a shell is a standalone
-script in `bin/` — `tmux-battery` and `tmux-git-branch` — invoked from `#()`.
+script in `bin/` (`tmux-battery` and `tmux-git-branch`), invoked from `#()`.
 
 The palette is tokyonight-night, and it is applied to every surface tmux exposes, not just the bar:
 pane borders, copy mode, search matches and messages included. Ghostty is set to its built-in
@@ -58,7 +58,7 @@ Rejected:
 - One file to read, and every tmux surface is themed rather than a third of them.
 - Two scripts to maintain. They are resolved through `$PATH`, so a tmux server started without
   `bin/` in its environment renders the branch and battery as empty rather than failing loudly.
-  Silent degradation is right for a status bar and wrong when debugging one — check `$PATH` first.
+  Silent degradation is right for a status bar and wrong when debugging one, so check `$PATH` first.
 - `#()` runs both helpers on every status refresh (`status-interval 5`).
 - Reverting means restoring `tmux/tmux-powerline.config.sh` from git history and re-adding the
   `@plugin` line; the TPM checkout re-clones on demand.
