@@ -148,6 +148,15 @@ class TestPassthrough(unittest.TestCase):
         """git status is untouched."""
         self.assertIsNone(run_hook("git status -sb"))
 
+    def test_heredoc_body_mentioning_a_commit(self):
+        """A script written via heredoc is data, not a commit."""
+        self.assertIsNone(run_hook("python3 - <<'PY'\n# git commit -m x\nPY"))
+
+    def test_command_after_heredoc_still_gated(self):
+        """A real commit following a heredoc is still caught."""
+        cmd = "cat > x.txt <<'EOF'\nhello\nEOF\ngit commit -m 'x'"
+        self.assertEqual(run_hook(cmd)["permissionDecision"], "ask")
+
     def test_malformed_payload(self):
         """Garbage on stdin exits quietly rather than crashing the tool call."""
         result = subprocess.run(

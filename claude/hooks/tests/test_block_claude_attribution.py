@@ -89,6 +89,15 @@ class TestBlocks(unittest.TestCase):
         """`git -C dir commit` is still inspected."""
         self.assertEqual(run_hook(f"git -C /tmp commit -m '{TRAILER}'"), 2)
 
+    def test_heredoc_commit_message(self):
+        """A trailer hidden in a heredoc commit message is still blocked.
+
+        Heredoc bodies are ignored when deciding WHAT is being invoked, but the invocation is on
+        the command line here, so the message content must still be read.
+        """
+        cmd = f"git commit -F - <<'MSG'\nfeat: x\n\n{TRAILER}\nMSG"
+        self.assertEqual(run_hook(cmd), 2)
+
 
 class TestAllows(unittest.TestCase):
     """Legitimate commands must pass through untouched."""
@@ -108,6 +117,35 @@ class TestAllows(unittest.TestCase):
     def test_unrelated_bash(self):
         """Unrelated shell commands are ignored."""
         self.assertEqual(run_hook("ls -la"), 0)
+
+
+class TestHeredocBodiesAreData(unittest.TestCase):
+    """Regression: a script written via heredoc must not read as a git invocation.
+
+    The guard blocked its own maintenance: a `python3 - <<'PY'` heredoc whose body described
+    the patterns being guarded contained both a commit invocation and a `-S`, so writing the
+    tooling tripped the tooling.
+    """
+
+    def test_script_body_mentioning_a_commit(self):
+        """A heredoc body that talks about committing is not a commit."""
+        cmd = f"python3 - <<'PY'\n# git commit -S is what this blocks\nprint('{TRAILER}')\nPY"
+        self.assertEqual(run_hook(cmd), 0)
+
+    def test_document_body_mentioning_attribution(self):
+        """Writing documentation about the rule is not breaking the rule."""
+        cmd = f"cat > notes.md <<'EOF'\nNever use {TRAILER} in a git commit.\nEOF"
+        self.assertEqual(run_hook(cmd), 0)
+
+    def test_indented_heredoc(self):
+        """The `<<-` form is handled too."""
+        cmd = f"cat <<-EOF\n\tgit commit -S -m '{TRAILER}'\n\tEOF"
+        self.assertEqual(run_hook(cmd), 0)
+
+    def test_command_after_heredoc_still_inspected(self):
+        """Stripping a body must not swallow the commands that follow it."""
+        cmd = f"cat > x.txt <<'EOF'\nhello\nEOF\ngit commit -m '{TRAILER}'"
+        self.assertEqual(run_hook(cmd), 2)
 
 
 class TestReadOnlyGitNotBlocked(unittest.TestCase):
