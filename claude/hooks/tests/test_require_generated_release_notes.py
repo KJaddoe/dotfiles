@@ -14,6 +14,10 @@ from pathlib import Path
 
 HOOK_PATH = Path(__file__).resolve().parents[1] / "require-generated-release-notes.py"
 
+# Loading by file path does not put the hooks directory on sys.path, so the hook's
+# own `from _hookutil import ...` would fail without this.
+sys.path.insert(0, str(HOOK_PATH.parent))
+
 spec = importlib.util.spec_from_file_location("require_generated_release_notes", HOOK_PATH)
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
@@ -131,6 +135,20 @@ class TestMalformedInput(unittest.TestCase):
             timeout=20,
         )
         self.assertEqual(result.returncode, ALLOW)
+
+
+class TestHeredocBodiesAreData(unittest.TestCase):
+    """A heredoc body describing a release is not creating one."""
+
+    def test_script_body_mentioning_release_create(self):
+        """Writing a script that mentions the command is allowed."""
+        cmd = "cat > release.md <<'EOF'\nRun gh release create 1.0.0 by hand.\nEOF"
+        self.assertEqual(run_hook(cmd), ALLOW)
+
+    def test_command_after_heredoc_still_blocked(self):
+        """A real release following a heredoc is still caught."""
+        cmd = "cat > notes.md <<'EOF'\nhello\nEOF\ngh release create 1.0.0 --notes-file notes.md"
+        self.assertEqual(run_hook(cmd), BLOCK)
 
 
 if __name__ == "__main__":
