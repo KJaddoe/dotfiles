@@ -121,7 +121,7 @@ class DeletesGoneBranches(GitGoneTestCase):
 
 
 class LeavesLiveBranchesAlone(GitGoneTestCase):
-    """Branches that are not gone must survive — the destructive regression."""
+    """Branches that are not gone must survive: the destructive regression."""
 
     def test_keeps_branch_with_live_upstream(self):
         """A branch still present on the remote is never deleted."""

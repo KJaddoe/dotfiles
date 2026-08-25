@@ -25,7 +25,7 @@ is `c`. You can override this default in `~/.localrc`.
 ### Topical
 
 Everything's built around topic areas. If you're adding a new area to your
-forked dotfiles — say, "Erlang" — you can simply add a `erlang` directory and
+forked dotfiles (say, "Erlang") you can simply add a `erlang` directory and
 put files in there. Anything with an extension of `.zsh` will get automatically
 included into your shell.
 
@@ -85,7 +85,7 @@ with Dotbot, and executes every topic's `install.sh`.
 
 ## Symlinking
 
-Symlinking is handled by [Dotbot](https://github.com/anishathalye/dotbot) — it cleans dead links,
+Symlinking is handled by [Dotbot](https://github.com/anishathalye/dotbot), which cleans dead links,
 links the dotfiles into `$HOME`, and runs shell commands. Its configuration lives in
 `dotbot.conf.yaml`. See `docs/architecture.md` for why provisioning and symlinking are separate.
 
@@ -95,10 +95,10 @@ links the dotfiles into `$HOME`, and runs shell commands. Its configuration live
 every `install.sh` via `script/install`, and updates the zsh plugins.
 
 **This also runs automatically.** `autoupdate/install.sh` registers a crontab entry that runs
-`dot_update` **every two hours**, logging to `$TMPDIR/dot_update.log` — so a machine pulls and
+`dot_update` **every two hours**, logging to `$TMPDIR/dot_update.log`, so a machine pulls and
 re-applies dotfiles changes on its own. Remove the entry with `crontab -e` if you don't want that.
 
-Because it runs unattended, the update **fast-forwards or does nothing** — it never rewrites
+Because it runs unattended, the update **fast-forwards or does nothing**: it never rewrites
 history or touches work in progress. It skips the pull, and says so in the log, when:
 
 - you are not on the default branch;
@@ -112,8 +112,8 @@ That last case is a real rebase, and it stays a decision for a human at a termin
 
 ## Testing
 
-`script/test` is the end-to-end check. It is **destructive** — it copies the repo over `~/dotfiles`,
-overwrites your global git identity, and runs a full bootstrap — so it is meant for a throwaway
+`script/test` is the end-to-end check. It is **destructive**: it copies the repo over `~/dotfiles`,
+overwrites your global git identity, and runs a full bootstrap, so it is meant for a throwaway
 machine or CI, not your working setup.
 
 For the hook unit tests alone (safe to run anywhere), see `docs/architecture.md`.

@@ -2,7 +2,7 @@
 
 ## Project docs
 
-Durable structural knowledge lives in `docs/`. `docs/` is **not** auto-loaded — consult it by
+Durable structural knowledge lives in `docs/`. `docs/` is **not** auto-loaded, so consult it by
 relevance; don't read it wholesale for trivial changes.
 
 | Doc                     | Read when                                                                         |
@@ -13,7 +13,7 @@ relevance; don't read it wholesale for trivial changes.
 | `docs/decisions/`       | Changing or questioning a setup decision (ADRs)                                   |
 
 Precedence: the actual config and `dotbot.conf.yaml` / `_system/main.yml` are the source of
-truth; `docs/` can go stale — verify against them before relying, and fix docs that drift.
+truth; `docs/` can go stale, so verify against them before relying, and fix docs that drift.
 
 ## Conventions
 
@@ -22,7 +22,7 @@ truth; `docs/` can go stale — verify against them before relying, and fix docs
   point the git setting at the `~/.foo` home path (mirror `~/.gitignore`), not the in-repo path.
 - A topic folder is not automatically a symlink. Link a config into `$HOME` only when the tool
   actually discovers it from there by searching upward (editorconfig, prettier). A tool that reads
-  its config from the working directory only — `selene` — keeps it in its topic folder and gets
+  its config from the working directory only (`selene`) keeps it in its topic folder and gets
   `--config` passed explicitly; linking it to `~` would be dead config. Config that governs *this
   repo's own* sources rather than every project stays at the repo root (`pyproject.toml`,
   `.editorconfig`) and is not linked at all.

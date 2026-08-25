@@ -1,6 +1,6 @@
 #!/bin/sh
 # Enforces the format+lint half of the definition of done on staged files.
-# Checks only — never rewrites what you staged. Skip with SKIP_HOOKS=1.
+# Checks only, never rewrites what you staged. Skip with SKIP_HOOKS=1.
 # A tool runs only when it is installed AND the project configures it, so this
 # stays silent in repos that have not opted into a given toolchain.
 
@@ -30,7 +30,7 @@ report() {
 }
 
 # Secrets first: a leaked credential is the one mistake a later gate cannot undo.
-# Unlike every other tool here this needs no project config — a secret is never wanted.
+# Unlike every other tool here this needs no project config: a secret is never wanted.
 # betterleaks, not gitleaks: same authors, but gitleaks is feature-frozen upstream.
 if have betterleaks; then
     betterleaks git --staged >/dev/null 2>&1 ||
@@ -101,7 +101,7 @@ if [ -n "$sh_files" ] && have shellcheck; then
 fi
 
 # zsh has no formatter or linter that can parse it, so a syntax check is the only
-# gate available — and a parse error in a sourced file breaks every new shell.
+# gate available, and a parse error in a sourced file breaks every new shell.
 zsh_files=$(staged '\.zsh$|(^|/)\.?zshrc$|(^|/)\.?zshenv$')
 if [ -n "$zsh_files" ] && have zsh; then
     echo "$zsh_files" | while IFS= read -r f; do
@@ -160,7 +160,7 @@ notice() {
 }
 
 if [ -n "$(staged '(^|/)(package|package-lock)\.json$')" ]; then
-    notice "dependencies changed — run: npm audit"
+    notice "dependencies changed, run: npm audit"
 fi
 
 py_manifest=$(staged '(^|/)(requirements.*\.txt|Pipfile|poetry\.lock)$')
@@ -169,11 +169,11 @@ for f in $(staged '(^|/)pyproject\.toml$'); do
         py_manifest="$py_manifest $f"
 done
 if [ -n "$py_manifest" ]; then
-    notice "dependencies changed — run: pip-audit"
+    notice "dependencies changed, run: pip-audit"
 fi
 
 if [ -n "$(staged '\.(csproj|fsproj)$|(^|/)Directory\.Packages\.props$')" ]; then
-    notice "dependencies changed — run: dotnet list package --vulnerable --include-transitive"
+    notice "dependencies changed, run: dotnet list package --vulnerable --include-transitive"
 fi
 
 [ "$fail" -ne 0 ] && echo "pre-commit: fix, or SKIP_HOOKS=1 git commit … to bypass" >&2
