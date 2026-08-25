@@ -86,6 +86,9 @@ for these rules as FYI reference only; the binding text is HERE.
   LOCAL scratch (working tree or stash). Commit only what was explicitly named as a deliverable and
   don't bundle unrequested refactors — "commit X and build Y to test" means: commit X, build Y
   locally, nothing more.
+- NEVER use an em dash or an en dash, in prose or in files: a plain hyphen, or reword the sentence.
+  This covers your chat replies too, which is where I notice it.
+  `claude/hooks/block-typographic-dashes.py` enforces the file half; nothing can enforce the prose.
 - In Markdown, align table columns — pad every cell with trailing spaces so the pipes line up and the
   raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
 

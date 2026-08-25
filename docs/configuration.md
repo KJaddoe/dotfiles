@@ -131,6 +131,11 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   `search`, `status`, `browse`, and `gh project`'s `item-list`/`field-list`) pass through untouched,
   as does `gh issue develop` — it publishes only a branch name for an issue already being worked on.
   Also unconfigurable
+- `claude/hooks/block-typographic-dashes.py` - PreToolUse guard on `Write`/`Edit`/`NotebookEdit`,
+  no configuration. Refuses an edit that ADDS an em or en dash, judged on the delta rather than on
+  the file, so carrying an existing one through an unrelated edit is never blocked and a cleanup
+  pass is never blocked either. It cannot see the assistant's chat prose, which the rule covers
+  alone
 - `claude/hooks/pre-tool-memory.sh` — the wrapper `settings.json` invokes for PreToolUse; it execs
   `pre-tool-memory.py`, which SessionStart calls directly
 - `claude/hooks/tests/` — run every suite:
