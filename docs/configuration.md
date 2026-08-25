@@ -119,6 +119,10 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   `default`/`plan` mode and denies outright in `auto`, `acceptEdits`, `dontAsk` and `bypassPermissions`,
   where a prompt would be auto-approved — so committing from those modes means switching to `default`
   first. `bypassPermissions` ignores hook decisions entirely and cannot be gated by any hook
+- `claude/hooks/require-push-approval.py` — the same gate for `git push`, since a push is public and
+  cannot be amended away afterwards. The prompt names the branch, the baseline it is compared against,
+  the commits that would be published, and whether history is being rewritten. `--dry-run` publishes
+  nothing and is not gated. Also unconfigurable
 - `claude/hooks/pre-tool-memory.sh` — the wrapper `settings.json` invokes for PreToolUse; it execs
   `pre-tool-memory.py`, which SessionStart calls directly
 - `claude/hooks/tests/` — run every suite:

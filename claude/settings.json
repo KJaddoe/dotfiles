@@ -42,6 +42,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/require-commit-approval.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/require-push-approval.py",
+            "timeout": 10
           }
         ]
       }

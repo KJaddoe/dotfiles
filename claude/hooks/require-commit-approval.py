@@ -25,23 +25,19 @@ actually render:
 Deliberately unconfigurable — no env switch. An off-switch is the failure it exists to prevent.
 """
 
-import json
 import sys
 
 from _hookutil import (
     COMMIT_SUBCOMMAND,
+    approval_decision,
+    clip_summary,
+    emit_decision,
     read_bash_payload,
     repo_root,
     run_git,
     short_flag,
     strip_heredocs,
 )
-
-PROMPTING_MODES = {"default", "plan"}
-
-SUMMARY_LINE_LIMIT = 40
-
-RULE = "~/.claude/CLAUDE.md -> Working Preferences -> Git & GitHub"
 
 
 def sweeps_tracked(cmd):
@@ -54,19 +50,6 @@ def sweeps_tracked(cmd):
     :return: True when tracked-but-unstaged changes would be included
     """
     return "--all" in cmd or short_flag(cmd, "a")
-
-
-def clip(text):
-    """Trim a diff summary to a length that stays readable inside a prompt.
-
-    :param text: full summary text
-    :return: the text, truncated with a count of the omitted lines
-    """
-    lines = text.splitlines()
-    if len(lines) <= SUMMARY_LINE_LIMIT:
-        return text
-    hidden = len(lines) - SUMMARY_LINE_LIMIT
-    return "\n".join(lines[:SUMMARY_LINE_LIMIT] + [f"... {hidden} more lines"])
 
 
 def pending_summary(repo, cmd):
@@ -91,31 +74,7 @@ def pending_summary(repo, cmd):
 
     if not sections:
         return "Nothing staged — git reports no pending changes."
-    return clip("\n\n".join(sections))
-
-
-def decide(mode, summary):
-    """Build the permission decision for the session's mode.
-
-    :param mode: the session's reported permission mode
-    :param summary: summary of the pending change
-    :return: (permissionDecision, permissionDecisionReason) pair
-    """
-    if mode in PROMPTING_MODES:
-        reason = (
-            f"This commit needs your explicit approval ({RULE}).\n\n{summary}\n\n"
-            "Approve only if this is the change you reviewed."
-        )
-        return "ask", reason
-
-    reason = (
-        f"BLOCKED: permission mode is '{mode}', where an approval prompt is auto-approved, so "
-        f"this commit cannot be put to the user ({RULE}).\n\n"
-        f"{summary}\n\n"
-        "Show this change to the user, get explicit approval in the conversation, and re-run "
-        "the commit in 'default' permission mode."
-    )
-    return "deny", reason
+    return clip_summary("\n\n".join(sections))
 
 
 def main():
@@ -129,19 +88,8 @@ def main():
         sys.exit(0)
 
     summary = pending_summary(repo_root(data.get("cwd") or "."), code)
-    decision, reason = decide(data.get("permission_mode") or "default", summary)
-
-    print(
-        json.dumps(
-            {
-                "hookSpecificOutput": {
-                    "hookEventName": "PreToolUse",
-                    "permissionDecision": decision,
-                    "permissionDecisionReason": reason,
-                }
-            }
-        )
-    )
+    mode = data.get("permission_mode") or "default"
+    emit_decision(*approval_decision(mode, "commit", summary))
     sys.exit(0)
 
 
