@@ -481,21 +481,6 @@ require("lazy").setup({
     end,
   },
   {
-    "nvimdev/lspsaga.nvim",
-    config = function()
-      require("lspsaga").setup({
-        -- Show the code-action lightbulb as virtual text only; its gutter sign
-        -- (priority 40) otherwise hides lower-priority signs like dap
-        -- breakpoints in a single-width signcolumn.
-        lightbulb = { sign = false },
-      })
-    end,
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter", -- optional
-      "nvim-tree/nvim-web-devicons", -- optional
-    },
-  },
-  {
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
   },
