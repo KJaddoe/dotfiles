@@ -395,7 +395,6 @@ require("lazy").setup({
       "hrsh7th/cmp-nvim-lsp-signature-help",
       "L3MON4D3/LuaSnip",
       "saadparwaiz1/cmp_luasnip",
-      "f3fora/cmp-spell",
     },
   },
   {
@@ -472,7 +471,6 @@ require("lazy").setup({
     ft = { "markdown" },
     build = ":call mkdp#util#install()",
   },
-  { "psf/black" },
   {
     "catgoose/nvim-colorizer.lua",
     config = function()
