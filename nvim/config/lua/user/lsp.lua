@@ -248,12 +248,22 @@ local float_config = {
   prefix = "",
 }
 
+local diagnostic_icons = require("user.icons").diagnostics
+
 vim.diagnostic.config({
   underline = true,
   update_in_insert = false,
   virtual_text = false,
   severity_sort = true,
   float = float_config,
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = diagnostic_icons.Error,
+      [vim.diagnostic.severity.WARN] = diagnostic_icons.Warning,
+      [vim.diagnostic.severity.INFO] = diagnostic_icons.Information,
+      [vim.diagnostic.severity.HINT] = diagnostic_icons.Hint,
+    },
+  },
 })
 
 vim.lsp.handlers[ms.textDocument_hover] =
@@ -262,9 +272,3 @@ vim.lsp.handlers[ms.textDocument_signatureHelp] =
   vim.lsp.with(vim.lsp.handlers.signature_help, float_config)
 
 vim.hl.priorities.semantic_tokens = 95
-
--- diagnostic signs
-for name, icon in pairs(require("user.icons").diagnostics) do
-  local sign = "DiagnosticSign" .. name
-  vim.fn.sign_define(sign, { text = icon, texthl = sign, numhl = "" })
-end
