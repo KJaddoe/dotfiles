@@ -422,7 +422,6 @@ require("lazy").setup({
     end,
   },
   { "rafamadriz/friendly-snippets" },
-  { "folke/neodev.nvim", opts = {} },
   {
     "kylechui/nvim-surround",
     version = "*", -- Use for stability; omit to use `main` branch for the latest features
@@ -481,8 +480,11 @@ require("lazy").setup({
     end,
   },
   {
+    -- Replaces neodev, which hooked lspconfig's lua_ls.setup() and so never
+    -- applied to the native vim.lsp.config wiring this config uses.
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
+    opts = {},
   },
   {
     "stevearc/oil.nvim",
