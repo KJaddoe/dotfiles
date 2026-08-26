@@ -71,10 +71,14 @@ M.setup = function()
       end
       -- buffer-local keymaps for any client that offers navigation; keymaps
       -- used to be wired per-server via on_attach, which silently skipped
-      -- buffers whose server was configured elsewhere or failed to start
+      -- buffers whose server was configured elsewhere or failed to start.
+      -- codeAction is in the list because on_attach gates its source-action
+      -- maps on the kinds a client advertises, and a linter such as eslint
+      -- offers neither definition nor hover to get itself here.
       if
         client:supports_method(ms.textDocument_definition, args.buf)
         or client:supports_method(ms.textDocument_hover, args.buf)
+        or client:supports_method(ms.textDocument_codeAction, args.buf)
       then
         require("lsp_keymaps").on_attach(args.buf)
       end

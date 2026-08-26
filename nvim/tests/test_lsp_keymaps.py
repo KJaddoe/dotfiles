@@ -29,10 +29,12 @@ PROBE = """
 local deadline = vim.uv.now() + {timeout}
 local function poll()
   local maps = {{}}
-  for _, m in ipairs(vim.api.nvim_buf_get_keymap(0, "n")) do
-    maps[m.lhs] = m.desc or ""
+  for _, mode in ipairs({{ "n", "v" }}) do
+    for _, m in ipairs(vim.api.nvim_buf_get_keymap(0, mode)) do
+      maps[mode .. ":" .. m.lhs] = m.desc or ""
+    end
   end
-  if maps["gd"] or vim.uv.now() > deadline then
+  if maps["n:gd"] or vim.uv.now() > deadline then
     local pairs_out = {{}}
     for lhs, desc in pairs(maps) do
       table.insert(pairs_out, lhs .. "\\t" .. desc)
@@ -107,16 +109,16 @@ class BindsNavigation(LspKeymapCase):
             ("gD", "Go to declaration"),
         ):
             with self.subTest(lhs=lhs):
-                self.assertEqual(self.maps.get(lhs), desc)
+                self.assertEqual(self.maps.get("n:" + lhs), desc)
 
     def test_call_hierarchy_is_bound(self):
         """Call hierarchy is reachable; it used to be bound nowhere."""
-        self.assertEqual(self.maps.get(" li"), "Incoming calls")
-        self.assertEqual(self.maps.get(" lo"), "Outgoing calls")
+        self.assertEqual(self.maps.get("n: li"), "Incoming calls")
+        self.assertEqual(self.maps.get("n: lo"), "Outgoing calls")
 
     def test_combined_finder_is_bound(self):
         """The combined trouble panel is reachable."""
-        self.assertEqual(self.maps.get(" lf"), "LSP finder (all)")
+        self.assertEqual(self.maps.get("n: lf"), "LSP finder (all)")
 
 
 class SurfacesInWhichKey(LspKeymapCase):
@@ -125,7 +127,24 @@ class SurfacesInWhichKey(LspKeymapCase):
     def test_g_prefix_has_a_which_key_trigger(self):
         """which-key's automatic trigger detection misses `g`, so on_attach names
         it explicitly. Without that registration the popup never lists gd/gr/gi."""
-        self.assertEqual(self.maps.get("g"), "which-key-trigger")
+        self.assertEqual(self.maps.get("n:g"), "which-key-trigger")
+
+
+class ReachesRangeCodeActions(LspKeymapCase):
+    """Code actions must be reachable from a selection, not just the cursor."""
+
+    def test_code_action_is_bound_in_visual_mode(self):
+        """TypeScript's extract refactors are only offered for a selected range,
+        so a normal-mode-only map cannot reach them at all."""
+        self.assertEqual(self.maps.get("n: ca"), "Code action")
+        self.assertEqual(self.maps.get("v: ca"), "Code action")
+
+    def test_source_actions_are_gated_on_the_server(self):
+        """Source-kind maps only exist where a client advertises the kind. Lua
+        has no eslint or TypeScript source actions, so none of them bind here."""
+        for lhs in ("n: cf", "n: cm", "n: cu"):
+            with self.subTest(lhs=lhs):
+                self.assertNotIn(lhs, self.maps)
 
 
 class LeavesGlobalMapsAlone(LspKeymapCase):
@@ -133,7 +152,7 @@ class LeavesGlobalMapsAlone(LspKeymapCase):
 
     def test_leader_d_is_not_shadowed(self):
         """`<leader>D` stays the global blackhole delete, not type definition."""
-        self.assertNotIn(" D", self.maps)
+        self.assertNotIn("n: D", self.maps)
 
 
 if __name__ == "__main__":
