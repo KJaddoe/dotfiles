@@ -1,39 +1,40 @@
-# nvim LSP navigation
+# nvim LSP
 
-Where each code-navigation request is bound, and what to expect when one returns nothing.
+How code navigation, code actions and diagnostics are wired, and what to expect when a
+request returns nothing.
 
 Buffer-local maps, attached by `nvim/config/lua/lsp_keymaps.lua` on `LspAttach` for any client
 that serves definitions or hover. Global maps live in `nvim/config/lua/user/keymaps.lua`.
 
 ## Keymaps
 
-| Key          | Does                                        | Backend               |
-|--------------|---------------------------------------------|-----------------------|
-| `gd`         | Go to definition                            | telescope             |
-| `gr`         | References                                  | trouble               |
-| `gi`         | Implementations                             | trouble               |
-| `gy`         | Type definition                             | telescope             |
-| `gD`         | Go to declaration                           | `vim.lsp.buf`         |
-| `gs`         | Signature help                              | `vim.lsp.buf`         |
-| `K`          | Hover docs                                  | `vim.lsp.buf`         |
-| `<leader>li` | Incoming calls (who calls this)             | trouble               |
-| `<leader>lo` | Outgoing calls (what this calls)            | trouble               |
-| `<leader>lf` | Combined panel: all of the above at once    | trouble `lsp` mode    |
-| `<leader>ls` | Document symbols                            | telescope             |
-| `<leader>lS` | Workspace symbols                           | telescope             |
-| `<leader>v`  | Definition in a vertical split              | `vim.lsp.buf`         |
+| Key          | Does                                     | Backend            |
+|--------------|------------------------------------------|--------------------|
+| `gd`         | Go to definition                         | telescope          |
+| `gr`         | References                               | trouble            |
+| `gi`         | Implementations                          | trouble            |
+| `gy`         | Type definition                          | telescope          |
+| `gD`         | Go to declaration                        | `vim.lsp.buf`      |
+| `gs`         | Signature help                           | `vim.lsp.buf`      |
+| `K`          | Hover docs                               | `vim.lsp.buf`      |
+| `<leader>li` | Incoming calls (who calls this)          | trouble            |
+| `<leader>lo` | Outgoing calls (what this calls)         | trouble            |
+| `<leader>lf` | Combined panel: all of the above at once | trouble `lsp` mode |
+| `<leader>ls` | Document symbols                         | telescope          |
+| `<leader>lS` | Workspace symbols                        | telescope          |
+| `<leader>v`  | Definition in a vertical split           | `vim.lsp.buf`      |
 
 Call hierarchy sits under `<leader>l` rather than the `g` prefix on purpose: `gc` is
 Comment.nvim's operator, so `gci` / `gco` would break commenting.
 
 ## Code actions
 
-| Key          | Mode          | Does                                             |
-|--------------|---------------|--------------------------------------------------|
-| `<leader>ca` | normal-visual | Code actions for the cursor or the selection     |
-| `<leader>cf` | normal        | Fix all auto-fixable eslint problems             |
-| `<leader>cm` | normal        | Add missing imports                              |
-| `<leader>cu` | normal        | Remove unused imports                            |
+| Key          | Mode          | Does                                         |
+|--------------|---------------|----------------------------------------------|
+| `<leader>ca` | normal-visual | Code actions for the cursor or the selection |
+| `<leader>cf` | normal        | Fix all auto-fixable eslint problems         |
+| `<leader>cm` | normal        | Add missing imports                          |
+| `<leader>cu` | normal        | Remove unused imports                        |
 
 `<leader>ca` is mapped in visual mode as well as normal, and that is the point: TypeScript
 offers its extract refactors (extract to constant, to a method, to a function) only for a
@@ -72,6 +73,25 @@ result.
 
 trouble sets `auto_jump` on its location modes, so a request with exactly one result jumps
 straight there instead of opening a panel. A panel means there was more than one.
+
+## Diagnostics
+
+| Key          | Does                                            |
+|--------------|-------------------------------------------------|
+| `]d` / `[d`  | Next / previous diagnostic, centred             |
+| `<leader>gl` | Full message for the current line in a float    |
+| `<leader>cd` | Every diagnostic in the workspace, in trouble   |
+| `<leader>co` | Quickfix list, in trouble                       |
+| `<leader>cc` | Close the trouble panel and the quickfix window |
+
+`virtual_text` is off and `virtual_lines` is set to `{ current_line = true }`: the full message
+renders inline, but only under the line the cursor is on, so a file full of diagnostics does not
+become unreadable. Because the message is already on screen when you land, `]d` and `[d` do not
+open the float that the old `goto_next`/`goto_prev` defaulted to.
+
+Navigation goes through `vim.diagnostic.jump()`. `goto_next`/`goto_prev` are deprecated and are
+removed in nvim 0.13; `nvim/tests/test_lsp_keymaps.py` fails if they come back, and likewise if
+`DiagnosticSign*` signs are defined through `sign_define` instead of `vim.diagnostic.config`.
 
 ## Discoverability
 

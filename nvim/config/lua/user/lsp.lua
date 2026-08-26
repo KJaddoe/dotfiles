@@ -254,6 +254,9 @@ vim.diagnostic.config({
   underline = true,
   update_in_insert = false,
   virtual_text = false,
+  -- Full message inline, but only under the cursor's line: the visibility
+  -- virtual_text gives without turning every diagnostic into screen clutter.
+  virtual_lines = { current_line = true },
   severity_sort = true,
   float = float_config,
   signs = {

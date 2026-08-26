@@ -155,5 +155,38 @@ class LeavesGlobalMapsAlone(LspKeymapCase):
         self.assertNotIn("n: D", self.maps)
 
 
+class AvoidsDeprecatedApis(unittest.TestCase):
+    """Deprecated nvim APIs must not creep back into the config.
+
+    This one needs no nvim: it reads the config files directly, so it still runs
+    where the rest of the suite skips.
+    """
+
+    def lua_sources(self):
+        """Yield every Lua file in the config as (path, text)."""
+        for path in sorted((CONFIG / "lua").rglob("*.lua")):
+            yield path, path.read_text(encoding="utf-8")
+
+    def test_diagnostic_navigation_uses_jump(self):
+        """goto_prev/goto_next are removed in nvim 0.13; jump() replaces them."""
+        for path, text in self.lua_sources():
+            for banned in ("vim.diagnostic.goto_prev", "vim.diagnostic.goto_next"):
+                with self.subTest(path=path.name, api=banned):
+                    self.assertNotIn(banned, text)
+
+    def test_diagnostic_signs_go_through_diagnostic_config(self):
+        """Defining DiagnosticSign* via sign_define is deprecated, and the names
+        it derived from the icon table (Warning, Information) are not the ones
+        nvim reads (Warn, Info), so those icons never applied.
+
+        sign_define itself is fine and dap.lua uses it for breakpoints; only
+        diagnostic signs are deprecated, so this bans the pairing.
+        """
+        for path, text in self.lua_sources():
+            if "sign_define" in text:
+                with self.subTest(path=path.name):
+                    self.assertNotIn("DiagnosticSign", text)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
