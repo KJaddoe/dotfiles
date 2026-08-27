@@ -20,6 +20,8 @@ for these rules as FYI reference only; the binding text is HERE.
 - Before a destructive or hard-to-reverse operation (DB restore/overwrite, bulk file delete, git history
   rewrite, a migration against a shared/production DB), state the plan, VERIFY the target and inputs first
   (confirm you have the right backup/file/DB), and get explicit confirmation, even for purely local actions.
+  `claude/hooks/require-destructive-approval.py` enforces this; it is a denylist, so a destructive command
+  it does not recognise still needs the same confirmation from you.
 - When executing an implementation plan, DEFAULT to inline execution (executing-plans skill) over
   subagent-driven; only go subagent-driven if the user asks for it.
 - Terminal tooling: the shell stays command-driven with plain `git`/`gh`/`kubectl` etc. Don't propose or

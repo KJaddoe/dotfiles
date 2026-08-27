@@ -14,6 +14,11 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 - `~/.claude/projects/<mapped-path>/memory/` is **local-only**, not part of any git repo, never pushed.
   Fine for project specifics, but it still auto-injects into context, so keep real secrets/PII out of it
   too (see CLAUDE.md → "Confidentiality & secrets").
+- 2026-08-27: `permissions.defaultMode` is `auto` (user settings, via the dotfiles symlink). Reads
+  and local edits no longer prompt; commits, pushes, `gh` writes and destructive commands are DENIED
+  rather than asked, because `approval_decision` treats only `default`/`plan` as prompting modes.
+  Switching to `default` is the review checkpoint. `require-destructive-approval.py` was added
+  first, to cover what the permission prompt had been guarding by accident. See ADR 0004.
 - A PreToolUse hook (`~/.claude/hooks/block-claude-attribution.py`) hard-blocks any git command that
   records a message, and any `gh` command that writes to GitHub, when it carries Claude attribution:
   the trailers, the session link, or `--gpg-sign` on a commit. If a commit or a `gh issue create` is
