@@ -18,6 +18,16 @@ subcommand cannot be parsed out of the flags, the command is gated rather than a
 creates a real issue with no write verb anywhere in it. `gh api` defaults to GET, but adding
 `-f/--raw-field`, `-F/--field` or `--input` makes it a POST unless `--method GET` says otherwise.
 
+`gh api graphql` is the one endpoint that rule cannot classify, and gating it was a false positive
+rather than a safe default: GraphQL is always a POST and always carries its document in a field
+flag, so every read looked like a write, and every project-board read (`projectV2` has no REST
+endpoint) asked for approval. Reading GitHub has to stay friction-free or the gate gets switched
+off, so a graphql call is classified by the OPERATION its document declares instead. That is not a
+weaker test: an executable document's top level holds only operations and fragments, and the one
+unlabelled form, the `{ ... }` shorthand, is a query by definition. Ambiguity fails closed here as
+everywhere else: a document passed by file, or hidden behind a shell variable, cannot be read at
+all, so it is gated.
+
 Two carve-outs exist, both for steps ~/.claude/CLAUDE.md mandates at the START of issue work.
 Gating a step the rules require every time would only teach the user to click through prompts.
 
