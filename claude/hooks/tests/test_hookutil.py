@@ -134,6 +134,96 @@ class GhClassification(unittest.TestCase):
         self.assertTrue(hookutil.gh_writes_to_github(["--some-new-flag"]))
 
 
+class GhGraphqlClassification(unittest.TestCase):
+    """GraphQL is classified by operation type, because the method rule cannot see past it.
+
+    Every `gh api graphql` call is a POST carrying `-f query=`, so classifying it by method gated
+    every project-board read: `projectV2` has no REST endpoint. What the call actually does is in
+    the document, and a document that is not a readable literal still fails closed.
+    """
+
+    def writes(self, document, flag="-f"):
+        """Report whether a graphql call carrying `document` counts as a write.
+
+        :param document: the GraphQL document passed as the query field
+        :param flag: the field flag carrying it
+        :return: True when the invocation would be gated
+        """
+        return hookutil.gh_writes_to_github(["api", "graphql", flag, f"query={document}"])
+
+    def test_query_operation_reads(self):
+        """The named read a board query is made of."""
+        self.assertFalse(self.writes("query Board { organization { login } }"))
+
+    def test_anonymous_shorthand_reads(self):
+        """The `{ ... }` shorthand is a query by definition."""
+        self.assertFalse(self.writes("{ viewer { login } }"))
+
+    def test_variable_definitions_read(self):
+        """A parameterised query is still a query, `$` and all."""
+        self.assertFalse(
+            self.writes("query B($org: String!, $after: String) { rateLimit { cost } }")
+        )
+
+    def test_mutation_operation_writes(self):
+        """Changing a board field is a write."""
+        self.assertTrue(
+            self.writes("mutation { updateProjectV2ItemFieldValue { clientMutationId } }")
+        )
+
+    def test_subscription_is_not_a_read(self):
+        """Only a query reads; anything else is gated."""
+        self.assertTrue(self.writes("subscription { events { id } }"))
+
+    def test_mutation_behind_a_fragment_writes(self):
+        """The operation keyword is found wherever it sits at the top level."""
+        self.assertTrue(self.writes("fragment F on Issue { id } mutation Go { closeIssue { id } }"))
+
+    def test_second_operation_writes(self):
+        """A read operation first does not license the write that follows it."""
+        self.assertTrue(
+            self.writes("query A { viewer { login } } mutation B { addComment { id } }")
+        )
+
+    def test_mutation_shaped_field_name_reads(self):
+        """A field inside a selection set is not an operation keyword."""
+        self.assertFalse(self.writes("query { node { clientMutationId mutationLog } }"))
+
+    def test_the_word_in_a_string_argument_reads(self):
+        """A string literal is data, not an operation."""
+        self.assertFalse(self.writes('query { search(query: "mutation", type: ISSUE) { id } }'))
+
+    def test_the_word_in_a_comment_reads(self):
+        """A comment is not an operation either."""
+        self.assertFalse(self.writes("# mutation\nquery { viewer { login } }"))
+
+    def test_shell_expansion_fails_closed(self):
+        """The hook cannot know what a variable holds, so it does not guess."""
+        self.assertTrue(self.writes("$QUERY"))
+        self.assertTrue(self.writes("$OP { viewer { login } }"))
+
+    def test_document_from_a_file_fails_closed(self):
+        """`-F query=@file` reads the document from disk, where the hook cannot follow."""
+        self.assertTrue(self.writes("@board.graphql", flag="-F"))
+
+    def test_input_flag_fails_closed(self):
+        """--input carries the document in a file or on stdin."""
+        self.assertTrue(hookutil.gh_writes_to_github(["api", "graphql", "--input", "q.json"]))
+
+    def test_missing_query_field_fails_closed(self):
+        """Nothing to classify is no reason to allow."""
+        self.assertTrue(hookutil.gh_writes_to_github(["api", "graphql"]))
+
+    def test_method_flag_does_not_decide(self):
+        """gh sends graphql as a POST, so the method says nothing about the operation."""
+        tokens = ["api", "graphql", "--method", "POST", "-f", "query={ viewer { login } }"]
+        self.assertFalse(hookutil.gh_writes_to_github(tokens))
+
+    def test_rest_endpoint_keeps_the_method_rule(self):
+        """Only the graphql endpoint changes; a REST call with fields is still a write."""
+        self.assertTrue(hookutil.gh_writes_to_github(["api", "repos/o/n", "-f", "title=x"]))
+
+
 class GhCommandPosition(unittest.TestCase):
     """`gh` counts as an invocation only where a command can actually start.
 

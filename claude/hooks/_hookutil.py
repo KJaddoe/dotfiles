@@ -125,6 +125,26 @@ GH_API_PAYLOAD_FLAGS = {"-f", "--raw-field", "-F", "--field", "--input"}
 
 GH_METHOD_FLAGS = {"-X", "--method"}
 
+# `gh api graphql` is the one endpoint the method rule cannot classify. GraphQL is always a POST
+# and always carries its document in a field flag, so classifying by method gated every read; the
+# board queries this repo's workflow depends on go through it, because `projectV2` has no REST
+# endpoint. The operation type in the document decides instead.
+GRAPHQL_QUERY_FIELD = "query"
+
+# String literals and comments, lexed together so whichever opens first wins: a `#` inside a
+# string is not a comment, and a quote inside a comment does not open a string.
+GRAPHQL_IGNORED = re.compile(r'"""(?:.|\n)*?"""|"(?:\\.|[^"\\\n])*"|#[^\n]*')
+
+# What may remain at a document's top level once selection sets and variable definitions are
+# blanked: operation and fragment keywords, the names they carry, and directives. Anything else
+# (a `$` from an unexpanded shell variable, a backtick, a path) means this is not a document the
+# hook can read, and an unreadable document fails closed.
+GRAPHQL_TOP_LEVEL = re.compile(r"(?:[A-Za-z_][A-Za-z0-9_]*|@[A-Za-z_][A-Za-z0-9_]*|[\s,])*")
+
+# An executable document's top level holds only operations and fragments, so a keyword scan there
+# is exact. `subscription` is included because only a query reads.
+GRAPHQL_WRITE_OPERATION = re.compile(r"\b(?:mutation|subscription)\b")
+
 
 def clip_summary(text):
     """Trim a summary to a length that stays readable inside a permission prompt.
@@ -360,12 +380,84 @@ def gh_subcommand(tokens):
     return command, verb
 
 
+def graphql_top_level(document):
+    """Blank everything nested inside a GraphQL document, leaving its top level.
+
+    Selection sets and variable definitions are where a document's data lives: a field named
+    `clientMutationId`, an argument spelled `query:`, a `$cursor` variable. None of them say what
+    the operation is, and all of them are noise a keyword scan would trip over.
+
+    :param document: the GraphQL document text
+    :return: the document with braced and parenthesised groups replaced by spaces
+    """
+    text = GRAPHQL_IGNORED.sub(" ", document)
+    kept = []
+    braces = 0
+    parens = 0
+    for char in text:
+        if char == "{":
+            braces += 1
+        elif char == "}":
+            braces = max(braces - 1, 0)
+        elif braces == 0 and char == "(":
+            parens += 1
+        elif braces == 0 and char == ")":
+            parens = max(parens - 1, 0)
+        elif braces == 0 and parens == 0:
+            kept.append(char)
+            continue
+        kept.append(" ")
+    return "".join(kept)
+
+
+def graphql_document_writes(document):
+    """Report whether a GraphQL document contains anything but read operations.
+
+    :param document: the GraphQL document text
+    :return: True when it writes, or cannot be read as a document at all
+    """
+    if "{" not in document:
+        return True
+
+    top_level = graphql_top_level(document)
+    if not GRAPHQL_TOP_LEVEL.fullmatch(top_level):
+        return True
+
+    return bool(GRAPHQL_WRITE_OPERATION.search(top_level))
+
+
+def gh_graphql_writes(tokens):
+    """Report whether a `gh api graphql` invocation would change anything.
+
+    The document has to be a literal the hook can read. Passed by file (`--input`, `-F query=@f`)
+    or behind a shell variable, what it does is unknowable here, so it is gated.
+
+    :param tokens: gh arguments, excluding `gh`
+    :return: True when the request would write
+    """
+    if any(token.partition("=")[0] == "--input" for token in tokens):
+        return True
+
+    documents = [
+        value.partition("=")[2]
+        for value in flag_values(tokens, GH_API_PAYLOAD_FLAGS)
+        if value.partition("=")[0] == GRAPHQL_QUERY_FIELD
+    ]
+    if not documents:
+        return True
+
+    return any(graphql_document_writes(document) for document in documents)
+
+
 def gh_api_writes(tokens):
     """Report whether a `gh api` invocation sends anything other than a GET.
 
     :param tokens: gh arguments, excluding `gh`
     :return: True when the request would write
     """
+    if any(token.lstrip("/") == "graphql" for token in tokens):
+        return gh_graphql_writes(tokens)
+
     for index, token in enumerate(tokens):
         if token in GH_METHOD_FLAGS and index + 1 < len(tokens):
             return tokens[index + 1].upper() != "GET"

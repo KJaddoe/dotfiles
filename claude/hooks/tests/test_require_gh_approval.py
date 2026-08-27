@@ -160,6 +160,31 @@ class TestApiIsClassifiedByMethod(unittest.TestCase):
         self.assertIsNone(run_hook("gh api --method GET search/issues -f q=is:open"))
 
 
+class TestGraphqlIsClassifiedByOperation(unittest.TestCase):
+    """A board read is a POST with a field flag, and must not be gated for looking like one."""
+
+    BOARD_QUERY = (
+        "gh api graphql -f query='query($org: String!) { organization(login: $org) "
+        "{ projectV2(number: 1) { items(first: 50) { nodes { id } } } } }' -f org=owner"
+    )
+
+    def test_board_read_is_not_gated(self):
+        """The regression: reading a project board asked for approval every time."""
+        self.assertIsNone(run_hook(self.BOARD_QUERY))
+
+    def test_board_write_is_gated(self):
+        """Setting a board field still needs approval."""
+        cmd = (
+            "gh api graphql -f query='mutation { updateProjectV2ItemFieldValue"
+            "(input: {}) { clientMutationId } }'"
+        )
+        self.assertEqual(run_hook(cmd)["permissionDecision"], "ask")
+
+    def test_document_the_hook_cannot_read_is_gated(self):
+        """A document behind a shell variable is not classifiable, so it fails closed."""
+        self.assertEqual(run_hook('gh api graphql -f query="$QUERY"')["permissionDecision"], "ask")
+
+
 class TestReadsPassThrough(unittest.TestCase):
     """Reading GitHub must stay friction-free."""
 
