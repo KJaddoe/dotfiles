@@ -14,8 +14,10 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 - `~/.claude/projects/<mapped-path>/memory/` is **local-only**, not part of any git repo, never pushed.
   Fine for project specifics, but it still auto-injects into context, so keep real secrets/PII out of it
   too (see CLAUDE.md → "Confidentiality & secrets").
-- A PreToolUse hook (`~/.claude/hooks/block-claude-attribution.py`) hard-blocks any `git commit` that
-  contains Claude attribution or `--gpg-sign`. If a commit is unexpectedly blocked, that's why.
+- A PreToolUse hook (`~/.claude/hooks/block-claude-attribution.py`) hard-blocks any git command that
+  records a message, and any `gh` command that writes to GitHub, when it carries Claude attribution:
+  the trailers, the session link, or `--gpg-sign` on a commit. If a commit or a `gh issue create` is
+  unexpectedly blocked, that's why. A body passed by file (`-F body.md`) is out of its reach.
 
 ## Commits & PRs
 

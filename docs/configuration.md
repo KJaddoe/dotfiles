@@ -114,7 +114,10 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
 - `claude/hooks/_hookutil.py`: git helpers, command patterns, and the `gh` write-classification,
   shared by the Stop hooks, the approval gates and the attribution guard; internal, never invoked
   by `settings.json`
-- `claude/hooks/block-claude-attribution.py`: PreToolUse guard, no configuration
+- `claude/hooks/block-claude-attribution.py`: PreToolUse guard, no configuration. It scans the git
+  subcommands that record a message and the `gh` commands that write to GitHub, so a trailer is
+  caught in a commit message and in an issue or PR body alike. A body passed by file
+  (`gh pr create -F body.md`) is out of reach, since the text never appears in the command
 - `claude/hooks/require-commit-approval.py`: PreToolUse gate that puts every commit to the user for
   approval; deliberately unconfigurable, since an off-switch is the failure it prevents. It prompts in
   `default`/`plan` mode and denies outright in `auto`, `acceptEdits`, `dontAsk` and `bypassPermissions`,
