@@ -80,6 +80,46 @@ class CommandPatterns(unittest.TestCase):
         self.assertIn("cat <<'EOF'", hookutil.strip_heredocs("cat <<'EOF'\ndangling"))
 
 
+class GhClassification(unittest.TestCase):
+    """The gh helpers shared by require-gh-approval and block-claude-attribution.
+
+    They moved here once a second hook needed them. These assert the shared contract both
+    callers rely on: which invocations a command contains, and which of them write.
+    """
+
+    def test_invocations_found_across_separators(self):
+        """Each gh invocation in a compound command is returned separately."""
+        found = hookutil.gh_invocations("gh issue list && gh pr view 3")
+        self.assertEqual(found, [["issue", "list"], ["pr", "view", "3"]])
+
+    def test_subcommand_skips_global_flags(self):
+        """A global flag and its value are not mistaken for the subcommand."""
+        self.assertEqual(
+            hookutil.gh_subcommand(["--repo", "owner/name", "pr", "view"]), ("pr", "view")
+        )
+
+    def test_write_verb_is_a_write(self):
+        """Creating an issue writes."""
+        self.assertTrue(hookutil.gh_writes_to_github(["issue", "create", "-t", "x"]))
+
+    def test_read_verb_is_not_a_write(self):
+        """Listing issues does not write."""
+        self.assertFalse(hookutil.gh_writes_to_github(["issue", "list"]))
+
+    def test_issue_develop_is_carved_out(self):
+        """`gh issue develop` publishes only a branch name."""
+        self.assertFalse(hookutil.gh_writes_to_github(["issue", "develop", "7"]))
+
+    def test_api_is_classified_by_method(self):
+        """A plain `gh api` reads; field flags make it a write."""
+        self.assertFalse(hookutil.gh_writes_to_github(["api", "repos/o/n"]))
+        self.assertTrue(hookutil.gh_writes_to_github(["api", "repos/o/n", "-f", "title=x"]))
+
+    def test_unrecognised_subcommand_fails_closed(self):
+        """An unparseable invocation is treated as a write."""
+        self.assertTrue(hookutil.gh_writes_to_github(["--some-new-flag"]))
+
+
 class GitHelpers(unittest.TestCase):
     """run_git and repo_root against real repositories and real failures."""
 

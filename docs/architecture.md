@@ -41,8 +41,10 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   their switches (ADR 0002 covers why hooks rather than prose alone). `docs-coverage-floor.py` and
   `duplicate-symbols.py` also run standalone (`--path`), because a documentation coverage floor and
   a duplicated symbol are repo properties rather than session events, so CI can gate them too.
-  `_hookutil.py` holds the git helpers the Stop hooks share; the leading underscore marks it as
-  internal to the directory, and `settings.json` never invokes it. The repo-root `CLAUDE.md`
+  `_hookutil.py` holds what the hooks share: git helpers, shell-command patterns, the approval
+  decision shape, and the `gh` write-classification the gh gate and the attribution guard both
+  read; the leading underscore marks it as internal to the directory, and `settings.json` never
+  invokes it. The repo-root `CLAUDE.md`
   (this trial) is separate: it is repo-level project instructions, not the global config.
 
 ## Python tooling (hooks)

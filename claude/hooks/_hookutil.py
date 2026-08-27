@@ -2,9 +2,14 @@
 """Git helpers and command patterns shared by the hooks in this directory.
 
 The hooks keep needing the same handful of things: run a git command without letting a failure
-escape, resolve the repository root for the session's cwd, and recognise a commit invocation,
-and its short flags, inside a shell command. Each was duplicated across hooks before this
-module existed.
+escape, resolve the repository root for the session's cwd, recognise a commit invocation and its
+short flags inside a shell command, and classify what a `gh` invocation would do to GitHub. Each
+was duplicated across hooks before this module existed.
+
+The `gh_*` helpers answer one question, "which gh invocations does this command contain and which
+of them write", for two callers that react to the answer differently: `require-gh-approval.py`
+puts a write to the user for approval, `block-claude-attribution.py` scans a write for attribution.
+The allowlist reasoning behind the classification lives in the former's module docstring.
 
 Importing this works because Python puts a script's OWN directory at the front of `sys.path`,
 and the hooks are invoked as `python3 ~/.claude/hooks/<name>.py`, so `~/.claude/hooks` leads
@@ -18,6 +23,7 @@ The leading underscore marks it as internal to the hooks directory: it is not a 
 
 import json
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -36,6 +42,67 @@ PROMPTING_MODES = {"default", "plan"}
 SUMMARY_LINE_LIMIT = 40
 
 RULE_REFERENCE = "~/.claude/CLAUDE.md -> Working Preferences"
+
+SHELL_SEPARATORS = re.compile(r"&&|\|\||;|\||\n")
+
+# Every top-level `gh` command, so the subcommand can be located without guessing which tokens
+# are flag values. A command absent from this set is unrecognised and therefore gated.
+GH_TOP_LEVEL = {
+    "alias",
+    "api",
+    "attestation",
+    "auth",
+    "browse",
+    "cache",
+    "codespace",
+    "completion",
+    "config",
+    "extension",
+    "gist",
+    "gpg-key",
+    "issue",
+    "label",
+    "org",
+    "pr",
+    "project",
+    "release",
+    "repo",
+    "ruleset",
+    "run",
+    "search",
+    "secret",
+    "ssh-key",
+    "status",
+    "variable",
+    "workflow",
+}
+
+# Top-level commands that only ever read.
+GH_READ_ONLY_COMMANDS = {"browse", "completion", "search", "status"}
+
+# Verbs that only read, whichever group they belong to. `clone` and `checkout` write locally
+# but publish nothing. `gh project` spells its read verbs with a hyphen, and every other
+# hyphenated project verb (item-create, field-delete, …) writes.
+GH_READ_ONLY_VERBS = {
+    "checkout",
+    "checks",
+    "clone",
+    "diff",
+    "download",
+    "field-list",
+    "item-list",
+    "list",
+    "status",
+    "view",
+    "watch",
+}
+
+# `gh issue develop` publishes a branch name and nothing else. See the module docstring.
+GH_ALLOWED_PAIRS = {("issue", "develop")}
+
+GH_API_PAYLOAD_FLAGS = {"-f", "--raw-field", "-F", "--field", "--input"}
+
+GH_METHOD_FLAGS = {"-X", "--method"}
 
 
 def clip_summary(text):
@@ -172,6 +239,82 @@ def short_flag(cmd, letter):
     :return: True when the letter is present as a short flag
     """
     return bool(re.search(rf"(?<![\w-])-[A-Za-z]*{re.escape(letter)}[A-Za-z]*(?![\w-])", cmd))
+
+
+def gh_invocations(cmd):
+    """Split a shell command into the argument list of each `gh` invocation it contains.
+
+    :param cmd: full shell command, heredoc bodies already stripped
+    :return: list of token lists, one per gh invocation, each excluding the `gh` itself
+    """
+    found = []
+    for chunk in SHELL_SEPARATORS.split(cmd):
+        try:
+            tokens = shlex.split(chunk)
+        except ValueError:
+            tokens = chunk.split()
+        for index, token in enumerate(tokens):
+            if token == "gh":
+                found.append(tokens[index + 1 :])
+                break
+    return found
+
+def gh_subcommand(tokens):
+    """Resolve the (command, verb) pair a gh invocation targets.
+
+    The command is matched against the known top-level set rather than taken positionally, so a
+    global flag and its value (`gh --repo X pr view`) cannot be mistaken for the subcommand.
+
+    :param tokens: gh arguments, excluding `gh`
+    :return: (command, verb) with either element empty when it cannot be resolved
+    """
+    command = next((token for token in tokens if token in GH_TOP_LEVEL), "")
+    if not command:
+        return "", ""
+
+    rest = tokens[tokens.index(command) + 1 :]
+    verb = next((token for token in rest if not token.startswith("-")), "")
+    return command, verb
+
+
+def gh_api_writes(tokens):
+    """Report whether a `gh api` invocation sends anything other than a GET.
+
+    :param tokens: gh arguments, excluding `gh`
+    :return: True when the request would write
+    """
+    for index, token in enumerate(tokens):
+        if token in GH_METHOD_FLAGS and index + 1 < len(tokens):
+            return tokens[index + 1].upper() != "GET"
+        if token.startswith("--method="):
+            return token.split("=", 1)[1].upper() != "GET"
+
+    return any(token.split("=", 1)[0] in GH_API_PAYLOAD_FLAGS for token in tokens)
+
+
+def gh_writes_to_github(tokens):
+    """Report whether a gh invocation would change anything on GitHub.
+
+    :param tokens: gh arguments, excluding `gh`
+    :return: True when the invocation writes
+    """
+    if not tokens:
+        return False
+
+    command, verb = gh_subcommand(tokens)
+    if not command:
+        return True
+
+    if command == "api":
+        return gh_api_writes(tokens)
+
+    if (command, verb) in GH_ALLOWED_PAIRS:
+        return False
+
+    if command in GH_READ_ONLY_COMMANDS:
+        return False
+
+    return verb not in GH_READ_ONLY_VERBS
 
 
 def run_git(repo, *args):
