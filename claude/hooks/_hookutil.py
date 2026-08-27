@@ -248,6 +248,35 @@ def strip_heredocs(cmd):
     return "\n".join(kept)
 
 
+def heredoc_bodies(cmd):
+    """Return the heredoc bodies in `cmd`: the content it feeds to a program.
+
+    The exact inverse of `strip_heredocs`. That one answers "what is being INVOKED" by discarding
+    the data; this answers "what is being WRITTEN" by keeping only the data. A guard that inspects
+    file CONTENT needs this, because content passed through a heredoc never reaches the Write tool
+    and so is invisible to a Write/Edit matcher.
+
+    :param cmd: full shell command, possibly multi-line
+    :return: list of heredoc bodies, delimiter lines excluded
+    """
+    lines = cmd.split("\n")
+    bodies = []
+    index = 0
+    while index < len(lines):
+        match = HEREDOC_START.search(lines[index])
+        index += 1
+        if not match:
+            continue
+        delimiter = match.group(2)
+        body = []
+        while index < len(lines) and lines[index].strip() != delimiter:
+            body.append(lines[index])
+            index += 1
+        index += 1
+        bodies.append("\n".join(body))
+    return bodies
+
+
 def short_flag(cmd, letter):
     """Report whether `letter` is present as a short flag in `cmd`.
 

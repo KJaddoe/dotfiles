@@ -75,6 +75,20 @@ class CommandPatterns(unittest.TestCase):
         """A command with no heredoc is returned unchanged."""
         self.assertEqual(hookutil.strip_heredocs("ls -la"), "ls -la")
 
+    def test_heredoc_bodies_is_the_inverse_of_stripping(self):
+        """What stripping discards is exactly what this returns."""
+        cmd = "cat > f.md <<'EOF'\nline one\nline two\nEOF\nls"
+        self.assertEqual(hookutil.heredoc_bodies(cmd), ["line one\nline two"])
+
+    def test_heredoc_bodies_finds_every_body(self):
+        """A command with two heredocs yields two bodies."""
+        cmd = "cat > a <<'EOF'\nfirst\nEOF\ncat > b <<'EOF'\nsecond\nEOF"
+        self.assertEqual(hookutil.heredoc_bodies(cmd), ["first", "second"])
+
+    def test_heredoc_bodies_without_a_heredoc(self):
+        """A plain command has no bodies."""
+        self.assertEqual(hookutil.heredoc_bodies("ls -la"), [])
+
     def test_strip_heredocs_survives_an_unterminated_body(self):
         """A missing delimiter must not raise or lose the opening line."""
         self.assertIn("cat <<'EOF'", hookutil.strip_heredocs("cat <<'EOF'\ndangling"))
