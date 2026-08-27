@@ -9,6 +9,7 @@ import importlib.util
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -222,6 +223,188 @@ class TestMarkers(unittest.TestCase):
         """First run has no state directory yet."""
         hook.sweep()
         self.assertFalse(self.state.exists())
+
+
+def run_hook(payload, args=(), env=None):
+    """Invoke the hook as a subprocess, the way the harness does.
+
+    :param payload: dict written to the hook's stdin
+    :param args: extra command line arguments
+    :param env: env vars to add to the child's environment
+    :return: the completed process
+    """
+    child_env = dict(os.environ)
+    child_env.update(env or {})
+    return subprocess.run(
+        [sys.executable, str(HOOK_PATH), *args],
+        input=json.dumps(payload),
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=20,
+        env=child_env,
+    )
+
+
+class TestInjection(unittest.TestCase):
+    """A heavy session injects; a light one stays silent."""
+
+    def setUp(self):
+        """Give each case its own transcript directory."""
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
+        self.transcript = self.tmp / "t.jsonl"
+
+    def _payload(self):
+        """Build a UserPromptSubmit payload for the case's transcript.
+
+        :return: the payload dict
+        """
+        return {"session_id": "s1", "transcript_path": str(self.transcript)}
+
+    def test_light_session_emits_nothing(self):
+        """Below threshold the hook is silent."""
+        write_transcript(self.transcript, user_turns=2)
+        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": "1000000"})
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+
+    def test_heavy_session_injects_context(self):
+        """At or above threshold the note is emitted in the UserPromptSubmit shape."""
+        write_transcript(self.transcript, user_turns=40, padding=200)
+        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": "100"})
+        emitted = json.loads(result.stdout)["hookSpecificOutput"]
+        self.assertEqual(emitted["hookEventName"], "UserPromptSubmit")
+        self.assertIn("40 user turns", emitted["additionalContext"])
+        self.assertEqual(result.returncode, 0)
+
+    def test_note_instructs_the_model_to_ask_not_to_clear(self):
+        """The note must never tell the model to run /clear itself."""
+        write_transcript(self.transcript, user_turns=5, padding=100)
+        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": "100"})
+        note = json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("AskUserQuestion", note)
+        self.assertIn("verbatim", note)
+        self.assertIn("still pending", note)
+
+    def test_exactly_at_threshold_injects(self):
+        """The threshold is inclusive; a session ON it is heavy."""
+        size = write_transcript(self.transcript, user_turns=3)
+        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": str(size)})
+        self.assertIn("hookSpecificOutput", json.loads(result.stdout))
+
+    def test_one_byte_under_threshold_stays_silent(self):
+        """The boundary is exact, not approximate."""
+        size = write_transcript(self.transcript, user_turns=3)
+        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": str(size + 1)})
+        self.assertEqual(result.stdout.strip(), "")
+
+    def test_dry_run_logs_and_emits_nothing(self):
+        """dry-run is for tuning the threshold without the hook talking."""
+        write_transcript(self.transcript, user_turns=4, padding=50)
+        log = self.tmp / "dry.log"
+        result = run_hook(
+            self._payload(),
+            env={
+                "FRESH_SESSION_HOOK_BYTES": "100",
+                "FRESH_SESSION_HOOK_MODE": "dry-run",
+                "FRESH_SESSION_LOG_PATH": str(log),
+            },
+        )
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("user turns", log.read_text(encoding="utf-8"))
+
+    def test_off_mode_emits_nothing(self):
+        """The off switch silences a session that would otherwise inject."""
+        write_transcript(self.transcript, user_turns=40, padding=200)
+        result = run_hook(
+            self._payload(),
+            env={"FRESH_SESSION_HOOK_BYTES": "100", "FRESH_SESSION_HOOK_MODE": "off"},
+        )
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+
+
+class TestFailureModes(unittest.TestCase):
+    """Nothing the hook meets may break a prompt."""
+
+    def _raw(self, stdin):
+        """Invoke the hook with raw stdin rather than a JSON payload.
+
+        :param stdin: exact text to write to the hook's stdin
+        :return: the completed process
+        """
+        return subprocess.run(
+            [sys.executable, str(HOOK_PATH)],
+            input=stdin,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=20,
+        )
+
+    def test_malformed_stdin_exits_clean(self):
+        """Garbage on stdin produces no output and exit 0."""
+        result = self._raw("not json")
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+
+    def test_empty_stdin_exits_clean(self):
+        """No payload at all produces no output and exit 0."""
+        result = self._raw("")
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+
+    def test_missing_transcript_path_exits_clean(self):
+        """A payload without a transcript path produces no output and exit 0."""
+        result = run_hook({"session_id": "s1"})
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+
+    def test_nonexistent_transcript_exits_clean(self):
+        """A transcript path that does not exist produces no output and exit 0."""
+        result = run_hook({"session_id": "s1", "transcript_path": "/nope/missing.jsonl"})
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+
+    def test_unwritable_state_directory_exits_clean(self):
+        """A state directory that cannot be created must not break a prompt."""
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+        transcript = tmp / "t.jsonl"
+        write_transcript(transcript, user_turns=2)
+        blocker = tmp / "blocked"
+        blocker.write_text("i am a file, not a directory", encoding="utf-8")
+        result = run_hook(
+            {"session_id": "s1", "transcript_path": str(transcript)},
+            args=["--mark"],
+            env={"FRESH_SESSION_STATE_DIR": str(blocker / "nested")},
+        )
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+
+
+class TestMarkInvocation(unittest.TestCase):
+    """`--mark` records the offset and emits nothing."""
+
+    def test_mark_writes_the_offset_and_stays_silent(self):
+        """A compaction records the transcript's current length."""
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+        transcript = tmp / "t.jsonl"
+        size = write_transcript(transcript, user_turns=3)
+        state = tmp / "state"
+        result = run_hook(
+            {"session_id": "marked", "transcript_path": str(transcript)},
+            args=["--mark"],
+            env={"FRESH_SESSION_STATE_DIR": str(state)},
+        )
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+        recorded = json.loads((state / "marked.json").read_text(encoding="utf-8"))
+        self.assertEqual(recorded["offset"], size)
+        self.assertEqual(recorded["transcript_path"], str(transcript))
 
 
 if __name__ == "__main__":
