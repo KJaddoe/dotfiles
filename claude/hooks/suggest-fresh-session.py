@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """UserPromptSubmit nudge: offer a fresh session once this one has grown heavy.
 
-Enforces nothing. It measures how much transcript a session is carrying so that, past a
-threshold, the model can be told to judge whether the incoming prompt actually depends on the
-conversation so far.
+Enforces nothing. It measures how much transcript this session is carrying and, past a
+threshold, injects a note telling the model to judge whether the incoming prompt actually
+depends on the conversation so far, and to ask the user about /clear when it does not.
 
 The split is deliberate. "How heavy is this session" is mechanical and belongs here. "Does this
-prompt need the previous context" is semantic and belongs to the model, so it lives in injected
-text rather than in a regex.
+prompt need the previous context" is semantic and belongs to the model, so it lives in
+`build_note` rather than in a regex. There is no state file recording whether the user already
+declined: the conversation records that, and the conversation is the only thing that knows
+whether the topic has since moved.
+
+Invoked two ways. Without arguments it is the UserPromptSubmit path. With `--mark` it is the
+SessionStart path for `compact` only: /clear rotates to a new session id and a new transcript
+file, so there is nothing to offset from there.
 
 It never blocks, never denies, and exits 0 on every path including failure. A hook whose only
 job is a suggestion must not be able to break a prompt.
@@ -18,6 +24,10 @@ import os
 import sys
 import time
 from pathlib import Path
+
+from _hookutil import read_payload
+
+DEFAULT_LOG_PATH = Path.home() / ".claude" / "logs" / "fresh-session-hook.log"
 
 DEFAULT_STATE_DIR = Path.home() / ".claude" / "state" / "fresh-session"
 
@@ -183,8 +193,144 @@ def measure(transcript_path, offset):
     return size - start, turns
 
 
+def log_path():
+    """Locate the dry-run log, overridable so the suite never writes to the real one.
+
+    :return: file the dry-run mode appends to
+    """
+    override = os.environ.get("FRESH_SESSION_LOG_PATH")
+    return Path(override) if override else DEFAULT_LOG_PATH
+
+
+def human_bytes(count):
+    """Render a byte count the way a person reads one.
+
+    :param count: number of bytes
+    :return: a short string such as "1.2MB"
+    """
+    if count >= 1_000_000:
+        return f"{count / 1_000_000:.1f}MB"
+    if count >= 1_000:
+        return f"{count / 1_000:.0f}KB"
+    return f"{count}B"
+
+
+def build_note(turns, size):
+    """Build the context injected into a heavy session.
+
+    Two of the design's decisions live in this text rather than in code, because they are model
+    behaviour rather than program behaviour: hand the prompt back on acceptance, and note an
+    unacted acceptance once without re-asking. Changing how the model behaves means changing
+    this string, so the test suite asserts the load-bearing phrases are present.
+
+    :param turns: real user turns measured
+    :param size: bytes measured
+    :return: the note to inject
+    """
+    return (
+        f"Session weight: {turns} user turns, {human_bytes(size)} of transcript. "
+        "Before answering, judge whether this prompt depends on anything earlier in this "
+        "conversation. If it does not, do not start work: ask the user via AskUserQuestion "
+        "whether to /clear first, and on acceptance reply with nothing but their prompt handed "
+        "back verbatim in a copyable block, since you cannot run /clear yourself. If you already "
+        "asked during the current thread and they declined, stay silent until the topic shifts "
+        "again. If they accepted a clear that has not happened, say in one line that it is still "
+        "pending and answer normally; do not ask again."
+    )
+
+
+def log_dry_run(note):
+    """Append what would have been injected, for tuning the threshold against real sessions.
+
+    :param note: the note that `on` mode would have emitted
+    """
+    try:
+        target = log_path()
+        target.parent.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        with target.open("a", encoding="utf-8") as handle:
+            handle.write(f"{stamp} {note}\n")
+    except OSError:
+        pass
+
+
+def transcript_from(data):
+    """Pull the transcript path out of a payload.
+
+    :param data: the hook payload
+    :return: the transcript path, or None when the payload does not carry a usable one
+    """
+    raw = data.get("transcript_path")
+    return Path(raw) if raw else None
+
+
+def run_mark(data):
+    """Record a compaction boundary, sweeping stale markers first.
+
+    :param data: the SessionStart payload
+    """
+    sweep()
+    transcript = transcript_from(data)
+    session_id = data.get("session_id")
+    if not transcript or not session_id:
+        return
+    try:
+        size = transcript.stat().st_size
+    except OSError:
+        return
+    write_marker(session_id, transcript, size)
+
+
+def run_nudge(data):
+    """Measure the session and inject the note when it has grown heavy.
+
+    :param data: the UserPromptSubmit payload
+    """
+    current = mode()
+    if current == "off":
+        return
+
+    transcript = transcript_from(data)
+    if not transcript:
+        return
+
+    size, turns = measure(transcript, read_marker(data.get("session_id") or ""))
+    if size < threshold():
+        return
+
+    note = build_note(turns, size)
+    if current == "dry-run":
+        log_dry_run(note)
+        return
+
+    print(
+        json.dumps(
+            {
+                "hookSpecificOutput": {
+                    "hookEventName": "UserPromptSubmit",
+                    "additionalContext": note,
+                }
+            }
+        )
+    )
+
+
 def main():
-    """Exit without acting; the invocations are wired in a later commit."""
+    """Dispatch to the mark or the nudge path, never failing either way."""
+    data = read_payload()
+    if data is None:
+        sys.exit(0)
+
+    try:
+        if "--mark" in sys.argv[1:]:
+            run_mark(data)
+        else:
+            run_nudge(data)
+    # Deliberately broad: this runs on every prompt submission, so an unexpected failure must
+    # cost a missing suggestion, never the user's ability to send the prompt at all.
+    except Exception:  # pylint: disable=broad-except
+        sys.exit(0)
+
     sys.exit(0)
 
 
