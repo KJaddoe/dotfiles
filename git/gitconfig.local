@@ -46,7 +46,7 @@
 [log]
 	showSignature = false
 [pull]
-	rebase = true
+	rebase = false
 [init]
 	defaultBranch = main
 	templateDir = ~/.git-template
