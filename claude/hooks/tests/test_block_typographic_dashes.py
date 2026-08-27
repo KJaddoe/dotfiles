@@ -128,6 +128,46 @@ class TestEdit(unittest.TestCase):
         self.assertEqual(run_hook("Edit", payload), ALLOW)
 
 
+class TestBashHeredocs(unittest.TestCase):
+    """Content written through a heredoc never reaches the Write tool.
+
+    Regression: the guard was registered on Write|Edit|NotebookEdit only, so every file authored
+    with `cat > f <<EOF` bypassed it completely. That is not a rare path; it is the normal way to
+    write a file from a shell command.
+    """
+
+    def test_heredoc_body_with_a_dash(self):
+        """A dash in the content being written is blocked."""
+        command = f"cat > notes.md <<'EOF'\nsome prose {EM} with a dash\nEOF"
+        self.assertEqual(run_hook("Bash", {"command": command}), BLOCK)
+
+    def test_en_dash_too(self):
+        """Both banned characters are caught."""
+        command = f"cat > notes.md <<'EOF'\na range 1{EN}2\nEOF"
+        self.assertEqual(run_hook("Bash", {"command": command}), BLOCK)
+
+    def test_clean_heredoc(self):
+        """A body with plain hyphens passes."""
+        command = "cat > notes.md <<'EOF'\nsome prose - with a hyphen\nEOF"
+        self.assertEqual(run_hook("Bash", {"command": command}), ALLOW)
+
+    def test_dash_outside_a_heredoc_is_not_content(self):
+        """Searching a file for a dash is not writing one.
+
+        Only heredoc bodies are read, so a grep for the character is deliberately left alone.
+        """
+        self.assertEqual(run_hook("Bash", {"command": f"grep -rn '{EM}' docs/"}), ALLOW)
+
+    def test_ordinary_command(self):
+        """A command with no heredoc at all is ignored."""
+        self.assertEqual(run_hook("Bash", {"command": "ls -la"}), ALLOW)
+
+    def test_second_heredoc_in_one_command(self):
+        """Every body is scanned, not just the first."""
+        command = f"cat > a.md <<'EOF'\nclean\nEOF\ncat > b.md <<'EOF'\ndirty {EM}\nEOF"
+        self.assertEqual(run_hook("Bash", {"command": command}), BLOCK)
+
+
 class TestOtherTools(unittest.TestCase):
     """Coverage of the remaining write paths, and of what must be ignored."""
 

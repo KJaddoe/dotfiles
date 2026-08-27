@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PreToolUse(Write|Edit|NotebookEdit) guard: keep typographic dashes out of written files.
+"""PreToolUse(Write|Edit|NotebookEdit|Bash) guard: keep typographic dashes out of written files.
 
 Enforces the binding rule in ~/.claude/CLAUDE.md ("Working Preferences" -> Code & artifacts):
 a plain hyphen, never an em dash or an en dash. The user reads them as a tell that text was
@@ -13,8 +13,14 @@ a hyphen, which often reads worse than either.
 
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model.
 
-Scope is files. Nothing in the harness lets a hook see or rewrite the assistant's own chat prose,
-which is where the user first noticed the habit, so the rule carries that half alone.
+Scope is file content, whichever tool carries it. Write/Edit/NotebookEdit is the obvious path;
+`Bash` is the one that was missing, because content written through a heredoc (`cat > f <<EOF`)
+never touches the Write tool and so bypassed a Write-only matcher entirely. Only heredoc BODIES
+are read there, since those are the content; other shell write forms (`echo >> f`, `sed -i`) are
+still uncovered, and a plain `grep` for a dash is deliberately left alone.
+
+Nothing in the harness lets a hook see or rewrite the assistant's own chat prose, which is where
+the user first noticed the habit, so the rule carries that half alone.
 
 The dashes are written as escapes below so this file never contains the characters it blocks, and
 its tests assemble them the same way.
@@ -23,7 +29,7 @@ its tests assemble them the same way.
 import sys
 from pathlib import Path
 
-from _hookutil import read_payload
+from _hookutil import heredoc_bodies, read_payload
 
 EM_DASH = "\u2014"
 
@@ -82,6 +88,10 @@ def added_count(tool, tool_input):
         new = tool_input.get("new_string") or ""
         old = tool_input.get("old_string") or ""
         return count_banned(new) - count_banned(old), new
+
+    if tool == "Bash":
+        written = "\n".join(heredoc_bodies(tool_input.get("command") or ""))
+        return count_banned(written), written
 
     if tool == "NotebookEdit":
         source = tool_input.get("new_source") or ""
