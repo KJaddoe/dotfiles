@@ -104,10 +104,10 @@ history or touches work in progress. It skips the pull, and says so in the log, 
 - you are not on the default branch;
 - the working tree is not clean;
 - the update channel is unreachable;
-- local commits would have to be replayed onto upstream ones.
+- local commits have diverged from upstream ones.
 
-That last case is a real rebase, and it stays a decision for a human at a terminal. Run
-`dot_update` yourself, or rebase by hand, when you see it skipped. The rest of the update
+That last case needs a real merge, and it stays a decision for a human at a terminal. Run
+`dot_update` yourself, or merge by hand, when you see it skipped. The rest of the update
 (submodules, `script/install`, zsh plugins) runs either way.
 
 ## Testing
