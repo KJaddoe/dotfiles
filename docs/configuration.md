@@ -9,12 +9,16 @@ never the value itself.
 
 ## Claude Code hooks
 
-| Variable                | Purpose                                                              | Required | Default     | Example   |
-|-------------------------|----------------------------------------------------------------------|----------|-------------|-----------|
-| `DOCS_ENV_HOOK_MODE`    | Behaviour of the `undocumented-env-vars` Stop hook (`claude/hooks/`) | No       | `dry-run`   | `enforce` |
-| `DOCS_FLOOR_HOOK_MODE`  | Behaviour of the `docs-coverage-floor` Stop hook (`claude/hooks/`)   | No       | `dry-run`   | `enforce` |
-| `DUPE_SYMBOL_HOOK_MODE` | Behaviour of the `duplicate-symbols` Stop hook (`claude/hooks/`)     | No       | `dry-run`   | `enforce` |
-| `CLAUDE_PROJECT_DIR`    | Project root the memory hook maps to a session dir                   | No       | current dir | -         |
+| Variable                   | Purpose                                                              | Required | Default                                 | Example      |
+|----------------------------|----------------------------------------------------------------------|----------|-----------------------------------------|--------------|
+| `DOCS_ENV_HOOK_MODE`       | Behaviour of the `undocumented-env-vars` Stop hook (`claude/hooks/`) | No       | `dry-run`                               | `enforce`    |
+| `DOCS_FLOOR_HOOK_MODE`     | Behaviour of the `docs-coverage-floor` Stop hook (`claude/hooks/`)   | No       | `dry-run`                               | `enforce`    |
+| `DUPE_SYMBOL_HOOK_MODE`    | Behaviour of the `duplicate-symbols` Stop hook (`claude/hooks/`)     | No       | `dry-run`                               | `enforce`    |
+| `CLAUDE_PROJECT_DIR`       | Project root the memory hook maps to a session dir                   | No       | current dir                             | -            |
+| `FRESH_SESSION_HOOK_MODE`  | Behaviour of the `suggest-fresh-session` UserPromptSubmit hook       | No       | `on`                                    | `off`        |
+| `FRESH_SESSION_HOOK_BYTES` | Transcript bytes at which that hook starts injecting                 | No       | `600000`                                | `900000`     |
+| `FRESH_SESSION_STATE_DIR`  | Marker directory for that hook; a test seam, not for hand-setting    | No       | `~/.claude/state/fresh-session`         | `/tmp/m`     |
+| `FRESH_SESSION_LOG_PATH`   | Dry-run log for that hook; a test seam, not for hand-setting         | No       | `~/.claude/logs/fresh-session-hook.log` | `/tmp/d.log` |
 
 `CLAUDE_PROJECT_DIR` is **set by Claude Code itself**, not by you; don't export it. `pre-tool-memory.py`
 reads it to derive the mapped session path, replacing both `/` and `.` with `-`
@@ -69,6 +73,25 @@ uncommitted work. Two tiers are reported, and they differ in confidence: an iden
 files is near-certain duplication, while near-identical names in the same directory are a
 lower-confidence notice. Detection is name-based, so it cannot see the same behaviour written under
 a different name in a different folder. A token-level clone detector is the tool for that.
+
+`FRESH_SESSION_HOOK_MODE` governs `suggest-fresh-session.py` and takes its own three values:
+
+| Value     | Behaviour                                                                             |
+|-----------|---------------------------------------------------------------------------------------|
+| `on`      | Default. Injects the nudge once the session is at or over `FRESH_SESSION_HOOK_BYTES`  |
+| `dry-run` | Appends what it would inject to `~/.claude/logs/fresh-session-hook.log`; injects none |
+| `off`     | Silent. The hook still runs and still exits 0, but emits and logs nothing             |
+
+An unrecognised value falls back to `on`, not to `off`: a typo silently disabling the nudge would
+be indistinguishable from the nudge working and finding nothing. `FRESH_SESSION_HOOK_BYTES` falls
+back the same way on a non-numeric or non-positive value.
+
+Unlike the three Stop hooks above, this one never blocks and never exits non-zero, so it has no
+`enforce` value. Its whole output is context for the model.
+
+**Where the value comes from:** none needed; both are local behaviour switches with safe defaults.
+Start on `dry-run`, read the log for a few days, and tune the byte threshold before switching to
+`on`.
 
 ## Permission mode
 
@@ -173,6 +196,20 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   a file written with `cat > f <<EOF` used to bypass it entirely; other shell write forms
   (`echo >> f`, `sed -i`) are still uncovered, and a `grep` for the character is left alone. It
   cannot see the assistant's chat prose, which the rule covers alone
+- `claude/hooks/suggest-fresh-session.py`: the hook the `FRESH_SESSION_*` vars configure, and the
+  only one that advises rather than gates. Two invocations. As a `UserPromptSubmit` hook it
+  measures the session's transcript, counting bytes and real user turns (`type: user` entries
+  WITHOUT `toolUseResult` or `isMeta`, since both of those also carry `type: user`), and past the
+  threshold injects a note asking the model to judge whether the prompt needs prior context and to
+  offer `/clear` when it does not. As a `SessionStart` hook with matcher `compact` and `--mark` it
+  records the post-compaction byte offset so the measurement does not count context that
+  compaction already discarded. `clear` is deliberately NOT marked: it rotates to a new session id
+  and a new transcript, so there is nothing to offset from. It never blocks and exits 0 on every
+  path, failure included, because it runs on every prompt submission. It owns
+  `~/.claude/state/fresh-session/` and sweeps it on every `--mark`, deleting markers past 14 days,
+  markers whose transcript is gone, and markers it cannot parse; Claude Code's own
+  `cleanupPeriodDays` retention covers `~/.claude/projects/`, `tasks/`, `shell-snapshots/` and
+  `backups/`, but not `~/.claude/state/`
 - `claude/hooks/pre-tool-memory.sh`: the wrapper `settings.json` invokes for PreToolUse; it execs
   `pre-tool-memory.py`, which SessionStart calls directly
 - `claude/hooks/tests/`: run every suite:
