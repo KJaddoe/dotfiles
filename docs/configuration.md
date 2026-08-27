@@ -128,6 +128,9 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   classifies by ALLOWLIST, so an unrecognised subcommand gates rather than slips through, and it
   classifies `gh api` by method (`--method` non-GET, or `-f`/`-F`/`--input` implying a POST) rather
   than by verb. Otherwise `gh api … -f title=…` would open an issue with no write verb in it.
+  Two carve-outs pass through ungated, both mandated at the start of issue work: `gh issue develop`,
+  and assigning an issue or PR to yourself. The second is scoped by FLAG, not by verb, since
+  `gh issue edit` also rewrites titles and bodies; assigning a colleague stays gated.
   Read commands (`view`, `list`, `diff`, `checks`, `download`, `clone`, `checkout`, `watch`,
   `search`, `status`, `browse`, and `gh project`'s `item-list`/`field-list`) pass through untouched,
   as does `gh issue develop`: it publishes only a branch name for an issue already being worked on.

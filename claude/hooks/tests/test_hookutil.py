@@ -163,6 +163,62 @@ class GhCommandPosition(unittest.TestCase):
         self.assertTrue(self.gated("FOO=1 gh issue create -t x"))
 
 
+class GhAssignmentCarveOut(unittest.TestCase):
+    """Assigning yourself is bookkeeping the rules mandate; editing the text is publishing.
+
+    `edit` cannot be carved out by verb, because the same subcommand rewrites titles and bodies.
+    The carve-out is by flag, and fails closed on anything it does not recognise.
+    """
+
+    def writes(self, tokens):
+        """Report whether the invocation counts as needing approval."""
+        return hookutil.gh_writes_to_github(tokens)
+
+    def test_assigning_self(self):
+        """The mundane case the workflow needs."""
+        self.assertFalse(self.writes(["issue", "edit", "42", "--add-assignee", "@me"]))
+
+    def test_inline_flag_form(self):
+        """`--flag=value` is handled as well as `--flag value`."""
+        self.assertFalse(self.writes(["issue", "edit", "42", "--add-assignee=@me"]))
+
+    def test_alongside_a_targeting_flag(self):
+        """Naming the repo picks the target without changing it."""
+        self.assertFalse(
+            self.writes(["issue", "edit", "42", "-R", "owner/repo", "--add-assignee", "@me"])
+        )
+
+    def test_unassigning_self(self):
+        """Handing work back is the same kind of bookkeeping."""
+        self.assertFalse(self.writes(["issue", "edit", "42", "--remove-assignee", "@me"]))
+
+    def test_pull_requests_too(self):
+        """`gh pr edit` gets the same treatment."""
+        self.assertFalse(self.writes(["pr", "edit", "7", "--add-assignee", "@me"]))
+
+    def test_assigning_someone_else_is_gated(self):
+        """Putting work in a colleague's queue notifies them; that is not mundane."""
+        self.assertTrue(self.writes(["issue", "edit", "42", "--add-assignee", "a-colleague"]))
+
+    def test_editing_content_alongside_is_gated(self):
+        """An assignment must not smuggle a body or title rewrite past the gate."""
+        for extra in (["--body", "rewritten"], ["--title", "new"], ["--add-label", "bug"]):
+            with self.subTest(extra=extra):
+                self.assertTrue(
+                    self.writes(["issue", "edit", "42", "--add-assignee", "@me", *extra])
+                )
+
+    def test_editing_without_assigning_is_gated(self):
+        """The carve-out needs an assignment flag to apply at all."""
+        self.assertTrue(self.writes(["issue", "edit", "42", "--body", "rewritten"]))
+
+    def test_unknown_flag_fails_closed(self):
+        """A flag the carve-out does not recognise gates the whole invocation."""
+        self.assertTrue(
+            self.writes(["issue", "edit", "42", "--add-assignee", "@me", "--some-new-flag"])
+        )
+
+
 class GitHelpers(unittest.TestCase):
     """run_git and repo_root against real repositories and real failures."""
 
