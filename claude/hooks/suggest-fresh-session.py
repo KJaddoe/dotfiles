@@ -14,7 +14,39 @@ job is a suggestion must not be able to break a prompt.
 """
 
 import json
+import os
 import sys
+
+DEFAULT_THRESHOLD_BYTES = 600_000
+
+VALID_MODES = {"on", "off", "dry-run"}
+
+
+def mode():
+    """Read the hook's mode, defaulting rather than failing on an unknown value.
+
+    An unrecognised value falls back to `on`: a typo in an env var must not silently disable
+    the hook, which would be indistinguishable from it working and finding nothing.
+
+    :return: one of "on", "off", "dry-run"
+    """
+    value = (os.environ.get("FRESH_SESSION_HOOK_MODE") or "on").strip().lower()
+    return value if value in VALID_MODES else "on"
+
+
+def threshold():
+    """Read the byte threshold, defaulting rather than failing on a non-numeric value.
+
+    :return: the byte count at or above which the note is injected
+    """
+    raw = os.environ.get("FRESH_SESSION_HOOK_BYTES")
+    if not raw:
+        return DEFAULT_THRESHOLD_BYTES
+    try:
+        value = int(raw.strip())
+    except (TypeError, ValueError):
+        return DEFAULT_THRESHOLD_BYTES
+    return value if value > 0 else DEFAULT_THRESHOLD_BYTES
 
 
 def measure(transcript_path, offset):

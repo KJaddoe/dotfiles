@@ -7,6 +7,7 @@ Uses stdlib unittest only, no third-party dependencies, identical on macOS and L
 
 import importlib.util
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -93,6 +94,48 @@ class TestMeasure(unittest.TestCase):
         """An absent transcript measures as empty rather than raising."""
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(hook.measure(Path(tmp) / "nope.jsonl", 0), (0, 0))
+
+
+class TestConfiguration(unittest.TestCase):
+    """Both env vars fall back to their default rather than failing."""
+
+    def setUp(self):
+        """Start each case from a clean environment."""
+        self._clear()
+        self.addCleanup(self._clear)
+
+    def _clear(self):
+        """Remove the vars a case set."""
+        for name in ("FRESH_SESSION_HOOK_MODE", "FRESH_SESSION_HOOK_BYTES"):
+            os.environ.pop(name, None)
+
+    def test_mode_defaults_to_on(self):
+        """An unset mode injects."""
+        self.assertEqual(hook.mode(), "on")
+
+    def test_mode_reads_the_env_var(self):
+        """A valid mode is honoured."""
+        os.environ["FRESH_SESSION_HOOK_MODE"] = "dry-run"
+        self.assertEqual(hook.mode(), "dry-run")
+
+    def test_unknown_mode_falls_back_to_on(self):
+        """A typo must not silently disable the hook."""
+        os.environ["FRESH_SESSION_HOOK_MODE"] = "enforce"
+        self.assertEqual(hook.mode(), "on")
+
+    def test_threshold_defaults(self):
+        """An unset threshold uses the tuned default."""
+        self.assertEqual(hook.threshold(), hook.DEFAULT_THRESHOLD_BYTES)
+
+    def test_threshold_reads_the_env_var(self):
+        """A numeric threshold is honoured."""
+        os.environ["FRESH_SESSION_HOOK_BYTES"] = "900000"
+        self.assertEqual(hook.threshold(), 900_000)
+
+    def test_non_numeric_threshold_falls_back(self):
+        """Garbage must not crash a prompt."""
+        os.environ["FRESH_SESSION_HOOK_BYTES"] = "lots"
+        self.assertEqual(hook.threshold(), hook.DEFAULT_THRESHOLD_BYTES)
 
 
 if __name__ == "__main__":
