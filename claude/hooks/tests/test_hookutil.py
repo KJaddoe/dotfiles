@@ -120,6 +120,49 @@ class GhClassification(unittest.TestCase):
         self.assertTrue(hookutil.gh_writes_to_github(["--some-new-flag"]))
 
 
+class GhCommandPosition(unittest.TestCase):
+    """`gh` counts as an invocation only where a command can actually start.
+
+    Regression: the word "gh" was matched anywhere in a command's tokens, and the command was
+    split on newlines BEFORE being lexed. A multi-line commit message with "gh" on a line of its
+    own therefore parsed as a gh invocation and was denied, which is how this was found.
+    """
+
+    def gated(self, command):
+        """Report whether any gh invocation in `command` would be treated as a write."""
+        return any(hookutil.gh_writes_to_github(t) for t in hookutil.gh_invocations(command))
+
+    def test_multiline_quoted_argument_is_not_split(self):
+        """A quoted argument spanning lines stays one token, so "gh" inside it is prose."""
+        message = 'git commit -m "refactor: x\n\nExplains which gh invocations write.\n"'
+        self.assertFalse(self.gated(message))
+
+    def test_bare_word_as_an_argument(self):
+        """Searching for the word is not running the command."""
+        self.assertFalse(self.gated("grep -rn gh docs/"))
+
+    def test_quoted_prose(self):
+        """The word inside a quoted string is not an invocation."""
+        self.assertFalse(self.gated("echo 'the gh cli is nice'"))
+
+    def test_piping_a_read_into_a_search_for_the_word(self):
+        """Neither half of this is a write."""
+        self.assertFalse(self.gated("gh pr view 3 | grep gh"))
+
+    def test_command_position_after_a_separator(self):
+        """A real invocation after `&&` is still found."""
+        self.assertTrue(self.gated("cd /tmp && gh issue create -t x"))
+
+    def test_separator_without_surrounding_spaces(self):
+        """The lexer treats `&&` as an operator even when it is not spaced out."""
+        self.assertTrue(self.gated("cd /tmp&&gh issue create -t x"))
+
+    def test_behind_a_wrapper_or_env_assignment(self):
+        """A wrapper in front of the command does not hide it."""
+        self.assertTrue(self.gated("sudo gh issue create -t x"))
+        self.assertTrue(self.gated("FOO=1 gh issue create -t x"))
+
+
 class GitHelpers(unittest.TestCase):
     """run_git and repo_root against real repositories and real failures."""
 

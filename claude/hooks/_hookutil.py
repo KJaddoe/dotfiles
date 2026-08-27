@@ -45,6 +45,14 @@ RULE_REFERENCE = "~/.claude/CLAUDE.md -> Working Preferences"
 
 SHELL_SEPARATORS = re.compile(r"&&|\|\||;|\||\n")
 
+# Operator tokens a punctuation-aware lexer emits, used to find where one command ends.
+SEPARATOR_TOKENS = {"&&", "||", ";", "|", "&", "(", ")", "\n"}
+
+ENV_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+
+# Wrappers that can sit in front of the real command without changing what it is.
+COMMAND_PREFIXES = {"command", "env", "nohup", "sudo", "time", "xargs"}
+
 # Every top-level `gh` command, so the subcommand can be located without guessing which tokens
 # are flag values. A command absent from this set is unrecognised and therefore gated.
 GH_TOP_LEVEL = {
@@ -241,23 +249,55 @@ def short_flag(cmd, letter):
     return bool(re.search(rf"(?<![\w-])-[A-Za-z]*{re.escape(letter)}[A-Za-z]*(?![\w-])", cmd))
 
 
+def command_head(tokens):
+    """Strip the env assignments and wrappers that can precede the real command.
+
+    `FOO=1 gh ...` and `sudo gh ...` are still gh invocations. A wrapper carrying its own
+    arguments (`sudo -u someone gh ...`) is NOT resolved, and reads as not-gh.
+
+    :param tokens: one command's tokens
+    :return: the tokens from the real command word onward
+    """
+    index = 0
+    while index < len(tokens) and (
+        ENV_ASSIGNMENT.match(tokens[index]) or tokens[index] in COMMAND_PREFIXES
+    ):
+        index += 1
+    return tokens[index:]
+
+
 def gh_invocations(cmd):
     """Split a shell command into the argument list of each `gh` invocation it contains.
+
+    `gh` counts only in COMMAND POSITION, never as a bare word somewhere in the arguments.
+    The word appears in ordinary prose, and treating it as an invocation gated `grep -rn gh docs/`
+    and, worse, any multi-line commit message with "gh" on a line of its own: the newline read as
+    a command separator, which broke the quoting and left `gh` looking like a command.
+
+    That is also why the whole command is lexed BEFORE it is split on operators, rather than
+    split on a newline regex first: a quoted argument spanning lines has to survive as one token.
 
     :param cmd: full shell command, heredoc bodies already stripped
     :return: list of token lists, one per gh invocation, each excluding the `gh` itself
     """
-    found = []
-    for chunk in SHELL_SEPARATORS.split(cmd):
-        try:
-            tokens = shlex.split(chunk)
-        except ValueError:
-            tokens = chunk.split()
-        for index, token in enumerate(tokens):
-            if token == "gh":
-                found.append(tokens[index + 1 :])
-                break
+    try:
+        lexer = shlex.shlex(cmd, posix=True, punctuation_chars=True)
+        lexer.whitespace_split = True
+        tokens = list(lexer)
+    except ValueError:
+        tokens = cmd.split()
+
+    found, segment = [], []
+    for token in [*tokens, ";"]:
+        if token in SEPARATOR_TOKENS:
+            head = command_head(segment)
+            if head and head[0] == "gh":
+                found.append(head[1:])
+            segment = []
+        else:
+            segment.append(token)
     return found
+
 
 def gh_subcommand(tokens):
     """Resolve the (command, verb) pair a gh invocation targets.
