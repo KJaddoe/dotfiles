@@ -187,10 +187,11 @@ def emit_decision(decision, reason):
 
 
 def read_payload():
-    """Read a PreToolUse payload from stdin.
+    """Read a hook payload from stdin.
 
-    A malformed payload is reported as absent rather than raised, so a guard can never take a
-    tool call down with it.
+    Shared by every event, not only PreToolUse: the payload envelope is the same shape whichever
+    hook is being invoked. A malformed payload is reported as absent rather than raised, so a
+    guard can never take a tool call down with it.
 
     :return: the parsed payload, or None when stdin does not carry one
     """
