@@ -111,8 +111,9 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   a CI command
 - `claude/hooks/duplicate-symbols.py`: the duplicate-symbol check; a Stop hook and, with `--path`,
   a CI command
-- `claude/hooks/_hookutil.py`: git helpers and command patterns shared by the Stop hooks and the
-  commit-approval gate; internal, never invoked by `settings.json`
+- `claude/hooks/_hookutil.py`: git helpers, command patterns, and the `gh` write-classification,
+  shared by the Stop hooks, the approval gates and the attribution guard; internal, never invoked
+  by `settings.json`
 - `claude/hooks/block-claude-attribution.py`: PreToolUse guard, no configuration
 - `claude/hooks/require-commit-approval.py`: PreToolUse gate that puts every commit to the user for
   approval; deliberately unconfigurable, since an off-switch is the failure it prevents. It prompts in
