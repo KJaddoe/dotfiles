@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
-"""PreToolUse(Bash) guard: block git commands that record Claude attribution or gpg-sign.
+"""PreToolUse(Bash) guard: block commands that record Claude attribution or gpg-sign.
 
 Enforces the binding rules in ~/.claude/CLAUDE.md ("Working Preferences"):
 - no "Co-Authored-By: Claude" / "Generated with Claude Code" / 🤖 trailers
+- no session-link trailer, in either the "Claude-Session:" key or a bare claude.ai/code/session URL
 - never --gpg-sign / -S on the user's behalf
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model.
 
-Scope is the git subcommands that record a message (commit, merge, tag, revert, cherry-pick,
-am, rebase, notes, stash), not the substring "commit", so read-only history inspection
-(`git log … | grep`, and prose like "commits ahead") is never blocked, while attribution can
-no longer slip through `git merge -m` or `git tag -a -m`. The gpg check stays scoped to
-`git commit`, which is what the rule names.
+The session link is the harness's own default, not something the model chooses, so it reappears
+every session no matter what the model was told last time. That is exactly the kind of rule a hook
+has to carry rather than a prompt.
+
+Scope is both halves of the rule's "commits, PR/issue bodies": git subcommands that record a
+message, and `gh` invocations that write to GitHub (classified by `gh_writes_to_github`, so a
+read like `gh issue list` is never scanned). A body passed by FILE (`gh pr create -F body.md`)
+is out of reach here, since the text never appears in the command; the rule text still covers it.
+
+On the git side that means the subcommands recording a message (commit, merge, tag, revert,
+cherry-pick, am, rebase, notes, stash), not the substring "commit", so read-only history
+inspection (`git log … | grep`, and prose like "commits ahead") is never blocked, while
+attribution can no longer slip through `git merge -m` or `git tag -a -m`. The gpg check stays
+scoped to `git commit`, which is what the rule names.
 
 Which subcommand is being INVOKED is decided from the command with heredoc bodies stripped, so
 writing a script or document that merely mentions one of them is not treated as running it. The
@@ -24,6 +34,8 @@ import sys
 from _hookutil import (
     COMMIT_SUBCOMMAND,
     GIT_FLAGS,
+    gh_invocations,
+    gh_writes_to_github,
     read_bash_payload,
     short_flag,
     strip_heredocs,
@@ -49,8 +61,21 @@ def writes_history(cmd):
     return bool(WRITE_SUBCOMMAND.search(cmd))
 
 
+def publishes_to_github(cmd):
+    """Report whether a shell command contains a gh invocation that writes to GitHub.
+
+    An issue or PR body is the other place the rule names, and it never passes through git.
+    Reads are excluded so that inspecting GitHub, including searching it for attribution,
+    is never blocked.
+
+    :param cmd: full shell command, heredoc bodies already stripped
+    :return: True when a writing gh invocation is present
+    """
+    return any(gh_writes_to_github(tokens) for tokens in gh_invocations(cmd))
+
+
 def main():
-    """Block a git invocation that would record Claude attribution or gpg-sign a commit."""
+    """Block an invocation that would record Claude attribution or gpg-sign a commit."""
     data, cmd = read_bash_payload()
     if data is None:
         sys.exit(0)
@@ -58,7 +83,7 @@ def main():
     low = cmd.lower()
     code = strip_heredocs(cmd)
 
-    if not writes_history(code):
+    if not (writes_history(code) or publishes_to_github(code)):
         sys.exit(0)
 
     attribution = [
@@ -66,6 +91,8 @@ def main():
         "generated with claude code",
         "🤖",
         "noreply@anthropic.com",
+        "claude-session:",
+        "claude.ai/code/session",
     ]
     hit = next((p for p in attribution if p in low), None)
 
@@ -81,7 +108,8 @@ def main():
         if gpg:
             reasons.append("--gpg-sign / -S")
         msg = (
-            "BLOCKED by user policy: a git command that records history must not include "
+            "BLOCKED by user policy: a command that records or publishes text under the "
+            "user's name must not include "
             + " or ".join(reasons)
             + ".\nSee ~/.claude/CLAUDE.md (Working Preferences): no Claude attribution "
             "trailers, and never gpg-sign on the user's behalf. Remove it and retry."

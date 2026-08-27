@@ -29,6 +29,8 @@ TRAILER = "Co-Authored" + "-By: " + "Claude"
 GENERATED = "Generated with " + "Claude Code"
 ROBOT = "\U0001f916"
 NOREPLY = "noreply@" + "anthropic.com"
+SESSION_KEY = "Claude-" + "Session:"
+SESSION_URL = "https://claude.ai/" + "code/session_" + "01Abc"
 
 
 def run_hook(command, tool="Bash"):
@@ -77,6 +79,14 @@ class TestBlocks(unittest.TestCase):
         """-S inside a short-flag cluster is blocked."""
         self.assertEqual(run_hook("git commit -amS 'x'"), 2)
 
+    def test_session_trailer_key(self):
+        """The harness's session-link trailer is blocked."""
+        self.assertEqual(run_hook(f"git commit -m 'feat: x\n\n{SESSION_KEY} {SESSION_URL}'"), 2)
+
+    def test_bare_session_url(self):
+        """The session URL alone, with no trailer key, is blocked too."""
+        self.assertEqual(run_hook(f"git commit -m 'feat: x\n\n{SESSION_URL}'"), 2)
+
     def test_amend_with_attribution(self):
         """Amend carrying attribution is blocked."""
         self.assertEqual(run_hook(f"git commit --amend -m '{TRAILER}'"), 2)
@@ -117,6 +127,62 @@ class TestAllows(unittest.TestCase):
     def test_unrelated_bash(self):
         """Unrelated shell commands are ignored."""
         self.assertEqual(run_hook("ls -la"), 0)
+
+
+class TestGitHubBodiesAreScanned(unittest.TestCase):
+    """The rule names "PR/issue bodies", which never pass through git.
+
+    `gh` writes are scanned for the same trailers as a commit message, while `gh` reads are
+    left alone so that inspecting or auditing GitHub is never blocked.
+    """
+
+    def test_issue_body_with_session_trailer(self):
+        """An issue body carrying the session trailer is blocked."""
+        self.assertEqual(
+            run_hook(f"gh issue create -t 'Bug' -b 'Steps...\n\n{SESSION_KEY} {SESSION_URL}'"), 2
+        )
+
+    def test_pr_body_with_session_url(self):
+        """A PR body carrying the bare session URL is blocked."""
+        self.assertEqual(run_hook(f"gh pr create -t x -b 'Does y.\n\n{SESSION_URL}'"), 2)
+
+    def test_comment_with_coauthored_trailer(self):
+        """A PR comment carrying attribution is blocked."""
+        self.assertEqual(run_hook(f"gh pr comment 4 -b '{TRAILER}'"), 2)
+
+    def test_release_notes_with_robot(self):
+        """Release notes carrying the robot emoji are blocked."""
+        self.assertEqual(run_hook(f"gh release create v1.0 -n 'Notes {ROBOT}'"), 2)
+
+    def test_api_post_with_attribution(self):
+        """The `gh api` bypass is covered, since it is classified by method."""
+        self.assertEqual(
+            run_hook(f"gh api repos/o/n/issues -f title=x -f body='{SESSION_KEY} {SESSION_URL}'"), 2
+        )
+
+    def test_clean_issue_create_allowed(self):
+        """An issue with no attribution passes through."""
+        self.assertEqual(run_hook("gh issue create -t 'Bug' -b 'Steps to reproduce.'"), 0)
+
+    def test_searching_github_for_the_trailer_allowed(self):
+        """Auditing GitHub for the trailer is a read, and must not be blocked."""
+        self.assertEqual(run_hook(f"gh issue list --search '{SESSION_KEY}'"), 0)
+
+    def test_viewing_a_pr_body_allowed(self):
+        """Reading a PR body and grepping it is a read."""
+        self.assertEqual(run_hook(f"gh pr view 3 --json body | grep '{SESSION_URL}'"), 0)
+
+    def test_issue_develop_allowed(self):
+        """`gh issue develop` publishes only a branch name, and the rules mandate it."""
+        self.assertEqual(run_hook("gh issue develop 7 --checkout"), 0)
+
+    def test_body_passed_by_file_is_a_known_gap(self):
+        """Documents the limitation: a body read from a file is out of the hook's reach.
+
+        The text never appears in the command, so no command-scanning guard can see it.
+        The CLAUDE.md rule text is what covers this path.
+        """
+        self.assertEqual(run_hook("gh pr create -t x -F body.md"), 0)
 
 
 class TestHeredocBodiesAreData(unittest.TestCase):
