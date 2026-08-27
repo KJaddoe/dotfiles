@@ -4,7 +4,7 @@
     "pr": ""
   },
   "permissions": {
-    "defaultMode": "default",
+    "defaultMode": "auto",
     "allow": [
       "Bash(gh project item-list *)",
       "Bash(gh project field-list *)",
@@ -52,6 +52,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/require-gh-approval.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/require-destructive-approval.py",
+            "timeout": 5
           }
         ]
       },

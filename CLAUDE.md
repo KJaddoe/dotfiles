@@ -9,7 +9,7 @@ relevance; don't read it wholesale for trivial changes.
 |-------------------------|-----------------------------------------------------------------------------------|
 | `docs/README.md`        | Index of what's in `docs/`                                                        |
 | `docs/architecture.md`  | Touching the topic-folder layout, dotbot wiring, zsh loading, or `_system/` roles |
-| `docs/configuration.md` | Env vars this repo's own tooling reads (hook switches)                            |
+| `docs/configuration.md` | Env vars, the hook inventory, and the permission mode the hooks assume            |
 | `docs/decisions/`       | Changing or questioning a setup decision (ADRs)                                   |
 
 Precedence: the actual config and `dotbot.conf.yaml` / `_system/main.yml` are the source of

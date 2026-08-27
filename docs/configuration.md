@@ -1,7 +1,8 @@
 # Configuration
 
-Environment variables this repo's own tooling reads. Reference material ("what"), deliberately
-kept out of `architecture.md` (which is "why").
+Settings this repo's own tooling reads: environment variables, and the Claude Code permission
+mode the hooks are built around. Reference material ("what"), deliberately kept out of
+`architecture.md` (which is "why").
 
 Nothing here is a secret, and nothing here should ever become one. Record where a value lives,
 never the value itself.
@@ -69,6 +70,27 @@ files is near-certain duplication, while near-identical names in the same direct
 lower-confidence notice. Detection is name-based, so it cannot see the same behaviour written under
 a different name in a different folder. A token-level clone detector is the tool for that.
 
+## Permission mode
+
+`permissions.defaultMode` in `claude/settings.json` is **`auto`**. That file is symlinked to
+`~/.claude/settings.json`, so it is USER settings; a project-level `.claude/settings.json` cannot
+set `auto` at all, and Claude Code ignores the value there.
+
+| Setting                   | Value     | Why                                                    |
+|---------------------------|-----------|--------------------------------------------------------|
+| `permissions.defaultMode` | `auto`    | Reads and local edits flow; the gates below still stop |
+| `permissions.allow`       | 5 entries | Read-only `gh project`/`gh label` calls and `git grep` |
+
+The mode is only safe because of how `approval_decision` in `_hookutil.py` behaves: `default` and
+`plan` are the only modes where a prompt renders, so in `auto` every gated action is **denied**
+rather than asked. Committing, pushing, writing to GitHub, or running a destructive command from
+`auto` therefore fails with an explanation, and doing it means switching to `default` first. That
+switch is the review checkpoint, not an obstacle to route around.
+
+The corollary: any rule that relies on a permission PROMPT rather than a hook stops holding in this
+mode. That is why `require-destructive-approval.py` exists; before it, "confirm before a destructive
+operation" was enforced only by the prompt that `auto` removes.
+
 ## Git hooks
 
 | Variable     | Purpose                                                      | Required | Default | Example |
@@ -127,6 +149,12 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   cannot be amended away afterwards. The prompt names the branch, the baseline it is compared against,
   the commits that would be published, and whether history is being rewritten. `--dry-run` publishes
   nothing and is not gated. Also unconfigurable
+- `claude/hooks/require-destructive-approval.py`: the same gate for destructive and hard-to-reverse
+  shell commands (bulk file delete, `git reset --hard`, history rewrites, `DROP`/`TRUNCATE`/restore,
+  migrations, `terraform apply`, `kubectl delete`). Unlike the gh gate this is a DENYLIST, because
+  there is no enumerable set of safe shell commands to allowlist against, so it is a safety net over
+  the known-destructive set rather than a boundary. It errs toward gating: a false positive costs one
+  approval, a false negative costs unrecoverable work. Also unconfigurable
 - `claude/hooks/require-gh-approval.py`: the same gate for `gh` commands that write to GitHub. It
   classifies by ALLOWLIST, so an unrecognised subcommand gates rather than slips through, and it
   classifies `gh api` by method (`--method` non-GET, or `-f`/`-F`/`--input` implying a POST) rather
