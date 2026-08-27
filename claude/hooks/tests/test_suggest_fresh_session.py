@@ -8,8 +8,10 @@ Uses stdlib unittest only, no third-party dependencies, identical on macOS and L
 import importlib.util
 import json
 import os
+import shutil
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -136,6 +138,90 @@ class TestConfiguration(unittest.TestCase):
         """Garbage must not crash a prompt."""
         os.environ["FRESH_SESSION_HOOK_BYTES"] = "lots"
         self.assertEqual(hook.threshold(), hook.DEFAULT_THRESHOLD_BYTES)
+
+
+class TestMarkers(unittest.TestCase):
+    """A marker records a byte offset and is swept once it is stale."""
+
+    def setUp(self):
+        """Point the hook's state directory at a temporary one."""
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
+        self.state = self.tmp / "state"
+        os.environ["FRESH_SESSION_STATE_DIR"] = str(self.state)
+        self.addCleanup(os.environ.pop, "FRESH_SESSION_STATE_DIR", None)
+
+    def _marker(self, session_id, transcript, offset=0, age_seconds=0):
+        """Write a marker directly, optionally backdating its mtime.
+
+        :param session_id: session the marker belongs to
+        :param transcript: transcript path the marker records
+        :param offset: byte offset the marker records
+        :param age_seconds: how far in the past to set the marker's mtime
+        :return: the marker's path
+        """
+        self.state.mkdir(parents=True, exist_ok=True)
+        path = self.state / f"{session_id}.json"
+        path.write_text(
+            json.dumps({"offset": offset, "transcript_path": str(transcript)}),
+            encoding="utf-8",
+        )
+        if age_seconds:
+            stamp = time.time() - age_seconds
+            os.utime(path, (stamp, stamp))
+        return path
+
+    def test_write_then_read_round_trips_the_offset(self):
+        """A recorded offset comes back."""
+        transcript = self.tmp / "t.jsonl"
+        write_transcript(transcript, user_turns=1)
+        hook.write_marker("abc", transcript, 1234)
+        self.assertEqual(hook.read_marker("abc"), 1234)
+
+    def test_absent_marker_reads_as_zero(self):
+        """No marker means measure from the start."""
+        self.assertEqual(hook.read_marker("nothing"), 0)
+
+    def test_corrupt_marker_reads_as_zero(self):
+        """A truncated write must not raise."""
+        self.state.mkdir(parents=True, exist_ok=True)
+        (self.state / "bad.json").write_text("{not json", encoding="utf-8")
+        self.assertEqual(hook.read_marker("bad"), 0)
+
+    def test_sweep_deletes_marker_whose_transcript_is_gone(self):
+        """Claude Code's own retention removes transcripts; the marker follows."""
+        path = self._marker("dead", self.tmp / "gone.jsonl")
+        hook.sweep()
+        self.assertFalse(path.exists())
+
+    def test_sweep_deletes_marker_older_than_the_age_cap(self):
+        """A marker outliving its usefulness is removed on age alone."""
+        transcript = self.tmp / "t.jsonl"
+        write_transcript(transcript, user_turns=1)
+        path = self._marker("old", transcript, age_seconds=hook.MARKER_MAX_AGE_SECONDS + 60)
+        hook.sweep()
+        self.assertFalse(path.exists())
+
+    def test_sweep_keeps_a_live_recent_marker(self):
+        """The sweep must not delete what is still in use."""
+        transcript = self.tmp / "t.jsonl"
+        write_transcript(transcript, user_turns=1)
+        path = self._marker("live", transcript)
+        hook.sweep()
+        self.assertTrue(path.exists())
+
+    def test_sweep_deletes_a_corrupt_marker(self):
+        """An unreadable marker is stale by definition."""
+        self.state.mkdir(parents=True, exist_ok=True)
+        path = self.state / "bad.json"
+        path.write_text("{not json", encoding="utf-8")
+        hook.sweep()
+        self.assertFalse(path.exists())
+
+    def test_sweep_on_absent_directory_is_a_noop(self):
+        """First run has no state directory yet."""
+        hook.sweep()
+        self.assertFalse(self.state.exists())
 
 
 if __name__ == "__main__":

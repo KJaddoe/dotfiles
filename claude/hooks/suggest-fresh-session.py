@@ -16,8 +16,16 @@ job is a suggestion must not be able to break a prompt.
 import json
 import os
 import sys
+import time
+from pathlib import Path
+
+DEFAULT_STATE_DIR = Path.home() / ".claude" / "state" / "fresh-session"
 
 DEFAULT_THRESHOLD_BYTES = 600_000
+
+# Claude Code's own `cleanupPeriodDays` sweep does not cover ~/.claude/state, so markers are
+# swept here. A marker is disposable: absent means "measure from zero", the safe default.
+MARKER_MAX_AGE_SECONDS = 14 * 24 * 60 * 60
 
 VALID_MODES = {"on", "off", "dry-run"}
 
@@ -47,6 +55,90 @@ def threshold():
     except (TypeError, ValueError):
         return DEFAULT_THRESHOLD_BYTES
     return value if value > 0 else DEFAULT_THRESHOLD_BYTES
+
+
+def state_dir():
+    """Locate the marker directory, overridable so the suite never writes to the real one.
+
+    :return: directory holding this hook's markers
+    """
+    override = os.environ.get("FRESH_SESSION_STATE_DIR")
+    return Path(override) if override else DEFAULT_STATE_DIR
+
+
+def marker_path(session_id):
+    """Locate a session's marker file.
+
+    :param session_id: the session's id
+    :return: path the marker would occupy
+    """
+    return state_dir() / f"{session_id}.json"
+
+
+def read_marker(session_id):
+    """Read a session's recorded byte offset.
+
+    Every failure reads as 0, which means "measure from the start". The marker is disposable by
+    construction, so losing one costs an overstated measurement, never a broken prompt.
+
+    :param session_id: the session's id
+    :return: the recorded offset, or 0 when absent or unreadable
+    """
+    try:
+        data = json.loads(marker_path(session_id).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+        return 0
+    offset = data.get("offset") if isinstance(data, dict) else 0
+    return offset if isinstance(offset, int) and offset > 0 else 0
+
+
+def write_marker(session_id, transcript_path, offset):
+    """Record where a session's post-compaction transcript begins.
+
+    The transcript path is stored alongside the offset so the sweep can tell a live marker from
+    one whose session has already been cleaned up.
+
+    :param session_id: the session's id
+    :param transcript_path: the session's transcript
+    :param offset: byte length of the transcript at compaction time
+    """
+    try:
+        state_dir().mkdir(parents=True, exist_ok=True)
+        marker_path(session_id).write_text(
+            json.dumps({"offset": offset, "transcript_path": str(transcript_path)}),
+            encoding="utf-8",
+        )
+    except OSError:
+        pass
+
+
+def sweep():
+    """Delete markers whose session is gone or which have simply aged out.
+
+    Claude Code's built-in `cleanupPeriodDays` retention covers ~/.claude/projects, tasks,
+    shell-snapshots and backups. It does not cover ~/.claude/state, so this directory sweeps
+    itself. A corrupt marker counts as stale: it can no longer be read, so it can only grow.
+    """
+    try:
+        markers = list(state_dir().glob("*.json"))
+    except OSError:
+        return
+
+    cutoff = time.time() - MARKER_MAX_AGE_SECONDS
+    for path in markers:
+        try:
+            if path.stat().st_mtime < cutoff:
+                path.unlink()
+                continue
+            data = json.loads(path.read_text(encoding="utf-8"))
+            transcript = data.get("transcript_path") if isinstance(data, dict) else None
+            if not transcript or not Path(transcript).exists():
+                path.unlink()
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+            try:
+                path.unlink()
+            except OSError:
+                continue
 
 
 def measure(transcript_path, offset):
