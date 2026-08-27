@@ -18,9 +18,15 @@ subcommand cannot be parsed out of the flags, the command is gated rather than a
 creates a real issue with no write verb anywhere in it. `gh api` defaults to GET, but adding
 `-f/--raw-field`, `-F/--field` or `--input` makes it a POST unless `--method GET` says otherwise.
 
-`gh issue develop` is deliberately allowed: it publishes only a branch name for an issue the user
-already decided to work on, notifies nobody, and ~/.claude/CLAUDE.md mandates it for every tracked
-issue. Gating a step the rules require on every issue would only teach the user to ignore prompts.
+Two carve-outs exist, both for steps ~/.claude/CLAUDE.md mandates at the START of issue work.
+Gating a step the rules require every time would only teach the user to click through prompts.
+
+`gh issue develop` publishes a branch name for an issue the user already decided to work on, and
+notifies nobody. Assigning that issue to themselves is the same kind of bookkeeping, but it cannot
+be carved out by verb: `gh issue edit` also rewrites titles and bodies, which IS publishing. So the
+assignment carve-out is by FLAG (`only_reassigns_to_self` in `_hookutil`) and fails closed on any
+flag it does not recognise. Assigning someone ELSE stays gated: that puts work in a colleague's
+queue and notifies them, which is not mundane.
 
 Mode handling matches the commit and push gates. See `approval_decision` in `_hookutil`: prompt
 where a prompt renders, deny where it would be auto-approved, never allow.

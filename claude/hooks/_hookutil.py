@@ -108,6 +108,19 @@ GH_READ_ONLY_VERBS = {
 # `gh issue develop` publishes a branch name and nothing else. See the module docstring.
 GH_ALLOWED_PAIRS = {("issue", "develop")}
 
+# `edit` can rewrite the title or body, which IS publishing, so it cannot be carved out by verb.
+# It is carved out by FLAG instead: see `only_reassigns_to_self`.
+GH_ASSIGNABLE_PAIRS = {("issue", "edit"), ("pr", "edit")}
+
+GH_ASSIGNMENT_FLAGS = {"--add-assignee", "--remove-assignee"}
+
+# Flags that pick the target without changing it, so they may accompany an assignment.
+GH_TARGETING_FLAGS = {"-R", "--repo"}
+
+# The only assignee the carve-out accepts. Assigning someone ELSE puts work in their queue and
+# notifies them, which is not a mundane act and is not what the carve-out is for.
+GH_SELF = {"@me"}
+
 GH_API_PAYLOAD_FLAGS = {"-f", "--raw-field", "-F", "--field", "--input"}
 
 GH_METHOD_FLAGS = {"-X", "--method"}
@@ -332,11 +345,67 @@ def gh_api_writes(tokens):
     return any(token.split("=", 1)[0] in GH_API_PAYLOAD_FLAGS for token in tokens)
 
 
-def gh_writes_to_github(tokens):
-    """Report whether a gh invocation would change anything on GitHub.
+def flag_values(tokens, names):
+    """Collect the values given to any of `names`, in both `--flag value` and `--flag=value` form.
 
     :param tokens: gh arguments, excluding `gh`
-    :return: True when the invocation writes
+    :param names: flag names to collect values for
+    :return: list of values
+    """
+    values = []
+    for index, token in enumerate(tokens):
+        name, _, inline = token.partition("=")
+        if name not in names:
+            continue
+        if inline:
+            values.append(inline)
+        elif index + 1 < len(tokens):
+            values.append(tokens[index + 1])
+    return values
+
+
+def only_reassigns_to_self(tokens):
+    """Report whether an edit does nothing but assign the issue or PR to the user.
+
+    Assigning yourself is bookkeeping: it publishes no prose, and the rules mandate it before
+    starting work. Rewriting a title or body from the same subcommand is not, so this fails closed
+    on any flag it does not recognise rather than allowlisting `edit` wholesale.
+
+    :param tokens: gh arguments, excluding `gh`
+    :return: True when the only mutation is assigning the user to it
+    """
+    names = {token.partition("=")[0] for token in tokens if token.startswith("-")}
+    if not names & GH_ASSIGNMENT_FLAGS:
+        return False
+    if not names <= (GH_ASSIGNMENT_FLAGS | GH_TARGETING_FLAGS):
+        return False
+
+    values = flag_values(tokens, GH_ASSIGNMENT_FLAGS)
+    return bool(values) and all(value in GH_SELF for value in values)
+
+
+def gh_is_carved_out(command, verb, tokens):
+    """Report whether a writing invocation is one the user has decided not to be asked about.
+
+    Both carve-outs are steps ~/.claude/CLAUDE.md mandates at the start of issue work, so gating
+    them would only train the user to click through prompts. See `require-gh-approval.py`.
+
+    :param command: resolved top-level gh command
+    :param verb: resolved verb
+    :param tokens: gh arguments, excluding `gh`
+    :return: True when the invocation writes but needs no approval
+    """
+    if (command, verb) in GH_ALLOWED_PAIRS:
+        return True
+
+    return (command, verb) in GH_ASSIGNABLE_PAIRS and only_reassigns_to_self(tokens)
+
+
+def gh_writes_to_github(tokens):
+    """Report whether a gh invocation would change anything the user should approve first.
+
+    :param tokens: gh arguments, excluding `gh`
+    :return: True when the invocation writes and is not carved out
     """
     if not tokens:
         return False
@@ -348,10 +417,7 @@ def gh_writes_to_github(tokens):
     if command == "api":
         return gh_api_writes(tokens)
 
-    if (command, verb) in GH_ALLOWED_PAIRS:
-        return False
-
-    if command in GH_READ_ONLY_COMMANDS:
+    if gh_is_carved_out(command, verb, tokens) or command in GH_READ_ONLY_COMMANDS:
         return False
 
     return verb not in GH_READ_ONLY_VERBS
