@@ -1,5 +1,3 @@
-local telescope = require("telescope")
-
 local function open_selection(prompt_bufnr, open_cmd)
   local actions = require("telescope.actions")
   local action_state = require("telescope.actions.state")
@@ -46,8 +44,6 @@ end
 local select_one_or_multi_tabedit = function(prompt_bufnr)
   open_selection(prompt_bufnr, "tabedit")
 end
-
-telescope.load_extension("gh")
 
 local builtin = require("telescope.builtin")
 
@@ -106,4 +102,3 @@ keymap("<leader>fr", builtin.resume, "Resume last picker")
 keymap("<leader>fq", builtin.quickfix, "Quickfix list")
 keymap("<leader>/", builtin.current_buffer_fuzzy_find, "Fuzzy find in buffer")
 keymap("<leader>xx", builtin.diagnostics, "Diagnostics list")
-keymap("<leader>ghi", telescope.extensions.gh.issues, "GitHub issues")
