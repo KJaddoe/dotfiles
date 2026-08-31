@@ -140,11 +140,8 @@ require("lazy").setup({
   },
   { "tpope/vim-fugitive" },
   { "tpope/vim-rhubarb" },
-  { "tpope/vim-abolish" },
   { "tpope/vim-repeat" },
-  { "tpope/vim-eunuch" },
   { "tpope/vim-sleuth" },
-  { "tpope/vim-speeddating" },
   {
     "nvim-telescope/telescope.nvim",
     dependencies = {
@@ -441,7 +438,6 @@ require("lazy").setup({
       require("bufferline").setup()
     end,
   },
-  { "dhruvasagar/vim-table-mode" },
   {
     "iamcco/markdown-preview.nvim",
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
