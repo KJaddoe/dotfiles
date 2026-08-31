@@ -166,6 +166,23 @@ require("lazy").setup({
     tag = "1.1.0",
     config = function()
       require("auto-hlsearch").setup()
+      -- setup() rebinds n/N itself, so the centring has to be layered on top of
+      -- its mappings here rather than in user.keymaps, which runs earlier and
+      -- would simply be overwritten. Its mappings are `expr`, returning the key
+      -- to run rather than running it, so this appends to that return value;
+      -- noremap keeps the returned `n` the built-in one, not this mapping.
+      for _, lhs in ipairs({ "n", "N" }) do
+        local hlsearch = vim.fn.maparg(lhs, "n", false, true)
+        vim.keymap.set("n", lhs, function()
+          local keys = hlsearch.callback and hlsearch.callback() or lhs
+          return keys .. "zzzv"
+        end, {
+          expr = true,
+          desc = "Search match "
+            .. (lhs == "n" and "next" or "previous")
+            .. " (centred)",
+        })
+      end
     end,
   },
   {

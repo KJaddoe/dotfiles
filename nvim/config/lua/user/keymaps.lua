@@ -82,10 +82,6 @@ nmap("<leader>w", ":write<CR>", "Write file")
 -- paste over without replacing default register
 nmap("<leader>p", '"_dP', "Paste (keep register)")
 
--- keep more or less in the same place when going next
-nmap("n", "nzzzv", "Next search match (centred)")
-nmap("N", "Nzzzv", "Previous search match (centred)")
-
 -- keep more or less in the same place when going up/down
 nmap("<C-u>", "<C-u>zz", "Half page up (centred)")
 nmap("<C-d>", "<C-d>zz", "Half page down (centred)")
