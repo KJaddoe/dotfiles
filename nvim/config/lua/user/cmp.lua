@@ -82,8 +82,6 @@ cmp.setup({
       keyword_length = 5,
     },
     { name = "path" },
-    { name = "emoji" },
-    { name = "calc" },
   }),
   confirm_opts = {
     behavior = cmp.ConfirmBehavior.Select,
