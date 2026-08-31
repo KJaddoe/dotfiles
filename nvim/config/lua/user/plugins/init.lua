@@ -182,17 +182,21 @@ require("lazy").setup({
       -- mode matters most: <C-h> is a backspace by default, which stranded the
       -- cursor in a gitcommit buffer, since those open straight into insert.
       -- Leaving insert first keeps the target window in normal mode.
-      for lhs, navigate in pairs({
-        ["<C-h>"] = nvim_tmux_nav.NvimTmuxNavigateLeft,
-        ["<C-j>"] = nvim_tmux_nav.NvimTmuxNavigateDown,
-        ["<C-k>"] = nvim_tmux_nav.NvimTmuxNavigateUp,
-        ["<C-l>"] = nvim_tmux_nav.NvimTmuxNavigateRight,
-        ["<C-\\>"] = nvim_tmux_nav.NvimTmuxNavigateLastActive,
+      for lhs, spec in pairs({
+        ["<C-h>"] = { nvim_tmux_nav.NvimTmuxNavigateLeft, "left" },
+        ["<C-j>"] = { nvim_tmux_nav.NvimTmuxNavigateDown, "down" },
+        ["<C-k>"] = { nvim_tmux_nav.NvimTmuxNavigateUp, "up" },
+        ["<C-l>"] = { nvim_tmux_nav.NvimTmuxNavigateRight, "right" },
+        ["<C-\\>"] = {
+          nvim_tmux_nav.NvimTmuxNavigateLastActive,
+          "to last active",
+        },
       }) do
+        local navigate, label = spec[1], spec[2]
         vim.keymap.set({ "n", "i", "v", "t" }, lhs, function()
           vim.cmd("stopinsert")
           navigate()
-        end)
+        end, { desc = "Navigate " .. label })
       end
     end,
   },

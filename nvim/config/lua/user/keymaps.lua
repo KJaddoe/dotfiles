@@ -1,5 +1,3 @@
-local opts = { noremap = true, silent = true }
-
 -- Shorten function name
 local keymap = vim.keymap.set
 
@@ -20,12 +18,21 @@ local function vmap(lhs, rhs, desc)
 end
 
 --Remap space as leader key
-keymap("", "<Space>", "<Nop>", opts)
+keymap("", "<Space>", "<Nop>", {
+  noremap = true,
+  silent = true,
+  desc = "Leader",
+})
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- Quick command mode
-keymap("n", ";", ":", { noremap = true, nowait = true, silent = false })
+keymap("n", ";", ":", {
+  noremap = true,
+  nowait = true,
+  silent = false,
+  desc = "Command mode",
+})
 
 -- Normal --
 -- create and edit new buffer
@@ -34,14 +41,14 @@ nmap("<leader>n", ":enew<CR>", "New buffer")
 -- quickfix. The list itself is browsed with <leader>fq (telescope).
 nmap("<leader>co", "<cmd>copen<CR>", "Open quickfix")
 nmap("<leader>cc", "<cmd>cclose<CR>", "Close quickfix")
-keymap("n", "[q", ":cprevious<CR>zz", opts)
-keymap("n", "]q", ":cnext<CR>zz", opts)
+nmap("[q", ":cprevious<CR>zz", "Previous quickfix item")
+nmap("]q", ":cnext<CR>zz", "Next quickfix item")
 
 -- Resize with arrows
-keymap("n", "<A-Up>", ":resize +2<CR>", opts)
-keymap("n", "<A-Down>", ":resize -2<CR>", opts)
-keymap("n", "<A-Left>", ":vertical resize -2<CR>", opts)
-keymap("n", "<A-Right>", ":vertical resize +2<CR>", opts)
+nmap("<A-Up>", ":resize +2<CR>", "Grow window")
+nmap("<A-Down>", ":resize -2<CR>", "Shrink window")
+nmap("<A-Left>", ":vertical resize -2<CR>", "Narrow window")
+nmap("<A-Right>", ":vertical resize +2<CR>", "Widen window")
 
 -- buffer killing
 nmap("<leader>q", "<cmd>bp|bd #<CR>", "Delete current buffer")
@@ -64,7 +71,8 @@ for i = 1, 9 do
   keymap(
     "t",
     "<leader>" .. i,
-    '<C-\\><C-n>:lua require"bufferline".go_to_buffer(' .. i .. ")<CR>"
+    '<C-\\><C-n>:lua require"bufferline".go_to_buffer(' .. i .. ")<CR>",
+    { noremap = true, silent = true, desc = "Go to buffer " .. i }
   )
 end
 
@@ -75,22 +83,22 @@ nmap("<leader>w", ":write<CR>", "Write file")
 nmap("<leader>p", '"_dP', "Paste (keep register)")
 
 -- keep more or less in the same place when going next
-keymap("n", "n", "nzzzv", opts)
-keymap("n", "N", "Nzzzv", opts)
+nmap("n", "nzzzv", "Next search match (centred)")
+nmap("N", "Nzzzv", "Previous search match (centred)")
 
 -- keep more or less in the same place when going up/down
-keymap("n", "<C-u>", "<C-u>zz", opts)
-keymap("n", "<C-d>", "<C-d>zz", opts)
-keymap("n", "<C-o>", "<C-o>zz", opts)
-keymap("n", "<C-i>", "<C-i>zz", opts)
+nmap("<C-u>", "<C-u>zz", "Half page up (centred)")
+nmap("<C-d>", "<C-d>zz", "Half page down (centred)")
+nmap("<C-o>", "<C-o>zz", "Jump back (centred)")
+nmap("<C-i>", "<C-i>zz", "Jump forward (centred)")
 
 -- move record macro to Q instead of q, which also keeps Ex mode out of reach
-keymap("n", "Q", "q", opts)
-keymap("n", "q", "<Nop>", opts)
+nmap("Q", "q", "Record macro")
+nmap("q", "<Nop>", "Disabled (macros are on Q)")
 
 -- Insert empty blank line above/bellow
-keymap("n", "]<Space>", "m`o<Esc>``", opts)
-keymap("n", "[<Space>", "m`O<Esc>``", opts)
+nmap("]<Space>", "m`o<Esc>``", "Blank line below")
+nmap("[<Space>", "m`O<Esc>``", "Blank line above")
 
 -- system clipboard integration
 nmap("<leader>y", '"+y', "Yank to system clipboard")
@@ -105,26 +113,27 @@ nmap("<leader>D", '"_D', "Delete to EOL (blackhole)")
 
 -- Insert --
 -- in insert mode, adds new undo points after , . ! and ?.
-keymap("i", "-", "-<c-g>u", opts)
-keymap("i", "_", "_<c-g>u", opts)
-keymap("i", ",", ",<c-g>u", opts)
-keymap("i", ".", ".<c-g>u", opts)
-keymap("i", "!", "!<c-g>u", opts)
-keymap("i", "?", "?<c-g>u", opts)
+for _, char in ipairs({ "-", "_", ",", ".", "!", "?" }) do
+  keymap("i", char, char .. "<c-g>u", {
+    noremap = true,
+    silent = true,
+    desc = "Insert " .. char .. " and start a new undo point",
+  })
+end
 
 -- Visual --
 -- Stay in indent mode
-keymap("v", "<", "<gv", opts)
-keymap("v", ">", ">gv", opts)
+vmap("<", "<gv", "Outdent, keep selection")
+vmap(">", ">gv", "Indent, keep selection")
 
 -- Move text up and down
-keymap("v", "<A-j>", ":m .+1<CR>==", opts)
-keymap("v", "<A-k>", ":m .-2<CR>==", opts)
+vmap("<A-j>", ":m .+1<CR>==", "Move line down")
+vmap("<A-k>", ":m .-2<CR>==", "Move line up")
 
 -- If I visually select words and paste from clipboard, don't replace my
 -- clipboard with the selected word, instead keep my old word in the
 -- clipboard
-keymap("v", "p", '"_dP', opts)
+vmap("p", '"_dP', "Paste over (keep register)")
 
 -- system clipboard integration
 vmap("<leader>y", '"+y', "Yank to system clipboard")
@@ -136,10 +145,20 @@ vmap("<leader>D", '"_D', "Delete to blackhole")
 
 -- Visual Block --
 -- Move text up and down
-keymap("x", "J", ":move '>+1<CR>gv-gv", opts)
-keymap("x", "K", ":move '<-2<CR>gv-gv", opts)
-keymap("x", "<A-j>", ":move '>+1<CR>gv-gv", opts)
-keymap("x", "<A-k>", ":move '<-2<CR>gv-gv", opts)
+for _, lhs in ipairs({ "J", "<A-j>" }) do
+  keymap("x", lhs, ":move '>+1<CR>gv-gv", {
+    noremap = true,
+    silent = true,
+    desc = "Move selection down",
+  })
+end
+for _, lhs in ipairs({ "K", "<A-k>" }) do
+  keymap("x", lhs, ":move '<-2<CR>gv-gv", {
+    noremap = true,
+    silent = true,
+    desc = "Move selection up",
+  })
+end
 
 -- Oil file explorer
-keymap("n", "-", "<CMD>Oil --float<CR>", opts)
+nmap("-", "<CMD>Oil --float<CR>", "File explorer (oil)")
