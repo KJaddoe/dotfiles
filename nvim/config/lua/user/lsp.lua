@@ -253,10 +253,10 @@ local diagnostic_icons = require("user.icons").diagnostics
 vim.diagnostic.config({
   underline = true,
   update_in_insert = false,
+  -- Neither inline form: the message is shown in the bordered float, which
+  -- [d/]d open on arrival and <leader>gl opens on demand.
   virtual_text = false,
-  -- Full message inline, but only under the cursor's line: the visibility
-  -- virtual_text gives without turning every diagnostic into screen clutter.
-  virtual_lines = { current_line = true },
+  virtual_lines = false,
   severity_sort = true,
   float = float_config,
   signs = {
