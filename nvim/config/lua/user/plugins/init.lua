@@ -104,12 +104,11 @@ require("lazy").setup({
         { "<leader>k", group = "HTTP" },
         { "<leader>l", group = "Symbols / Grep" },
         { "<leader>o", group = "Open / Angular" },
-        { "<leader>s", group = "Swap" },
         { "<leader>t", group = "Test" },
         { "<leader>x", group = "Debug" },
         -- treesitter swap mappings can't carry a native desc.
-        { "<leader>sa", desc = "Swap param with next" },
-        { "<leader>sA", desc = "Swap param with previous" },
+        { "<leader>a", desc = "Swap param with next" },
+        { "<leader>A", desc = "Swap param with previous" },
       })
     end,
   },
