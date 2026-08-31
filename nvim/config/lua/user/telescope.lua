@@ -67,6 +67,7 @@ keymap("<c-p>", function()
       "--hidden",
       "--files",
       "--smart-case",
+      "--no-ignore-vcs",
       "--glob=!.git",
     },
     attach_mappings = function(_, map)
