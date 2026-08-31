@@ -48,7 +48,6 @@ local select_one_or_multi_tabedit = function(prompt_bufnr)
 end
 
 telescope.load_extension("gh")
-telescope.load_extension("harpoon")
 
 local builtin = require("telescope.builtin")
 
@@ -107,4 +106,3 @@ keymap("<leader>fq", builtin.quickfix, "Quickfix list")
 keymap("<leader>/", builtin.current_buffer_fuzzy_find, "Fuzzy find in buffer")
 keymap("<leader>xx", builtin.diagnostics, "Diagnostics list")
 keymap("<leader>ghi", telescope.extensions.gh.issues, "GitHub issues")
-keymap("<leader>fj", telescope.extensions.harpoon.marks, "Harpoon marks")
