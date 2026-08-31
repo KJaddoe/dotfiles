@@ -14,15 +14,25 @@ local organize_imports = function(client, bufnr)
       -- ignore errors
       return
     end
+    local organized = false
     for _, r in pairs(result or {}) do
       if r.edit then
         local enc = client.offset_encoding or "utf-16"
         vim.lsp.util.apply_workspace_edit(r.edit, enc)
+        organized = true
       elseif r.command and r.command.command then
         client:exec_cmd(r.command, { bufnr = bufnr })
+        organized = true
       end
     end
-    vim.cmd([[noautocmd write]])
+    -- Only when the server actually reordered something. Writing regardless
+    -- put a second write on every save, once per code-action-capable client,
+    -- racing conform's format_after_save.
+    if organized and vim.api.nvim_buf_is_loaded(bufnr) then
+      vim.api.nvim_buf_call(bufnr, function()
+        vim.cmd([[noautocmd write]])
+      end)
+    end
   end
 
   local win = vim.api.nvim_get_current_win()
