@@ -436,12 +436,6 @@ require("lazy").setup({
     end,
   },
   {
-    "folke/trouble.nvim",
-    config = function()
-      require("trouble").setup({})
-    end,
-  },
-  {
     "akinsho/bufferline.nvim",
     version = "*",
     dependencies = "nvim-tree/nvim-web-devicons",
