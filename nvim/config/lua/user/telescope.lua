@@ -62,14 +62,7 @@ end
 
 keymap("<c-p>", function()
   builtin.find_files({
-    find_command = {
-      "rg",
-      "--hidden",
-      "--files",
-      "--smart-case",
-      "--no-ignore-vcs",
-      "--glob=!.git",
-    },
+    find_command = require("user.search").find_command(),
     attach_mappings = function(_, map)
       map("i", "<cr>", select_one_or_multi)
       map("i", "<c-x>", select_one_or_multi_split)

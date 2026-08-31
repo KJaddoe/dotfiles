@@ -164,20 +164,7 @@ require("lazy").setup({
           entry_prefix = "   ",
           multi_icon = "+ ",
           path_display = { "filename_first" },
-          -- --no-ignore-vcs so gitignored files are searchable; .ignore and
-          -- .rgignore still apply, and .git itself stays excluded by glob.
-          vimgrep_arguments = {
-            "rg",
-            "--color=never",
-            "--no-heading",
-            "--with-filename",
-            "--line-number",
-            "--column",
-            "--smart-case",
-            "--hidden",
-            "--no-ignore-vcs",
-            "--glob=!.git",
-          },
+          vimgrep_arguments = require("user.search").vimgrep_arguments(),
         },
       })
     end,
