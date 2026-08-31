@@ -183,11 +183,22 @@ require("lazy").setup({
       nvim_tmux_nav.setup({
         disable_when_zoomed = true, -- defaults to false
       })
-      vim.keymap.set("n", "<C-h>", nvim_tmux_nav.NvimTmuxNavigateLeft)
-      vim.keymap.set("n", "<C-j>", nvim_tmux_nav.NvimTmuxNavigateDown)
-      vim.keymap.set("n", "<C-k>", nvim_tmux_nav.NvimTmuxNavigateUp)
-      vim.keymap.set("n", "<C-l>", nvim_tmux_nav.NvimTmuxNavigateRight)
-      vim.keymap.set("n", "<C-\\>", nvim_tmux_nav.NvimTmuxNavigateLastActive)
+      -- Window and pane navigation in every mode, never anything else. Insert
+      -- mode matters most: <C-h> is a backspace by default, which stranded the
+      -- cursor in a gitcommit buffer, since those open straight into insert.
+      -- Leaving insert first keeps the target window in normal mode.
+      for lhs, navigate in pairs({
+        ["<C-h>"] = nvim_tmux_nav.NvimTmuxNavigateLeft,
+        ["<C-j>"] = nvim_tmux_nav.NvimTmuxNavigateDown,
+        ["<C-k>"] = nvim_tmux_nav.NvimTmuxNavigateUp,
+        ["<C-l>"] = nvim_tmux_nav.NvimTmuxNavigateRight,
+        ["<C-\\>"] = nvim_tmux_nav.NvimTmuxNavigateLastActive,
+      }) do
+        vim.keymap.set({ "n", "i", "v", "t" }, lhs, function()
+          vim.cmd("stopinsert")
+          navigate()
+        end)
+      end
     end,
   },
   {

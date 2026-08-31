@@ -50,16 +50,6 @@ cmp.setup({
         cmp.complete()
       end
     end),
-    ["<C-k>"] = cmp.mapping(function()
-      if luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
-      end
-    end, { "i", "s" }),
-    ["<C-j>"] = cmp.mapping(function()
-      if luasnip.expand_or_jumpable(-1) then
-        luasnip.expand_or_jump(-1)
-      end
-    end, { "i", "s" }),
   }),
   formatting = {
     fields = { "kind", "abbr", "menu" },
