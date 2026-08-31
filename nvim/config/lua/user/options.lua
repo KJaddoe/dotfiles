@@ -3,6 +3,7 @@ vim.opt.termsync = true
 vim.opt.clipboard = "unnamedplus"
 vim.opt.hidden = true
 vim.opt.updatetime = 1000 -- faster update times, default 4000
+vim.opt.timeoutlen = 300 -- how long a mapping waits for the next key
 vim.opt.mouse = "a"
 vim.opt.inccommand = "split"
 vim.opt.splitbelow = true
