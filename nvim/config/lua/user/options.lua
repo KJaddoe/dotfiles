@@ -26,6 +26,7 @@ vim.opt.undofile = true
 vim.opt.undodir = vim.fs.joinpath(vim.fn.stdpath("data"), "undodir")
 vim.opt.hlsearch = false
 vim.opt.ignorecase = true
+vim.opt.smartcase = true
 vim.opt.incsearch = true
 vim.opt.ruler = true
 vim.opt.wildmenu = true
