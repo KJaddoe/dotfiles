@@ -28,9 +28,6 @@ vim.g.maplocalleader = " "
 keymap("n", ";", ":", { noremap = true, nowait = true, silent = false })
 
 -- Normal --
--- disable Ex mode, I always enter in it by mistake
-keymap("n", "Q", "<Nop>", opts)
-
 -- create and edit new buffer
 nmap("<leader>n", ":enew<CR>", "New buffer")
 
@@ -96,7 +93,7 @@ keymap("n", "<C-d>", "<C-d>zz", opts)
 keymap("n", "<C-o>", "<C-o>zz", opts)
 keymap("n", "<C-i>", "<C-i>zz", opts)
 
--- move record macro to Q instead of q
+-- move record macro to Q instead of q, which also keeps Ex mode out of reach
 keymap("n", "Q", "q", opts)
 keymap("n", "q", "<Nop>", opts)
 
