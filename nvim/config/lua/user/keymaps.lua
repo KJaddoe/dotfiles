@@ -31,18 +31,9 @@ keymap("n", ";", ":", { noremap = true, nowait = true, silent = false })
 -- create and edit new buffer
 nmap("<leader>n", ":enew<CR>", "New buffer")
 
--- quicklists. trouble renders the quickfix list and the diagnostics it reads
--- from; required inside the callbacks so pressing the key loads it, not startup.
-nmap("<leader>co", function()
-  require("trouble").open({ mode = "qflist", focus = true })
-end, "Open quickfix")
-nmap("<leader>cc", function()
-  require("trouble").close()
-  vim.cmd("cclose")
-end, "Close quickfix")
-nmap("<leader>cd", function()
-  require("trouble").open({ mode = "diagnostics", focus = true })
-end, "Diagnostics list")
+-- quickfix. The list itself is browsed with <leader>fq (telescope).
+nmap("<leader>co", "<cmd>copen<CR>", "Open quickfix")
+nmap("<leader>cc", "<cmd>cclose<CR>", "Close quickfix")
 keymap("n", "[q", ":cprevious<CR>zz", opts)
 keymap("n", "]q", ":cnext<CR>zz", opts)
 
