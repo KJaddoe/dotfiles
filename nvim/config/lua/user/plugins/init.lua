@@ -471,7 +471,9 @@ require("lazy").setup({
   },
   {
     "stevearc/oil.nvim",
-    dependencies = { { "echasnovski/mini.icons", opts = {} } },
+    -- oil prefers mini.icons but falls back to nvim-web-devicons, which lualine
+    -- and bufferline already load; one icon set, one provider.
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     -- Lazy loading is tricky to get right with oil; keep it eager.
     lazy = false,
     ---@module 'oil'
