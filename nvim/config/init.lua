@@ -14,7 +14,6 @@ require("user.notify")
 --
 require("user.indent")
 require("user.todo")
-require("user.harpoon")
 require("user.telescope")
 require("user.git")
 

@@ -138,11 +138,6 @@ require("lazy").setup({
       -- refer to the configuration section below
     },
   },
-  {
-    "ThePrimeagen/harpoon",
-    branch = "harpoon2",
-    dependencies = { "nvim-lua/plenary.nvim" },
-  },
   { "tpope/vim-fugitive" },
   { "tpope/vim-rhubarb" },
   { "tpope/vim-abolish" },
