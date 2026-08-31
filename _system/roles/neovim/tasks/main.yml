@@ -64,6 +64,16 @@
     state: present
   when: ansible_facts.os_family == "Darwin"
 
+# macOS ships clangd with the Xcode Command Line Tools that _system/install.sh
+# already installs, so only Ubuntu needs it provisioned.
+- name: Install clangd (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name: clangd
+    state: present
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
 - name: Create lua-language-server versioned install directory (Ubuntu)
   ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/.local/share/lua-language-server-v{{ neovim_lua_ls_version }}"
