@@ -144,6 +144,56 @@ local function find_dotnet_dll()
   return coroutine.yield()
 end
 
+--- Read the environment a project's launch profile defines.
+---
+--- Rider and Visual Studio start a project through the first `commandName ==
+--- "Project"` profile in `Properties/launchSettings.json`, which is where
+--- `ASPNETCORE_ENVIRONMENT` and the application URLs live. Debugging the built
+--- dll bypasses that file, so without this the app boots as Production (no
+--- `appsettings.Development.json` and therefore no dev connection strings) on
+--- Kestrel's default port 5000, which on macOS also collides with Control
+--- Centre's AirPlay receiver.
+---@param project_dir string Directory holding the `.csproj`
+---@return table<string, string> env Variables the profile sets, empty when it defines none
+local function launch_profile_env(project_dir)
+  local file = io.open(project_dir .. "/Properties/launchSettings.json", "r")
+  if not file then
+    return {}
+  end
+  local content = file:read("*a")
+  file:close()
+
+  local ok, settings = pcall(vim.json.decode, content)
+  if
+    not ok
+    or type(settings) ~= "table"
+    or type(settings.profiles) ~= "table"
+  then
+    return {}
+  end
+
+  -- vim.json.decode drops JSON object order, so pick by sorted name to keep the
+  -- same profile winning on every launch.
+  local names = vim.tbl_keys(settings.profiles)
+  table.sort(names)
+
+  for _, name in ipairs(names) do
+    local profile = settings.profiles[name]
+    if type(profile) == "table" and profile.commandName == "Project" then
+      local env = {}
+      for key, value in pairs(profile.environmentVariables or {}) do
+        env[key] = tostring(value)
+      end
+      if profile.applicationUrl then
+        env.ASPNETCORE_URLS = profile.applicationUrl
+      end
+      return env
+    end
+  end
+
+  return {}
+end
+
 dap.configurations.cs = {
   {
     type = "coreclr",
@@ -155,14 +205,17 @@ dap.configurations.cs = {
     cwd = function()
       return nearest_root("%.csproj$") or vim.fn.getcwd()
     end,
-    --- Launching the dll directly bypasses launchSettings.json, so ASP.NET
-    --- binds Kestrel's default port. Forward ASPNETCORE_URLS/ENVIRONMENT from
-    --- the shell when set (e.g. `export ASPNETCORE_URLS=http://localhost:5179`
-    --- to match a frontend proxy) -- nil values drop out, leaving defaults.
-    env = {
-      ASPNETCORE_URLS = vim.env.ASPNETCORE_URLS,
-      ASPNETCORE_ENVIRONMENT = vim.env.ASPNETCORE_ENVIRONMENT,
-    },
+    --- Launching the dll bypasses launchSettings.json, so read the profile's
+    --- environment ourselves. The shell still wins where it sets a value, so
+    --- `ASPNETCORE_URLS=http://localhost:5179 nvim` keeps overriding the port.
+    env = function()
+      local env =
+        launch_profile_env(nearest_root("%.csproj$") or vim.fn.getcwd())
+      env.ASPNETCORE_URLS = vim.env.ASPNETCORE_URLS or env.ASPNETCORE_URLS
+      env.ASPNETCORE_ENVIRONMENT = vim.env.ASPNETCORE_ENVIRONMENT
+        or env.ASPNETCORE_ENVIRONMENT
+      return env
+    end,
   },
   {
     type = "coreclr",
