@@ -430,12 +430,6 @@ require("lazy").setup({
   { "nvim-treesitter/nvim-treesitter-context" },
   { "RRethy/nvim-treesitter-endwise" },
   {
-    "numToStr/Comment.nvim",
-    config = function()
-      require("Comment").setup()
-    end,
-  },
-  {
     "akinsho/bufferline.nvim",
     version = "*",
     dependencies = "nvim-tree/nvim-web-devicons",

@@ -69,16 +69,8 @@ M.on_attach = function(bufnr)
   keymap("<leader>li", builtin.lsp_incoming_calls, bufnr, "Incoming calls")
   keymap("<leader>lo", builtin.lsp_outgoing_calls, bufnr, "Outgoing calls")
   keymap("<leader>cl", vim.lsp.codelens.run, bufnr, "Run code lens")
-  keymap("<leader>rn", vim.lsp.buf.rename, bufnr, "Rename symbol")
-  -- Visual mode too: TypeScript's extract refactors are only offered for a
-  -- selected range, so a normal-mode-only map cannot reach them at all.
-  keymap(
-    "<leader>ca",
-    vim.lsp.buf.code_action,
-    bufnr,
-    "Code action",
-    { "n", "v" }
-  )
+  -- Rename and code action are Neovim's own grn and gra, which already cover
+  -- normal and visual mode; the source-kind actions below have no built-in.
 
   for _, action in ipairs({
     { "<leader>cf", "source.fixAll.eslint", "Fix all (eslint)" },
