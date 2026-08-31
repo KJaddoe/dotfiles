@@ -32,6 +32,11 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   `hosts.ini`. `should_be_root` is true except under Homebrew (macOS). Roles provision software;
   they do **not** symlink plain configs (that's dotbot's job, see ADR 0001). The exception is
   `ssh`, whose link carries dir-mode + backup logic dotbot can't express.
+- **`nvim/`**: `config/` is symlinked to `~/.config/nvim`, and plugins are managed by lazy.nvim.
+  `config/lazy-lock.json` is **tracked**, so a fresh machine installs the same plugin commits this
+  one runs rather than whatever each plugin's HEAD is that day. Treat it as a lockfile: commit it
+  when you deliberately add or update a plugin, and see `claude/memory/` on why `Lazy! sync` is the
+  wrong verb for adding one.
 - **`claude/`**: global Claude Code config, symlinked into `~/.claude/` (`settings.json`,
   `CLAUDE.md`, `hooks/`, `memory/`, `skills/`, `keybindings.json`, `templates/`). `templates/`
   holds starter scaffolding, currently `docs-pointer/`: a `CLAUDE.md.template`, a `docs/`
