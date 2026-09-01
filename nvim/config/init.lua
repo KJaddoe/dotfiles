@@ -4,11 +4,6 @@ require("user.autocommands")
 require("user.plugins")
 
 --
--- BASIC
---
-require("user.telescope")
-
---
 -- CODING
 --
 require("user.lsp")
