@@ -194,13 +194,30 @@ require("lazy").setup({
     end,
   },
   {
+    -- Eager, because the highlighting is the plugin's whole job: a keys trigger
+    -- would leave TODO comments unhighlighted until a jump key was first
+    -- pressed. Creating those highlight groups forces a redraw that would steal
+    -- the :intro screen, but todo-comments already defers its own setup when
+    -- called before VimEnter, so no deferral is needed here.
     "folke/todo-comments.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
+      highlight = {
+        keyword = "bg",
+      },
     },
+    config = function(_, opts)
+      local todo = require("todo-comments")
+      todo.setup(opts)
+
+      vim.keymap.set("n", "]t", todo.jump_next, { desc = "Next todo comment" })
+      vim.keymap.set(
+        "n",
+        "[t",
+        todo.jump_prev,
+        { desc = "Previous todo comment" }
+      )
+    end,
   },
   { "tpope/vim-fugitive" },
   { "tpope/vim-rhubarb" },

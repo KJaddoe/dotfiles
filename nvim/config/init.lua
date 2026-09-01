@@ -6,7 +6,6 @@ require("user.plugins")
 --
 -- BASIC
 --
-require("user.todo")
 require("user.telescope")
 require("user.git")
 
