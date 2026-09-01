@@ -173,12 +173,17 @@ class TestGraphqlIsClassifiedByOperation(unittest.TestCase):
         self.assertIsNone(run_hook(self.BOARD_QUERY))
 
     def test_board_write_is_gated(self):
-        """Setting a board field still needs approval."""
+        """A mutation that publishes still needs approval."""
+        cmd = "gh api graphql -f query='mutation { addComment(input: {}) { clientMutationId } }'"
+        self.assertEqual(run_hook(cmd)["permissionDecision"], "ask")
+
+    def test_board_field_mutation_is_carved_out(self):
+        """Setting board Status is bookkeeping the rules mandate, so it is not gated."""
         cmd = (
             "gh api graphql -f query='mutation { updateProjectV2ItemFieldValue"
             "(input: {}) { clientMutationId } }'"
         )
-        self.assertEqual(run_hook(cmd)["permissionDecision"], "ask")
+        self.assertIsNone(run_hook(cmd))
 
     def test_document_the_hook_cannot_read_is_gated(self):
         """A document behind a shell variable is not classifiable, so it fails closed."""
@@ -214,6 +219,39 @@ class TestReadsPassThrough(unittest.TestCase):
     def test_issue_develop_is_carved_out(self):
         """The branch-creation step the rules mandate is allowed through."""
         self.assertIsNone(run_hook("gh issue develop 42 --checkout"))
+
+    def test_help_is_not_gated(self):
+        """Printing usage touches nothing, so it must not cost an approval."""
+        for cmd in ("gh project item-edit --help", "gh issue create --help"):
+            with self.subTest(cmd=cmd):
+                self.assertIsNone(run_hook(cmd))
+
+    def test_help_bound_as_a_value_is_gated(self):
+        """`-t --help` would title a real issue `--help`, so it stays gated."""
+        self.assertEqual(run_hook("gh issue create -t --help -b body")["permissionDecision"], "ask")
+
+    def test_board_bookkeeping_is_carved_out(self):
+        """Placing an issue on the board and setting its fields notifies nobody."""
+        for cmd in (
+            "gh project item-add 4 --owner @me --url https://github.com/o/r/issues/1",
+            "gh project item-edit --id I --project-id P --field-id F --single-select-option-id S",
+            "gh project item-edit --id I --project-id P --field-id F --text 'In Progress'",
+            "gh project item-edit --id I --project-id P --field-id F --clear",
+        ):
+            with self.subTest(cmd=cmd):
+                self.assertIsNone(run_hook(cmd))
+
+    def test_draft_issue_prose_stays_gated(self):
+        """`item-edit` also rewrites draft-issue prose, which publishes, so it fails closed."""
+        for cmd in (
+            "gh project item-edit --id I --title 'a new title'",
+            "gh project item-edit --id I --body 'a new body'",
+            "gh project item-edit --id I --field-id F --text x --title 'smuggled'",
+            "gh project item-edit --id I",
+            "gh project item-delete --id I",
+        ):
+            with self.subTest(cmd=cmd):
+                self.assertEqual(run_hook(cmd)["permissionDecision"], "ask")
 
     def test_non_gh_command(self):
         """Unrelated commands are ignored."""

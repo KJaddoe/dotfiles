@@ -187,9 +187,18 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   board queries (`projectV2` has no REST endpoint). A document whose top-level operations are all
   queries reads; a `mutation` or `subscription` writes. A document the hook cannot read as a literal
   (`--input`, `-F query=@file`, or one behind a shell variable) fails closed and is gated.
-  Two carve-outs pass through ungated, both mandated at the start of issue work: `gh issue develop`,
-  and assigning an issue or PR to yourself. The second is scoped by FLAG, not by verb, since
-  `gh issue edit` also rewrites titles and bodies; assigning a colleague stays gated.
+  An invocation whose first flag is `--help` reads, whatever verb it names: gh prints usage and
+  exits without reaching the API. Only the long form counts, since `gh auth login -h` is
+  `--hostname`, and a `--help` sitting where another flag's value belongs still gates.
+  The remaining carve-outs are all steps mandated at the start of issue work:
+  `gh issue develop`; `gh project item-add`; assigning an issue or PR to yourself; setting a board
+  field with `gh project item-edit`; and a graphql mutation whose root selection holds nothing but
+  `updateProjectV2ItemFieldValue` / `clearProjectV2ItemFieldValue`. The last three are scoped by
+  FLAG or by root selection rather than by verb, since `gh issue edit` also rewrites titles and
+  bodies and `gh project item-edit` also rewrites a DRAFT issue's title and body. Assigning a
+  colleague stays gated, as does `--title`/`--body` on `item-edit`, a board mutation bundled with
+  a second one, an alias disguising another mutation, a document declaring more than one operation,
+  and root fields hidden behind a fragment spread.
   Read commands (`view`, `list`, `diff`, `checks`, `download`, `clone`, `checkout`, `watch`,
   `search`, `status`, `browse`, and `gh project`'s `item-list`/`field-list`) pass through untouched,
   as does `gh issue develop`: it publishes only a branch name for an issue already being worked on.
