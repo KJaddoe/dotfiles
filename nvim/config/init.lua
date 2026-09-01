@@ -6,7 +6,6 @@ require("user.plugins")
 --
 -- UI
 --
-require("user.colorscheme")
 require("user.notify")
 
 --
