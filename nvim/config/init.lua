@@ -4,11 +4,6 @@ require("user.autocommands")
 require("user.plugins")
 
 --
--- UI
---
-require("user.notify")
-
---
 -- BASIC
 --
 require("user.indent")
