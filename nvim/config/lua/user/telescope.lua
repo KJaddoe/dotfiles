@@ -1,3 +1,15 @@
+--- Telescope actions that open every entry in a multi-selection, rather than
+--- only the entry under the cursor.
+---
+--- A pure helper module in the shape of user.search: it is required on demand
+--- from the Telescope keymaps instead of at startup, so lazy.nvim can keep
+--- telescope itself unloaded until a picker is actually opened.
+local M = {}
+
+--- Open every selected entry, falling back to the entry under the cursor when
+--- nothing is multi-selected.
+---@param prompt_bufnr integer Telescope prompt buffer
+---@param open_cmd string Command opening the entries ("edit", "split", "vsplit" or "tabedit")
 local function open_selection(prompt_bufnr, open_cmd)
   local actions = require("telescope.actions")
   local action_state = require("telescope.actions.state")
@@ -32,73 +44,28 @@ local function open_selection(prompt_bufnr, open_cmd)
   end
 end
 
-local select_one_or_multi = function(prompt_bufnr)
+--- Open the selection in the current window.
+---@param prompt_bufnr integer Telescope prompt buffer
+function M.edit(prompt_bufnr)
   open_selection(prompt_bufnr, "edit")
 end
-local select_one_or_multi_split = function(prompt_bufnr)
+
+--- Open the selection in horizontal splits.
+---@param prompt_bufnr integer Telescope prompt buffer
+function M.split(prompt_bufnr)
   open_selection(prompt_bufnr, "split")
 end
-local select_one_or_multi_vsplit = function(prompt_bufnr)
+
+--- Open the selection in vertical splits.
+---@param prompt_bufnr integer Telescope prompt buffer
+function M.vsplit(prompt_bufnr)
   open_selection(prompt_bufnr, "vsplit")
 end
-local select_one_or_multi_tabedit = function(prompt_bufnr)
+
+--- Open the selection in new tabs.
+---@param prompt_bufnr integer Telescope prompt buffer
+function M.tabedit(prompt_bufnr)
   open_selection(prompt_bufnr, "tabedit")
 end
 
-local builtin = require("telescope.builtin")
-
---- Add a normal-mode Telescope keymap.
----@param lhs string Keymap
----@param rhs function Action
----@param desc string which-key description
-local function keymap(lhs, rhs, desc)
-  vim.keymap.set("n", lhs, rhs, { noremap = true, silent = true, desc = desc })
-end
-
-keymap("<c-p>", function()
-  builtin.find_files({
-    find_command = require("user.search").find_command(),
-    attach_mappings = function(_, map)
-      map("i", "<cr>", select_one_or_multi)
-      map("i", "<c-x>", select_one_or_multi_split)
-      map("i", "<c-v>", select_one_or_multi_vsplit)
-      map("i", "<c-t>", select_one_or_multi_tabedit)
-      return true
-    end,
-  })
-end, "Find files")
-
-keymap("<leader>fb", function()
-  builtin.buffers({
-    attach_mappings = function(_, map)
-      map("i", "<cr>", select_one_or_multi)
-      map("i", "<c-x>", select_one_or_multi_split)
-      map("i", "<c-v>", select_one_or_multi_vsplit)
-      map("i", "<c-t>", select_one_or_multi_tabedit)
-      map("i", "<c-d>", "delete_buffer")
-      return true
-    end,
-  })
-end, "Buffers")
-
-keymap("<leader>of", function()
-  builtin.oldfiles({
-    only_cwd = true,
-    attach_mappings = function(_, map)
-      map("i", "<cr>", select_one_or_multi)
-      map("i", "<c-x>", select_one_or_multi_split)
-      map("i", "<c-v>", select_one_or_multi_vsplit)
-      map("i", "<c-t>", select_one_or_multi_tabedit)
-      return true
-    end,
-  })
-end, "Recent files (cwd)")
-
-keymap("<leader>lg", builtin.live_grep, "Live grep")
-keymap("<leader>fh", builtin.help_tags, "Help tags")
-keymap("<leader>fc", builtin.commands, "Commands")
-keymap("<leader>fk", builtin.keymaps, "Keymaps")
-keymap("<leader>fr", builtin.resume, "Resume last picker")
-keymap("<leader>fq", builtin.quickfix, "Quickfix list")
-keymap("<leader>/", builtin.current_buffer_fuzzy_find, "Fuzzy find in buffer")
-keymap("<leader>xx", builtin.diagnostics, "Diagnostics list")
+return M

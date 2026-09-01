@@ -11,6 +11,16 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+--- Build a lazy.nvim `keys` entry for a Telescope picker, carrying the same
+--- mapping options the pickers used before they moved into this spec.
+---@param lhs string Keymap
+---@param rhs function Action
+---@param desc string which-key description
+---@return table entry lazy.nvim keys spec
+local function picker(lhs, rhs, desc)
+  return { lhs, rhs, desc = desc, silent = true, noremap = true }
+end
+
 require("lazy").setup({
   -- UI --
   {
@@ -273,8 +283,91 @@ require("lazy").setup({
   { "tpope/vim-repeat" },
   { "tpope/vim-sleuth" },
   {
+    -- Lazy on its keymaps: telescope does nothing until a picker is opened,
+    -- and it dominated the startup profile. Every keymap therefore lives in
+    -- `keys` rather than in `config`, which now only runs on first use.
     "nvim-telescope/telescope.nvim",
     dependencies = { { "nvim-lua/plenary.nvim" } },
+    keys = {
+      picker("<c-p>", function()
+        local select = require("user.telescope")
+        require("telescope.builtin").find_files({
+          find_command = require("user.search").find_command(),
+          attach_mappings = function(_, map)
+            map("i", "<cr>", select.edit)
+            map("i", "<c-x>", select.split)
+            map("i", "<c-v>", select.vsplit)
+            map("i", "<c-t>", select.tabedit)
+            return true
+          end,
+        })
+      end, "Find files"),
+      picker("<leader>fb", function()
+        local select = require("user.telescope")
+        require("telescope.builtin").buffers({
+          attach_mappings = function(_, map)
+            map("i", "<cr>", select.edit)
+            map("i", "<c-x>", select.split)
+            map("i", "<c-v>", select.vsplit)
+            map("i", "<c-t>", select.tabedit)
+            map("i", "<c-d>", "delete_buffer")
+            return true
+          end,
+        })
+      end, "Buffers"),
+      picker("<leader>of", function()
+        local select = require("user.telescope")
+        require("telescope.builtin").oldfiles({
+          only_cwd = true,
+          attach_mappings = function(_, map)
+            map("i", "<cr>", select.edit)
+            map("i", "<c-x>", select.split)
+            map("i", "<c-v>", select.vsplit)
+            map("i", "<c-t>", select.tabedit)
+            return true
+          end,
+        })
+      end, "Recent files (cwd)"),
+      picker("<leader>lg", function()
+        require("telescope.builtin").live_grep()
+      end, "Live grep"),
+      picker("<leader>fh", function()
+        require("telescope.builtin").help_tags()
+      end, "Help tags"),
+      picker("<leader>fc", function()
+        require("telescope.builtin").commands()
+      end, "Commands"),
+      picker("<leader>fk", function()
+        require("telescope.builtin").keymaps()
+      end, "Keymaps"),
+      picker("<leader>fr", function()
+        require("telescope.builtin").resume()
+      end, "Resume last picker"),
+      picker("<leader>fq", function()
+        require("telescope.builtin").quickfix()
+      end, "Quickfix list"),
+      picker("<leader>/", function()
+        require("telescope.builtin").current_buffer_fuzzy_find()
+      end, "Fuzzy find in buffer"),
+      picker("<leader>xx", function()
+        require("telescope.builtin").diagnostics()
+      end, "Diagnostics list"),
+
+      -- Git browsing. Read-only views with a diff preview; the work itself
+      -- happens in a terminal pane.
+      picker("<leader>gf", function()
+        require("telescope.builtin").git_status()
+      end, "Changed files"),
+      picker("<leader>gc", function()
+        require("telescope.builtin").git_commits()
+      end, "Commits (repo)"),
+      picker("<leader>gC", function()
+        require("telescope.builtin").git_bcommits()
+      end, "Commits (this file)"),
+      picker("<leader>gB", function()
+        require("telescope.builtin").git_branches()
+      end, "Branches"),
+    },
     config = function()
       require("telescope").setup({
         defaults = {
@@ -287,27 +380,11 @@ require("lazy").setup({
         },
       })
 
-      local builtin = require("telescope.builtin")
-
-      --- Add a normal-mode Telescope keymap.
-      ---@param lhs string Keymap
-      ---@param rhs function Action
-      ---@param desc string which-key description
-      local function map(lhs, rhs, desc)
-        vim.keymap.set(
-          "n",
-          lhs,
-          rhs,
-          { noremap = true, silent = true, desc = desc }
-        )
-      end
-
-      -- Git browsing. Read-only views with a diff preview; the work itself
-      -- happens in a terminal pane.
-      map("<leader>gf", builtin.git_status, "Changed files")
-      map("<leader>gc", builtin.git_commits, "Commits (repo)")
-      map("<leader>gC", builtin.git_bcommits, "Commits (this file)")
-      map("<leader>gB", builtin.git_branches, "Branches")
+      -- nvim-notify registers this itself, but only if telescope is already
+      -- loaded when notify sets up, which no longer happens now telescope is
+      -- lazy. Registering it here keeps :Telescope notify (a searchable history
+      -- of past notifications) working, with its cost off the startup path.
+      require("telescope").load_extension("notify")
     end,
   },
   {
