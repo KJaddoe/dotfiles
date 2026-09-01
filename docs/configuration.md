@@ -201,6 +201,14 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   a file written with `cat > f <<EOF` used to bypass it entirely; other shell write forms
   (`echo >> f`, `sed -i`) are still uncovered, and a `grep` for the character is left alone. It
   cannot see the assistant's chat prose, which the rule covers alone
+- `claude/hooks/block-artifact-publish.py` - PreToolUse guard on `Artifact`, no configuration.
+  Refuses any action that would send local content to claude.ai as a hosted page: `publish`
+  (which is also what an OMITTED `action` means, the shape most publish calls take) and
+  `upload_asset`. Generated pages are written to a local `.html` file and reviewed there;
+  only the user decides whether one ever gets a URL. Reading and bookkeeping stay available
+  (`read`, `list`, `comments`, `watch`, `unwatch`, `status`, `list_assets`, `read_asset`),
+  since none of them push anything outward. The allowlist is exact and everything absent from
+  it is blocked, so an action added to the tool later cannot publish before anyone notices
 - `claude/hooks/suggest-fresh-session.py`: the hook the `FRESH_SESSION_*` vars configure, and the
   only one that advises rather than gates. Two invocations. As a `UserPromptSubmit` hook it
   measures the session's transcript, counting bytes and real user turns (`type: user` entries

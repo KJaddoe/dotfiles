@@ -74,6 +74,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Artifact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/block-artifact-publish.py",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
