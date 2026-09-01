@@ -174,7 +174,15 @@ require("lazy").setup({
   },
 
   -- Basics
-  { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} },
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    opts = {
+      indent = { char = "│" },
+      exclude = { filetypes = { "help" } },
+      scope = { enabled = false },
+    },
+  },
   {
     "lewis6991/gitsigns.nvim",
     config = function()
