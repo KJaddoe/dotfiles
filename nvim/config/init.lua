@@ -8,6 +8,5 @@ require("user.plugins")
 --
 require("user.lsp")
 require("user.cmp")
-require("user.treesitter")
 require("user.neotest")
 require("user.dap")
