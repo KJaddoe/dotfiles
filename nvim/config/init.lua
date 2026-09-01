@@ -7,7 +7,6 @@ require("user.plugins")
 -- BASIC
 --
 require("user.telescope")
-require("user.git")
 
 --
 -- CODING

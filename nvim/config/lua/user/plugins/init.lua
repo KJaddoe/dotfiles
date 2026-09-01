@@ -184,13 +184,45 @@ require("lazy").setup({
     },
   },
   {
+    -- Eager: the sign column is drawn without any user action, so a keys
+    -- trigger would leave hunks unmarked until a hunk key was first pressed.
     "lewis6991/gitsigns.nvim",
-    config = function()
-      require("gitsigns").setup({
-        preview_config = {
-          border = "rounded",
-        },
-      })
+    opts = {
+      preview_config = {
+        border = "rounded",
+      },
+    },
+    config = function(_, opts)
+      local gitsigns = require("gitsigns")
+      gitsigns.setup(opts)
+
+      --- Add a normal-mode gitsigns keymap.
+      ---@param lhs string Keymap
+      ---@param rhs string|function Action
+      ---@param desc string which-key description
+      local function map(lhs, rhs, desc)
+        vim.keymap.set(
+          "n",
+          lhs,
+          rhs,
+          { noremap = true, silent = true, desc = desc }
+        )
+      end
+
+      -- Hunks. nav_hunk wraps, so the keys keep working at the end of a file.
+      map("]h", function()
+        gitsigns.nav_hunk("next")
+      end, "Next hunk")
+      map("[h", function()
+        gitsigns.nav_hunk("prev")
+      end, "Previous hunk")
+      map("<leader>gp", gitsigns.preview_hunk, "Preview hunk")
+      map("<leader>ga", gitsigns.stage_hunk, "Stage hunk")
+      map("<leader>gr", gitsigns.reset_hunk, "Reset hunk")
+      map("<leader>gu", gitsigns.undo_stage_hunk, "Undo stage hunk")
+      map("<leader>gb", function()
+        gitsigns.blame_line({ full = true })
+      end, "Blame line")
     end,
   },
   {
@@ -219,7 +251,24 @@ require("lazy").setup({
       )
     end,
   },
-  { "tpope/vim-fugitive" },
+  {
+    -- Eager: fugitive does not appear in the startup profile at all, so a lazy
+    -- trigger would buy nothing and risk the fugitive:// buffer handling.
+    "tpope/vim-fugitive",
+    init = function()
+      vim.g.fugitive_legacy_commands = 0
+    end,
+    config = function()
+      vim.keymap.set("n", "<leader>gs", vim.cmd.Git, {
+        noremap = true,
+        silent = true,
+        desc = "Open Git",
+      })
+      vim.keymap.set("n", "<leader>gms", function()
+        vim.cmd.Git("sync")
+      end, { noremap = true, silent = true, desc = "Git sync" })
+    end,
+  },
   { "tpope/vim-rhubarb" },
   { "tpope/vim-repeat" },
   { "tpope/vim-sleuth" },
@@ -237,6 +286,28 @@ require("lazy").setup({
           vimgrep_arguments = require("user.search").vimgrep_arguments(),
         },
       })
+
+      local builtin = require("telescope.builtin")
+
+      --- Add a normal-mode Telescope keymap.
+      ---@param lhs string Keymap
+      ---@param rhs function Action
+      ---@param desc string which-key description
+      local function map(lhs, rhs, desc)
+        vim.keymap.set(
+          "n",
+          lhs,
+          rhs,
+          { noremap = true, silent = true, desc = desc }
+        )
+      end
+
+      -- Git browsing. Read-only views with a diff preview; the work itself
+      -- happens in a terminal pane.
+      map("<leader>gf", builtin.git_status, "Changed files")
+      map("<leader>gc", builtin.git_commits, "Commits (repo)")
+      map("<leader>gC", builtin.git_bcommits, "Commits (this file)")
+      map("<leader>gB", builtin.git_branches, "Branches")
     end,
   },
   {
