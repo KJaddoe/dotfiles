@@ -105,8 +105,10 @@ GH_READ_ONLY_VERBS = {
     "watch",
 }
 
-# `gh issue develop` publishes a branch name and nothing else. See the module docstring.
-GH_ALLOWED_PAIRS = {("issue", "develop")}
+# Verbs carved out whole, because nothing they can do publishes prose or notifies anyone:
+# `gh issue develop` publishes a branch name, and `gh project item-add` places an issue on a
+# board. See the module docstring of require-gh-approval.py.
+GH_ALLOWED_PAIRS = {("issue", "develop"), ("project", "item-add")}
 
 # `edit` can rewrite the title or body, which IS publishing, so it cannot be carved out by verb.
 # It is carved out by FLAG instead: see `only_reassigns_to_self`.
@@ -120,6 +122,41 @@ GH_TARGETING_FLAGS = {"-R", "--repo"}
 # The only assignee the carve-out accepts. Assigning someone ELSE puts work in their queue and
 # notifies them, which is not a mundane act and is not what the carve-out is for.
 GH_SELF = {"@me"}
+
+# `gh project item-edit` sets one board field's value, the bookkeeping the rules mandate before
+# work starts. It also rewrites a DRAFT issue's title and body, which IS publishing, so like
+# `issue edit` it is carved out by FLAG rather than by verb: see `only_edits_board_fields`.
+GH_PROJECT_FIELD_PAIRS = {("project", "item-edit")}
+
+# Flags that set or clear a field's value, and nothing else.
+GH_PROJECT_FIELD_FLAGS = {
+    "--clear",
+    "--date",
+    "--iteration-id",
+    "--number",
+    "--single-select-option-id",
+    "--text",
+}
+
+# Flags that pick the item and field, or shape the output, without changing anything. `--title`
+# and `--body` are deliberately absent: they edit draft-issue prose, so they fail closed.
+GH_PROJECT_TARGETING_FLAGS = {
+    "--field-id",
+    "--format",
+    "--id",
+    "--jq",
+    "--owner",
+    "--project-id",
+    "--template",
+    "-q",
+    "-t",
+}
+
+# `--help` makes gh print usage and exit without touching the API, so an invocation asking for it
+# reads whatever verb it names. Only the LONG form counts: `-h` is not universally help in gh
+# (`gh auth login -h` is `--hostname`). It must also be the FIRST flag-like token, so a `--help`
+# bound as another flag's VALUE (`gh issue create -t --help`) still gates.
+GH_HELP_FLAG = "--help"
 
 GH_API_PAYLOAD_FLAGS = {"-f", "--raw-field", "-F", "--field", "--input"}
 
@@ -144,6 +181,27 @@ GRAPHQL_TOP_LEVEL = re.compile(r"(?:[A-Za-z_][A-Za-z0-9_]*|@[A-Za-z_][A-Za-z0-9_
 # An executable document's top level holds only operations and fragments, so a keyword scan there
 # is exact. `subscription` is included because only a query reads.
 GRAPHQL_WRITE_OPERATION = re.compile(r"\b(?:mutation|subscription)\b")
+
+GRAPHQL_SUBSCRIPTION = re.compile(r"\bsubscription\b")
+
+# Every executable operation and fragment keyword. A document declaring more than one of them
+# cannot be classified by reading a single selection set, so it fails closed.
+GRAPHQL_OPERATIONS = re.compile(r"\b(?:query|mutation|subscription|fragment)\b")
+
+# What may remain of a root selection set once nested sets and arguments are blanked: field
+# names, aliases, directives and separators. A fragment spread's `...` is not here, so a document
+# hiding its root fields behind one cannot be read and fails closed.
+GRAPHQL_SELECTION = re.compile(r"(?:[A-Za-z_][A-Za-z0-9_]*|@[A-Za-z_][A-Za-z0-9_]*|[:\s,])*")
+
+# A root selection, whose field name is what follows an optional `alias:`.
+GRAPHQL_FIELD = re.compile(r"(?:[A-Za-z_][A-Za-z0-9_]*\s*:\s*)?([A-Za-z_][A-Za-z0-9_]*)")
+
+# The only mutations carved out: each sets or clears ONE field value on ONE board item, which is
+# the bookkeeping ~/.claude/CLAUDE.md mandates before work starts. Every other mutation is gated.
+GRAPHQL_BOARD_FIELD_MUTATIONS = {
+    "clearProjectV2ItemFieldValue",
+    "updateProjectV2ItemFieldValue",
+}
 
 
 def clip_summary(text):
@@ -410,6 +468,69 @@ def graphql_top_level(document):
     return "".join(kept)
 
 
+def graphql_root_fields(document):
+    """Return the field names an operation selects at the root of its selection set.
+
+    Arguments and every nested selection are blanked, so what remains is the operation's own
+    root selection: the fields that say what it actually does. An alias resolves to the field it
+    names, because `x: deleteRepository` deletes a repository just the same.
+
+    :param document: the GraphQL document text
+    :return: the set of root field names, or None when the document cannot be read
+    """
+    text = GRAPHQL_IGNORED.sub(" ", document)
+    start = text.find("{")
+    if start < 0:
+        return None
+
+    kept = []
+    depth = 0
+    parens = 0
+    for char in text[start:]:
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+        elif char == "(" and depth == 1:
+            parens += 1
+        elif char == ")" and depth == 1:
+            parens = max(parens - 1, 0)
+        elif depth == 1 and parens == 0:
+            kept.append(char)
+            continue
+        kept.append(" ")
+        if depth == 0:
+            break
+
+    selection = "".join(kept)
+    if not GRAPHQL_SELECTION.fullmatch(selection):
+        return None
+
+    return {match.group(1) for match in GRAPHQL_FIELD.finditer(selection)}
+
+
+def graphql_is_board_bookkeeping(document, top_level):
+    """Report whether a writing document does nothing but set or clear board field values.
+
+    The test is the whole root selection, not its first field, so a board mutation cannot smuggle
+    a second one alongside it. A document declaring more than one operation, a subscription, or
+    root fields hidden behind a fragment spread all fail closed: the selection read would not be
+    provably the one that writes.
+
+    :param document: the GraphQL document text
+    :param top_level: the document's top level, per `graphql_top_level`
+    :return: True when every root field is a board field mutation
+    """
+    if GRAPHQL_SUBSCRIPTION.search(top_level):
+        return False
+
+    if len(GRAPHQL_OPERATIONS.findall(top_level)) != 1:
+        return False
+
+    fields = graphql_root_fields(document)
+    return bool(fields) and fields <= GRAPHQL_BOARD_FIELD_MUTATIONS
+
+
 def graphql_document_writes(document):
     """Report whether a GraphQL document contains anything but read operations.
 
@@ -423,7 +544,10 @@ def graphql_document_writes(document):
     if not GRAPHQL_TOP_LEVEL.fullmatch(top_level):
         return True
 
-    return bool(GRAPHQL_WRITE_OPERATION.search(top_level))
+    if not GRAPHQL_WRITE_OPERATION.search(top_level):
+        return False
+
+    return not graphql_is_board_bookkeeping(document, top_level)
 
 
 def gh_graphql_writes(tokens):
@@ -506,10 +630,28 @@ def only_reassigns_to_self(tokens):
     return bool(values) and all(value in GH_SELF for value in values)
 
 
+def only_edits_board_fields(tokens):
+    """Report whether an item edit does nothing but set or clear a board field's value.
+
+    A field value is bookkeeping: it publishes no prose and notifies nobody, and the rules mandate
+    setting Status before work starts. The same subcommand also rewrites a draft issue's title and
+    body, which IS publishing, so this fails closed on any flag it does not recognise rather than
+    allowlisting `item-edit` wholesale.
+
+    :param tokens: gh arguments, excluding `gh`
+    :return: True when the only mutation is a board field value
+    """
+    names = {token.partition("=")[0] for token in tokens if token.startswith("-")}
+    if not names & GH_PROJECT_FIELD_FLAGS:
+        return False
+
+    return names <= (GH_PROJECT_FIELD_FLAGS | GH_PROJECT_TARGETING_FLAGS)
+
+
 def gh_is_carved_out(command, verb, tokens):
     """Report whether a writing invocation is one the user has decided not to be asked about.
 
-    Both carve-outs are steps ~/.claude/CLAUDE.md mandates at the start of issue work, so gating
+    Every carve-out is a step ~/.claude/CLAUDE.md mandates at the start of issue work, so gating
     them would only train the user to click through prompts. See `require-gh-approval.py`.
 
     :param command: resolved top-level gh command
@@ -520,7 +662,23 @@ def gh_is_carved_out(command, verb, tokens):
     if (command, verb) in GH_ALLOWED_PAIRS:
         return True
 
+    if (command, verb) in GH_PROJECT_FIELD_PAIRS:
+        return only_edits_board_fields(tokens)
+
     return (command, verb) in GH_ASSIGNABLE_PAIRS and only_reassigns_to_self(tokens)
+
+
+def gh_shows_help(tokens):
+    """Report whether an invocation only asks gh to print usage.
+
+    :param tokens: gh arguments, excluding `gh`
+    :return: True when the first flag-like token is `--help`
+    """
+    for token in tokens:
+        if token.startswith("-"):
+            return token.partition("=")[0] == GH_HELP_FLAG
+
+    return False
 
 
 def gh_writes_to_github(tokens):
@@ -529,7 +687,7 @@ def gh_writes_to_github(tokens):
     :param tokens: gh arguments, excluding `gh`
     :return: True when the invocation writes and is not carved out
     """
-    if not tokens:
+    if not tokens or gh_shows_help(tokens):
         return False
 
     command, verb = gh_subcommand(tokens)

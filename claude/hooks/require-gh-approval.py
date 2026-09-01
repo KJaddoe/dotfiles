@@ -28,15 +28,33 @@ unlabelled form, the `{ ... }` shorthand, is a query by definition. Ambiguity fa
 everywhere else: a document passed by file, or hidden behind a shell variable, cannot be read at
 all, so it is gated.
 
-Two carve-outs exist, both for steps ~/.claude/CLAUDE.md mandates at the START of issue work.
-Gating a step the rules require every time would only teach the user to click through prompts.
+`--help` is read whatever verb it names, because gh prints usage and exits without reaching the
+API. Only the LONG form counts (`gh auth login -h` is `--hostname`, not help), and it must be the
+FIRST flag-like token, so a `--help` bound as another flag's VALUE (`gh issue create -t --help`,
+which titles a real issue `--help`) still gates.
+
+The remaining carve-outs are all steps ~/.claude/CLAUDE.md mandates at the START of issue work: creating the
+branch, assigning the issue, putting it on the board and setting its Status. Gating a step the
+rules require every time would only teach the user to click through prompts.
 
 `gh issue develop` publishes a branch name for an issue the user already decided to work on, and
-notifies nobody. Assigning that issue to themselves is the same kind of bookkeeping, but it cannot
-be carved out by verb: `gh issue edit` also rewrites titles and bodies, which IS publishing. So the
-assignment carve-out is by FLAG (`only_reassigns_to_self` in `_hookutil`) and fails closed on any
-flag it does not recognise. Assigning someone ELSE stays gated: that puts work in a colleague's
-queue and notifies them, which is not mundane.
+notifies nobody; `gh project item-add` places an issue on a board, which notifies nobody either.
+Both are carved out by verb, because nothing those verbs can do publishes prose.
+
+Assigning an issue and setting a board field are the same kind of bookkeeping, but neither can be
+carved out by verb: `gh issue edit` also rewrites titles and bodies, and `gh project item-edit`
+also rewrites a DRAFT issue's title and body. Both are therefore carved out by FLAG
+(`only_reassigns_to_self` and `only_edits_board_fields` in `_hookutil`), and both fail closed on
+any flag they do not recognise. Assigning someone ELSE stays gated: that puts work in a
+colleague's queue and notifies them, which is not mundane.
+
+Board Status has no REST endpoint, so it is also set through `gh api graphql`. A mutation whose
+root selection holds nothing but `updateProjectV2ItemFieldValue` / `clearProjectV2ItemFieldValue`
+is the same bookkeeping and is carved out; every other mutation is gated. The test is the whole
+root selection, not its first field, so a board mutation cannot smuggle a second one alongside it,
+and an alias resolves to the field it names. A document declaring more than one operation, a
+subscription, or root fields hidden behind a fragment spread all fail closed, because the
+selection read would not be provably the one that writes.
 
 Mode handling matches the commit and push gates. See `approval_decision` in `_hookutil`: prompt
 where a prompt renders, deny where it would be auto-approved, never allow.

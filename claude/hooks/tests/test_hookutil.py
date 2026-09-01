@@ -12,6 +12,7 @@ is asserted rather than assumed.
 
 import importlib.util
 import json
+import shlex
 import shutil
 import subprocess
 import sys
@@ -166,9 +167,102 @@ class GhGraphqlClassification(unittest.TestCase):
         )
 
     def test_mutation_operation_writes(self):
-        """Changing a board field is a write."""
+        """A mutation publishes, so it is a write."""
+        self.assertTrue(self.writes("mutation { addComment(input: {}) { clientMutationId } }"))
+
+
+class GhHelpReads(unittest.TestCase):
+    """Asking gh to print usage touches nothing, whatever verb it names."""
+
+    def writes(self, cmd):
+        """Report whether `cmd` is classified as writing.
+
+        :param cmd: full shell command
+        :return: True when the invocation is classified as writing
+        """
+        return hookutil.gh_writes_to_github(shlex.split(cmd)[1:])
+
+    def test_help_on_a_write_verb_reads(self):
+        """The regression: `gh project item-edit --help` asked for approval to print usage."""
+        for cmd in (
+            "gh project item-edit --help",
+            "gh issue create --help",
+            "gh release delete --help",
+            "gh api --help",
+        ):
+            with self.subTest(cmd=cmd):
+                self.assertFalse(self.writes(cmd))
+
+    def test_help_as_another_flags_value_still_writes(self):
+        """`-t --help` titles an issue `--help`; it does not ask for usage."""
+        self.assertTrue(self.writes("gh issue create -t --help -b body"))
+
+    def test_help_after_another_flag_still_writes(self):
+        """Only a leading --help is unambiguous, and the gate errs toward gating."""
+        self.assertTrue(self.writes("gh issue create --title x --help"))
+
+    def test_short_h_is_not_help(self):
+        """`gh auth login -h` is --hostname, so the short form cannot be treated as help."""
+        self.assertTrue(self.writes("gh auth login -h github.example.com"))
+
+
+class GhGraphqlBoardCarveOut(unittest.TestCase):
+    """Board bookkeeping goes through graphql because projectV2 has no REST endpoint.
+
+    Setting Status is a step the rules mandate before work starts, so gating it would only train
+    the user to click through prompts. Everything else a mutation can do stays gated.
+    """
+
+    def writes(self, document, flag="-f"):
+        """Report whether a graphql call carrying `document` counts as a write.
+
+        :param document: the GraphQL document text
+        :param flag: the payload flag carrying it
+        :return: True when the call is classified as writing
+        """
+        return hookutil.gh_writes_to_github(["api", "graphql", flag, f"query={document}"])
+
+    def test_board_field_mutation_is_carved_out(self):
+        """Setting a board field notifies nobody, and the rules mandate it before work starts."""
+        for document in (
+            "mutation { updateProjectV2ItemFieldValue(input: {}) { clientMutationId } }",
+            "mutation { clearProjectV2ItemFieldValue(input: {}) { clientMutationId } }",
+            "mutation S($i: ID!) { updateProjectV2ItemFieldValue(input: $i) { id } }",
+        ):
+            with self.subTest(document=document):
+                self.assertFalse(self.writes(document))
+
+    def test_board_field_mutation_bundled_with_another_writes(self):
+        """The carve-out covers the whole root selection, not merely its first field."""
         self.assertTrue(
-            self.writes("mutation { updateProjectV2ItemFieldValue { clientMutationId } }")
+            self.writes(
+                "mutation { updateProjectV2ItemFieldValue(input: {}) { id } addComment { id } }"
+            )
+        )
+
+    def test_alias_cannot_disguise_a_mutation(self):
+        """An alias resolves to the field it names, so it buys no cover."""
+        self.assertTrue(
+            self.writes("mutation { updateProjectV2ItemFieldValue: deleteRepository { id } }")
+        )
+
+    def test_board_field_mutation_beside_a_second_operation_writes(self):
+        """More than one operation means the selection read need not be the one that writes."""
+        self.assertTrue(
+            self.writes(
+                "query A { viewer { login } } "
+                "mutation B { updateProjectV2ItemFieldValue { id } }"
+            )
+        )
+
+    def test_board_field_subscription_writes(self):
+        """A subscription is never bookkeeping, whatever it selects."""
+        self.assertTrue(self.writes("subscription { updateProjectV2ItemFieldValue { id } }"))
+
+    def test_fragment_spread_at_the_root_fails_closed(self):
+        """Root fields hidden behind a spread cannot be read, so the document is gated."""
+        self.assertTrue(
+            self.writes("fragment F on Mutation { addComment { id } } mutation { ...F }")
         )
 
     def test_subscription_is_not_a_read(self):
