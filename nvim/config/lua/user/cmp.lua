@@ -83,9 +83,6 @@ cmp.setup({
     },
     { name = "path" },
   }),
-  confirm_opts = {
-    behavior = cmp.ConfirmBehavior.Select,
-  },
   experimental = {
     native_menu = false,
     ghost_text = false,
