@@ -3,8 +3,8 @@
 ## Issue numbers collide across repos on a shared board (2026-07-21)
 
 An org-level Project board holds items from **multiple repos**, and issue numbers are
-per-repo, so the same `#N` can appear twice (e.g. `#14` exists in two different repos on the
-board). Selecting a project item by `content.number` alone grabs the
+per-repo, so the same `#N` can appear twice (one number can exist in two different repos on
+the board). Selecting a project item by `content.number` alone grabs the
 first match and can hit the **wrong repo's issue**.
 
 **Rule:** when resolving a project item ID, always disambiguate by repository, e.g.

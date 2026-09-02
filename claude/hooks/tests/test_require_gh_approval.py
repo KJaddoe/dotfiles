@@ -233,7 +233,7 @@ class TestReadsPassThrough(unittest.TestCase):
     def test_board_bookkeeping_is_carved_out(self):
         """Placing an issue on the board and setting its fields notifies nobody."""
         for cmd in (
-            "gh project item-add 4 --owner @me --url https://github.com/o/r/issues/1",
+            "gh project item-add 4 --owner @me --url https://github.com/o/r/issues/N",
             "gh project item-edit --id I --project-id P --field-id F --single-select-option-id S",
             "gh project item-edit --id I --project-id P --field-id F --text 'In Progress'",
             "gh project item-edit --id I --project-id P --field-id F --clear",

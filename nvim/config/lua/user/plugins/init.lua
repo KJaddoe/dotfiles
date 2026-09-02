@@ -649,7 +649,8 @@ require("lazy").setup({
     "L3MON4D3/LuaSnip",
     config = function()
       require("luasnip").setup({
-        -- see: https://github.com/L3MON4D3/LuaSnip/issues/525
+        -- Without these, pressing Tab in insert mode after accepting a completion jumps
+        -- the caret back into the snippet that was already accepted.
         region_check_events = "InsertEnter",
         delete_check_events = "InsertLeave",
       })
