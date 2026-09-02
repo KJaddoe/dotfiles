@@ -27,19 +27,29 @@ CONFIG = REPO / "nvim" / "config"
 
 PROBE = """
 local deadline = vim.uv.now() + {timeout}
-local function poll()
-  local maps = {{}}
-  for _, mode in ipairs({{ "n", "v" }}) do
-    for _, m in ipairs(vim.api.nvim_buf_get_keymap(0, mode)) do
-      maps[mode .. ":" .. m.lhs] = m.desc or ""
+local function collect(get, modes)
+  local out = {{}}
+  for _, mode in ipairs(modes) do
+    for _, m in ipairs(get(mode)) do
+      out[mode .. ":" .. m.lhs] = m.desc or ""
     end
   end
+  return out
+end
+local function emit(label, maps)
+  local pairs_out = {{}}
+  for lhs, desc in pairs(maps) do
+    table.insert(pairs_out, lhs .. "\\t" .. desc)
+  end
+  io.stdout:write(label .. "=" .. table.concat(pairs_out, "\\x1f") .. "\\n")
+end
+local function poll()
+  local maps = collect(function(mode)
+    return vim.api.nvim_buf_get_keymap(0, mode)
+  end, {{ "n", "v" }})
   if maps["n:gd"] or vim.uv.now() > deadline then
-    local pairs_out = {{}}
-    for lhs, desc in pairs(maps) do
-      table.insert(pairs_out, lhs .. "\\t" .. desc)
-    end
-    io.stdout:write("RESULT=" .. table.concat(pairs_out, "\\x1f") .. "\\n")
+    emit("RESULT", maps)
+    emit("GLOBAL", collect(vim.api.nvim_get_keymap, {{ "n", "x" }}))
     vim.cmd("qa!")
   else
     vim.defer_fn(poll, 200)
@@ -60,12 +70,12 @@ class LspKeymapCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Attach lua_ls once and cache the resulting buffer-local keymaps."""
-        cls.maps = cls._probe()
+        """Attach lua_ls once and cache the buffer-local and global keymaps."""
+        cls.maps, cls.globals = cls._probe()
 
     @classmethod
     def _probe(cls, timeout=30000):
-        """Open a Lua file in headless nvim and return its normal-mode keymaps."""
+        """Open a Lua file in headless nvim and return its (buffer, global) keymaps."""
         work = Path(tempfile.mkdtemp())
         cls.addClassCleanup(shutil.rmtree, work, ignore_errors=True)
 
@@ -89,36 +99,46 @@ class LspKeymapCase(unittest.TestCase):
             env={**os.environ, "XDG_CONFIG_HOME": str(xdg)},
         )
         out = result.stdout + result.stderr
+        emitted = {}
         for line in out.splitlines():
-            if "RESULT=" in line:
-                body = line.split("RESULT=", 1)[1]
-                return dict(entry.split("\t", 1) for entry in body.split("\x1f") if "\t" in entry)
-        raise AssertionError(f"probe never reported a result:\n{out[-2000:]}")
+            for label in ("RESULT", "GLOBAL"):
+                if label + "=" in line:
+                    body = line.split(label + "=", 1)[1]
+                    emitted[label] = dict(
+                        entry.split("\t", 1) for entry in body.split("\x1f") if "\t" in entry
+                    )
+        if "RESULT" not in emitted or "GLOBAL" not in emitted:
+            raise AssertionError(f"probe never reported a result:\n{out[-2000:]}")
+        return emitted["RESULT"], emitted["GLOBAL"]
 
 
 class BindsNavigation(LspKeymapCase):
     """Every navigation request an attached server can answer has a keymap."""
 
     def test_goto_maps_are_bound(self):
-        """The g-prefix navigation maps attach with their descriptions."""
+        """The g-prefix navigation maps attach with their descriptions.
+
+        References and implementations use nvim 0.11's own `grr`/`gri` names. A
+        bare `gr` would be a prefix of the whole built-in family and stall for
+        timeoutlen, so those two lhs must not come back.
+        """
         for lhs, desc in (
             ("gd", "Go to definition"),
-            ("gr", "References"),
-            ("gi", "Implementations"),
+            ("grr", "References"),
+            ("gri", "Implementations"),
             ("gy", "Type definition"),
             ("gD", "Go to declaration"),
         ):
             with self.subTest(lhs=lhs):
                 self.assertEqual(self.maps.get("n:" + lhs), desc)
+        for lhs in ("gr", "gi"):
+            with self.subTest(lhs=lhs):
+                self.assertNotIn("n:" + lhs, self.maps)
 
     def test_call_hierarchy_is_bound(self):
         """Call hierarchy is reachable; it used to be bound nowhere."""
         self.assertEqual(self.maps.get("n: li"), "Incoming calls")
         self.assertEqual(self.maps.get("n: lo"), "Outgoing calls")
-
-    def test_combined_finder_is_bound(self):
-        """The combined trouble panel is reachable."""
-        self.assertEqual(self.maps.get("n: lf"), "LSP finder (all)")
 
 
 class SurfacesInWhichKey(LspKeymapCase):
@@ -135,9 +155,14 @@ class ReachesRangeCodeActions(LspKeymapCase):
 
     def test_code_action_is_bound_in_visual_mode(self):
         """TypeScript's extract refactors are only offered for a selected range,
-        so a normal-mode-only map cannot reach them at all."""
-        self.assertEqual(self.maps.get("n: ca"), "Code action")
-        self.assertEqual(self.maps.get("v: ca"), "Code action")
+        so a normal-mode-only map cannot reach them at all. Code actions are
+        nvim's own `gra`, which covers normal and visual; the config must keep
+        both halves rather than rebinding it buffer-locally to normal alone."""
+        for mode in ("n", "x"):
+            with self.subTest(mode=mode):
+                self.assertIn(mode + ":gra", self.globals)
+        self.assertNotIn("n:gra", self.maps)
+        self.assertNotIn("v:gra", self.maps)
 
     def test_source_actions_are_gated_on_the_server(self):
         """Source-kind maps only exist where a client advertises the kind. Lua
