@@ -210,6 +210,21 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   a file written with `cat > f <<EOF` used to bypass it entirely; other shell write forms
   (`echo >> f`, `sed -i`) are still uncovered, and a `grep` for the character is left alone. It
   cannot see the assistant's chat prose, which the rule covers alone
+- `claude/hooks/block-issue-references.py` - PreToolUse guard on `Write`/`Edit`/`NotebookEdit`
+  and on `Bash`, no configuration. Refuses an edit that ADDS a tracker reference, judged on the
+  delta like the dash guard, so carrying an existing one through an unrelated edit is never
+  blocked. Four shapes count: a citation cue next to a number (`fixes`, `closes`, `see issue`)
+  anywhere in the content; a tracker URL, an upstream project's included; a Jira-style project
+  key; and a bare hash-and-number, but only in PROSE, meaning a prose document or a comment line,
+  since a number in an expression is far more likely to be data. Ordinals counting an item
+  (`rule`, `line`, `step`) and hex colours are allowed, as are standards and toolchain
+  identifiers that share the key shape (`UTF-8`, `RFC-7231`, `CVE-2024-1234`, `JDK-17`); that
+  last list is a running one, and a new collision joins it. Nothing exempts test files. A number
+  is still correct in a commit message, a PR body and a branch name, all of which are outside a
+  hook's reach as file content. Under `Bash` it reads heredoc BODIES like the dash guard, and
+  there is no delta there, only content: a script whose heredoc REMOVES a reference is refused
+  alongside one that adds it, so a cleanup pass driven from the shell has to assemble the string
+  it is deleting from parts, the way the hook's own tests do
 - `claude/hooks/block-artifact-publish.py` - PreToolUse guard on `Artifact`, no configuration.
   Refuses any action that would send local content to claude.ai as a hosted page: `publish`
   (which is also what an OMITTED `action` means, the shape most publish calls take) and
