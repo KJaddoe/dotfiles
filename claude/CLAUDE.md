@@ -170,7 +170,10 @@ for these rules as FYI reference only; the binding text is HERE.
   patterns, naming, and already-chosen libraries, and reuse existing helpers. Don't add a new dependency
   or introduce a parallel way of doing something that already exists without sign-off. Before writing a
   function, SEARCH for one that already does the job: by behaviour, not by name, and outside the current
-  folder (shared/common/utils, the core lib). Never write your own alongside one you found. If none
+  folder (shared/common/utils, the core lib). Never write your own alongside one you found. Widen
+  that same search past the project before writing: the language's stdlib and the platform's own
+  features (a native form control over a component, CSS over JS, a DB constraint over app-layer
+  checks) beat custom code, including when a dependency you already have could also do it. If none
   exists and you need it a second time, extract it to where the project already keeps shared code rather
   than writing a second copy.
 - Audit dependencies before a release; the pre-commit hook prompts it when a manifest changes. Report

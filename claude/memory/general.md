@@ -193,6 +193,16 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 
 - 2026-08-20: Two rules sharpened after a breakage the test suite could not see: a client web app's ETag / conditional-request (`If-None-Match` → 304) handling stopped working, because the edit that broke it was never requested AND the path was never exercised against a live response. (1) Definition of done now states that green tests are evidence about the tests, not the system: anything crossing a real boundary (HTTP/API, DB, cache/CDN or conditional-request headers, auth, queue, filesystem) counts as working ONLY after being exercised with the actual response quoted (status/headers/rows/output); if it can't be run, say "unverified: needs a real call", never "working". (2) The scope rule now states that every hunk must trace to the request or to a gate it must pass (format/lint/test/docs), working code not asked about stays untouched (no drive-by refactors/renames/"while I'm here" cleanups), and anything out of scope worth changing is raised as an AskUserQuestion PROMPT, never buried in prose where it is lost in a wall of text, with no permission mode, auto/auto-accept included, ever counting as that answer. Why: the pre-existing gates were ALL command-output gates (format/lint/tests/docs), so a green mocked suite satisfied them completely while the live behaviour was broken; and every scope rule fired at commit time, so an unrequested edit inside a file already being edited never looked like bundling. Rule (1) catches the consequence, rule (2) the cause: neither alone closes it. Binding copies in CLAUDE.md → Code quality (Definition of done) and Working method (scope).
 
+- 2026-09-02: Evaluated DietrichGebert/ponytail (an always-on "laziest solution that works" ruleset)
+  and declined the plugin: six of its seven ladder rungs already existed here as sharper rules, and
+  its testing stance (one runnable check, no per-function suites) plus "fewest files possible"
+  contradict the test-coverage, docs-in-the-same-commit and Angular-CLI rules. Adopted the one gap:
+  prefer the stdlib and native platform features over custom code even when an already-installed
+  dependency could do the job. Why: the existing SEARCH rule stopped at the project boundary and the
+  stdlib check only fired when ADDING a dependency, so nothing covered writing custom code with deps
+  already present. How to apply: don't re-propose ponytail or a similar always-on minimalism plugin.
+  Binding copy in CLAUDE.md → Code quality (folded into the existing-conventions rule).
+
 ## Code & Writing Style
 
 - 2026-06-01: Don't add explanatory/descriptive comments to code or config files. Keep only what's functionally required (e.g. shebangs) and match the surrounding file's existing comment density, which is near-zero. Why: the user explicitly rejected added comments in a zsh dotfile and expects this as a standing preference. How to apply: write code without narration comments unless the user asks for them; the same terse style applies to commit messages (see Commits & PRs).
