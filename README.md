@@ -59,7 +59,7 @@ This project uses the [Powerlevel10k][powerlevel10k] prompt with the [Powerline 
 
 macOS and Ubuntu are the supported platforms, both first-class. `_system/install.sh` exits with an
 error on any other OS, including non-Ubuntu Linux distributions. WSL works where it presents as
-Ubuntu (see [Issues](#issues)).
+Ubuntu.
 
 # Installation
 
@@ -127,11 +127,6 @@ to install the tmux plugins you will have to manually do `prefix + I` to install
 The `claude` topic installs [Claude Code][claude-code] and restores the global config. Its `install.sh` installs the binary, then adds the configured marketplaces and plugins. Dotbot symlinks `settings.json`, `CLAUDE.md`, `keybindings.json`, `hooks/`, `memory/`, `skills/` and `templates/` into `~/.claude`, so they stay in sync with the repo. You will need to authenticate once with `claude` on a new machine.
 
 [claude-code]: https://github.com/anthropics/claude-code
-
-## Issues
-
-When having issues installing on wsl some of the following links helped me to get it working:
-<https://github.com/MicrosoftDocs/WSL/issues/457#issuecomment-730731900> (deamon not running or can't get deamon status)
 
 # Personalization
 
