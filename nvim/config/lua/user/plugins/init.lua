@@ -11,13 +11,13 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
---- Build a lazy.nvim `keys` entry for a Telescope picker, carrying the same
---- mapping options the pickers used before they moved into this spec.
+--- Build a lazy.nvim `keys` entry, carrying the same mapping options the
+--- keymaps used before they moved into their plugin specs.
 ---@param lhs string Keymap
 ---@param rhs function Action
 ---@param desc string which-key description
 ---@return table entry lazy.nvim keys spec
-local function picker(lhs, rhs, desc)
+local function lazy_key(lhs, rhs, desc)
   return { lhs, rhs, desc = desc, silent = true, noremap = true }
 end
 
@@ -289,7 +289,7 @@ require("lazy").setup({
     "nvim-telescope/telescope.nvim",
     dependencies = { { "nvim-lua/plenary.nvim" } },
     keys = {
-      picker("<c-p>", function()
+      lazy_key("<c-p>", function()
         local select = require("user.telescope")
         require("telescope.builtin").find_files({
           find_command = require("user.search").find_command(),
@@ -302,7 +302,7 @@ require("lazy").setup({
           end,
         })
       end, "Find files"),
-      picker("<leader>fb", function()
+      lazy_key("<leader>fb", function()
         local select = require("user.telescope")
         require("telescope.builtin").buffers({
           attach_mappings = function(_, map)
@@ -315,7 +315,7 @@ require("lazy").setup({
           end,
         })
       end, "Buffers"),
-      picker("<leader>of", function()
+      lazy_key("<leader>of", function()
         local select = require("user.telescope")
         require("telescope.builtin").oldfiles({
           only_cwd = true,
@@ -328,43 +328,43 @@ require("lazy").setup({
           end,
         })
       end, "Recent files (cwd)"),
-      picker("<leader>lg", function()
+      lazy_key("<leader>lg", function()
         require("telescope.builtin").live_grep()
       end, "Live grep"),
-      picker("<leader>fh", function()
+      lazy_key("<leader>fh", function()
         require("telescope.builtin").help_tags()
       end, "Help tags"),
-      picker("<leader>fc", function()
+      lazy_key("<leader>fc", function()
         require("telescope.builtin").commands()
       end, "Commands"),
-      picker("<leader>fk", function()
+      lazy_key("<leader>fk", function()
         require("telescope.builtin").keymaps()
       end, "Keymaps"),
-      picker("<leader>fr", function()
+      lazy_key("<leader>fr", function()
         require("telescope.builtin").resume()
       end, "Resume last picker"),
-      picker("<leader>fq", function()
+      lazy_key("<leader>fq", function()
         require("telescope.builtin").quickfix()
       end, "Quickfix list"),
-      picker("<leader>/", function()
+      lazy_key("<leader>/", function()
         require("telescope.builtin").current_buffer_fuzzy_find()
       end, "Fuzzy find in buffer"),
-      picker("<leader>xx", function()
+      lazy_key("<leader>xx", function()
         require("telescope.builtin").diagnostics()
       end, "Diagnostics list"),
 
       -- Git browsing. Read-only views with a diff preview; the work itself
       -- happens in a terminal pane.
-      picker("<leader>gf", function()
+      lazy_key("<leader>gf", function()
         require("telescope.builtin").git_status()
       end, "Changed files"),
-      picker("<leader>gc", function()
+      lazy_key("<leader>gc", function()
         require("telescope.builtin").git_commits()
       end, "Commits (repo)"),
-      picker("<leader>gC", function()
+      lazy_key("<leader>gC", function()
         require("telescope.builtin").git_bcommits()
       end, "Commits (this file)"),
-      picker("<leader>gB", function()
+      lazy_key("<leader>gB", function()
         require("telescope.builtin").git_branches()
       end, "Branches"),
     },
@@ -480,6 +480,56 @@ require("lazy").setup({
       "nvim-treesitter/nvim-treesitter",
       "nvim-neotest/neotest-jest",
     },
+    -- Lazy on its keymaps: neotest runs nothing until a test is run or the
+    -- summary is opened, so it owns no passive background work.
+    keys = {
+      lazy_key("<leader>tt", function()
+        require("neotest").run.run()
+      end, "Run nearest test"),
+      lazy_key("<leader>tf", function()
+        require("neotest").run.run(vim.fn.expand("%"))
+      end, "Run file tests"),
+      lazy_key("<leader>td", function()
+        require("neotest").run.run({ strategy = "dap" })
+      end, "Debug nearest test"),
+      lazy_key("<leader>tl", function()
+        require("neotest").run.run_last()
+      end, "Run last test"),
+      lazy_key("<leader>ts", function()
+        require("neotest").summary.toggle()
+      end, "Toggle test summary"),
+      lazy_key("<leader>to", function()
+        require("neotest").output.open({ enter = true, auto_close = true })
+      end, "Show test output"),
+      lazy_key("<leader>tw", function()
+        require("neotest").watch.toggle(vim.fn.expand("%"))
+      end, "Toggle test watch"),
+      lazy_key("[T", function()
+        require("neotest").jump.prev({ status = "failed" })
+      end, "Previous failed test"),
+      lazy_key("]T", function()
+        require("neotest").jump.next({ status = "failed" })
+      end, "Next failed test"),
+    },
+    config = function()
+      -- must be in package.loaded before neotest's client initializes, so its
+      -- ts filetype mapping reaches the parse subprocess (see the module docs)
+      require("neotest-filetype-fix")
+
+      require("neotest").setup({
+        adapters = {
+          require("neotest-jest")({
+            jestCommand = "npm test --",
+            env = { CI = true },
+            --- Resolve the working directory for a test run.
+            ---@return string cwd Project root to run jest from
+            cwd = function()
+              return vim.fn.getcwd()
+            end,
+          }),
+        },
+      })
+    end,
   },
   {
     "joeveiga/ng.nvim",
