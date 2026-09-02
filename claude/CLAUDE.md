@@ -96,6 +96,11 @@ for these rules as FYI reference only; the binding text is HERE.
 - NEVER use an em dash or an en dash, in prose or in files: a plain hyphen, or reword the sentence.
   This covers your chat replies too, which is where I notice it.
   `claude/hooks/block-typographic-dashes.py` enforces the file half; nothing can enforce the prose.
+- NEVER cite an issue or ticket in anything that lives in a repository: no number, no tracker key,
+  no issue URL, not even an upstream project's. Trackers and repositories have different lifetimes,
+  so what survives is a pointer to nothing; write the substance the number stood for instead. A
+  number belongs only in a commit message, a PR body, or a branch name.
+  `claude/hooks/block-issue-references.py` enforces the file half.
 - In Markdown, align table columns: pad every cell with trailing spaces so the pipes line up and the
   raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
 
