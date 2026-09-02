@@ -80,9 +80,11 @@ for these rules as FYI reference only; the binding text is HERE.
 
 ### Code & artifacts
 
-- Document every function, class, and method with a structured doc-comment covering its purpose, params,
-  and return value, in the language's convention (JSDoc/TSDoc, C# XML `///`, Python docstrings) and
-  matching the project's existing doc style. Do NOT add inline narration comments explaining what a
+- Document every function, class, and method with a structured doc-comment in the language's
+  convention (JSDoc/TSDoc, C# XML `///`, Python docstrings), matching the project's existing doc
+  style, and keep it as short as it can be: one line for the purpose, plus a `@param`/`@returns` only
+  where it adds what the signature can't say (units, ranges, what null means, failure modes). Never
+  restate a typed name back at the reader. Do NOT add inline narration comments explaining what a
   single line does; keep line-level code self-explanatory. Config files stay comment-free (only what's
   functionally required, e.g. shebangs); commit messages stay terse.
 - Keep non-deliverables OUT of the repo. Generated planning artifacts (specs, design docs, plans) go to
