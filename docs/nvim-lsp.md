@@ -3,6 +3,11 @@
 How code navigation, code actions and diagnostics are wired, and what to expect when a
 request returns nothing.
 
+Server configs, capabilities and diagnostic settings live in the `nvim-lspconfig` spec in
+`nvim/config/lua/user/plugins/init.lua`, which loads on `BufReadPre`/`BufNewFile` rather than at
+startup: none of it has an effect until a file is open, and `vim.lsp.enable` re-runs its own
+`FileType` handler across buffers that already exist, so loading late still attaches.
+
 Buffer-local maps, attached by `nvim/config/lua/lsp_keymaps.lua` on `LspAttach` for any client
 that serves definitions, hover or code actions. Global maps live in
 `nvim/config/lua/user/keymaps.lua`, and the telescope pickers in the plugin spec's `keys`.

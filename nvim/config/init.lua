@@ -6,5 +6,4 @@ require("user.plugins")
 --
 -- CODING
 --
-require("user.lsp")
 require("user.dap")

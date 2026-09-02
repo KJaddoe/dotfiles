@@ -84,7 +84,7 @@ M.on_attach = function(bufnr)
   end
   keymap("<leader>gl", vim.diagnostic.open_float, bufnr, "Line diagnostics")
   -- goto_prev/goto_next are deprecated and go away in nvim 0.13. The float is
-  -- what shows the message: virtual_lines is off, see user.lsp.
+  -- what shows the message: virtual_lines is off, see the nvim-lspconfig spec.
   keymap("[d", function()
     vim.diagnostic.jump({ count = -1, float = true })
     vim.cmd("norm zz")
