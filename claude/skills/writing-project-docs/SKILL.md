@@ -27,6 +27,31 @@ The one question this skill exists to answer. Document the **interface**; never 
 consumer: they are required even though they are "what". Keep the two apart physically: reference
 material in the README or its own `docs/` page, rationale in `architecture.md` / ADRs.
 
+## Never cite an issue or ticket number
+
+Not in a doc comment, a README, an ADR, a changelog entry, or any other artifact that lives in the
+repository. The tracker and the repository have different lifetimes: issues get closed, renumbered,
+migrated between trackers, and deleted outright. What is left behind is a pointer to nothing, which
+leaves the reader worse off than if you had written no reference at all. Anyone who wants the
+history has `git log` and `git blame`, which cannot rot.
+
+Write the substance instead. It is almost always already there:
+
+| Instead of                                              | Write                                                  |
+|---------------------------------------------------------|--------------------------------------------------------|
+| `Guards #NNN: adding to the cart used to decide ...`    | `Adding to the cart used to decide ...`                |
+| `the exact shape that blocked checkout in #NNN`         | `the exact shape that blocked checkout`                |
+| `Extracted for #NNN, where the same block was repeated` | `It was extracted because the same block was repeated` |
+| `no version is pinned yet, see issue #NNN`              | `no version is pinned in the repository yet`           |
+
+Removing the number costs nothing, because the sentence already carried the reason. If it does feel
+load-bearing, the sentence was too thin to begin with: say what the behaviour is, what broke, and
+why it must not come back. A regression test's doc comment earns its place by describing the
+failure, not by naming the ticket that reported it.
+
+The same goes for `Fixes #NNN` in a source comment. A number belongs only where the medium's own
+lifetime matches it: a commit message, a pull request body, a branch name.
+
 ## Three modes
 
 | Mode          | Trigger                                          | Output                                         |
