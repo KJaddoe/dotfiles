@@ -80,15 +80,17 @@ for these rules as FYI reference only; the binding text is HERE.
 
 ### Code & artifacts
 
-- A doc-comment is ONE line saying what the name and type don't already say; where nothing is left to
-  say, write none. Add a `@param`/`@returns`/`@throws` only for what the signature can't carry (units,
-  ranges, defaults, what null or absent means, failure modes), never restating a typed name back at the
-  reader. THREE LINES IS THE HARD CEILING: past that it is rationale, and rationale belongs in
-  `docs/architecture.md` or an ADR, never above a declaration. The one exemption is a layer whose
-  doc-comments are PUBLISHED as generated API text (e.g. the `@nestjs/swagger` plugin), and that
-  project's `CLAUDE.md` must name the layer it covers. Use the language's convention (JSDoc/TSDoc,
-  C# XML `///`, Python docstrings) and match the project's doc style. Do NOT add inline narration
-  comments explaining what a single line does; keep line-level code self-explanatory. Config files stay
+- Every function, class and method carries a doc-comment, and it ALWAYS lists a `@param` for each
+  parameter, a `@returns` where something is returned, and a `@throws` for each failure it raises.
+  The prose above those tags is ONE line saying what the name and type don't already say, THREE AT
+  THE ABSOLUTE MOST; past that it is rationale, and rationale belongs in `docs/architecture.md` or an
+  ADR, never above a declaration. The tag lines themselves don't count towards that ceiling. Types,
+  interface properties and constants are not callables: give them one line only where the name and
+  type don't already say it, and none where they do. The one exemption is a layer whose doc-comments
+  are PUBLISHED as generated API text (e.g. the `@nestjs/swagger` plugin), and that project's
+  `CLAUDE.md` must name the layer it covers. Use the language's convention (JSDoc/TSDoc, C# XML
+  `///`, Python docstrings) and match the project's doc style. Do NOT add inline narration comments
+  explaining what a single line does; keep line-level code self-explanatory. Config files stay
   comment-free (only what's functionally required, e.g. shebangs); commit messages stay terse.
 - Keep non-deliverables OUT of the repo. Generated planning artifacts (specs, design docs, plans) go to
   the untracked session dir `~/.claude/projects/<mapped-path>/specs/`, overriding the brainstorming
