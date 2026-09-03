@@ -120,7 +120,10 @@ for these rules as FYI reference only; the binding text is HERE.
   feature, endpoint, env var, flag, or command DELETES its docs in the same commit. Also fix docs you
   notice have already drifted.
 - Docs state what the code ACTUALLY does, verified against it, never intended or aspirational
-  behaviour, and never invented to fill a gap (mark `TODO(owner)` and ask instead).
+  behaviour, and never invented to fill a gap (mark `TODO(owner)` and ask instead). They say WHAT
+  the thing IS, never HOW that was established: no "verified against X", no capture dates, no
+  attributing a claim to whoever recorded it. A claim inherited from an existing comment is that
+  author's assertion, not a confirmation.
 - Coverage floor: EVERY project's docs answer: what it is; setup/install (incl. tooling + versions);
   how to run; how to test; structure/architecture; who to ask (ownership/escalation); the domain
   glossary, unless the project has no business domain. Then by kind:
