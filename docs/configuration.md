@@ -224,7 +224,15 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   hook's reach as file content. Under `Bash` it reads heredoc BODIES like the dash guard, and
   there is no delta there, only content: a script whose heredoc REMOVES a reference is refused
   alongside one that adds it, so a cleanup pass driven from the shell has to assemble the string
-  it is deleting from parts, the way the hook's own tests do
+  it is deleting from parts, the way the hook's own tests do. It applies only INSIDE a git
+  working tree, which is what the rule is about: a reference rots when the repository outlives
+  the tracker. A file written anywhere else is not a repository artifact, so the session dirs
+  under `~/.claude/projects/` and scratch under `/tmp` are out of scope, while repository prose
+  stays covered, docs and READMEs included. A `Bash` command is judged by where it redirects,
+  and by the session's own directory when it redirects nowhere or names a target the hook cannot
+  resolve, a path behind an unexpanded shell variable most of all, so that case fails closed
+  inside a repository. The repository test runs only once a reference has been found, so an
+  ordinary edit never pays for it
 - `claude/hooks/block-artifact-publish.py` - PreToolUse guard on `Artifact`, no configuration.
   Refuses any action that would send local content to claude.ai as a hosted page: `publish`
   (which is also what an OMITTED `action` means, the shape most publish calls take) and

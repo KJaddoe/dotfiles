@@ -28,6 +28,13 @@ block-typographic-dashes.py. An edit that carries an existing citation through u
 so touching a legacy line is never wedged and a cleanup pass is never blocked; only introducing a
 new reference is refused.
 
+It also only applies INSIDE a git working tree, because that is what the rule is about: a
+reference rots when the repository outlives the tracker. A file written anywhere else is not a
+repository artifact and is none of this hook's business, which covers the session dirs under
+`~/.claude/projects/` where the rules deliberately put plans and notes, and scratch under `/tmp`.
+Repository prose stays covered, docs and READMEs included. The repository test runs only once a
+reference has already been found, so the ordinary edit that contains none never pays for it.
+
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model.
 
 Scope is file content, whichever tool carries it. Under `Bash` only heredoc BODIES are read, since
@@ -46,7 +53,7 @@ import re
 import sys
 from pathlib import Path
 
-from _hookutil import heredoc_bodies, read_payload
+from _hookutil import heredoc_bodies, read_payload, repo_root
 
 HASH = "#"
 
@@ -212,13 +219,93 @@ def existing_text(path):
         return ""
 
 
+def redirect_targets(command):
+    """Return the paths a shell command redirects into.
+
+    Quotes are stripped, so a target carrying a space survives as the path it names rather than
+    as a token that no suffix and no repository test would recognise.
+
+    :param command: the shell command
+    :return: list of redirect target paths, empty when the command redirects nowhere
+    """
+    return [target.strip("'\"") for target in re.findall(r">>?\s*([^\s;&|]+)", command) if target]
+
+
 def heredoc_targets_prose(command):
     """Report whether a shell command redirects into a prose document.
 
     :param command: the shell command
     :return: True when any redirect target has a prose suffix
     """
-    return any(is_prose_suffix(target) for target in re.findall(r">>?\s*([^\s;&|]+)", command))
+    return any(is_prose_suffix(target) for target in redirect_targets(command))
+
+
+def directory_in_repository(directory):
+    """Report whether a directory sits inside a git working tree.
+
+    The nearest existing ancestor is what gets asked, so a write into a directory the command
+    would create resolves against the tree it would be created in.
+
+    :param directory: directory path, which need not exist yet
+    :return: True when it resolves inside a git repository
+    """
+    if not directory:
+        return False
+
+    current = Path(directory).expanduser()
+    while not current.is_dir() and current != current.parent:
+        current = current.parent
+
+    return current.is_dir() and repo_root(current) is not None
+
+
+def in_repository(path, cwd):
+    """Report whether a file path lies inside a git working tree.
+
+    :param path: file path, absolute or relative, which need not exist yet
+    :param cwd: directory a relative path resolves against
+    :return: True when the file would be written inside a git repository
+    """
+    if not path:
+        return False
+
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute() and cwd:
+        candidate = Path(cwd).expanduser() / candidate
+
+    return directory_in_repository(candidate.parent)
+
+
+def target_path(tool_input):
+    """Resolve the file a tool call writes to.
+
+    :param tool_input: the tool's input payload
+    :return: the path, empty when the call names none
+    """
+    return tool_input.get("file_path") or tool_input.get("notebook_path") or ""
+
+
+def writes_into_repository(tool, tool_input, cwd):
+    """Report whether a tool call would write inside a git working tree.
+
+    A Bash command is judged by where it redirects. When it redirects nowhere the content is
+    reaching a file some other way (a script on stdin, a program writing its own output), so the
+    session's own directory answers for it. A target the hook cannot resolve, a path behind an
+    unexpanded shell variable most of all, resolves against that directory too and so fails
+    closed inside a repository, which is the safe direction to be wrong in.
+
+    :param tool: tool name
+    :param tool_input: the tool's input payload
+    :param cwd: the session's working directory
+    :return: True when the write lands in a repository
+    """
+    if tool == "Bash":
+        targets = redirect_targets(tool_input.get("command") or "")
+        if targets:
+            return any(in_repository(target, cwd) for target in targets)
+        return directory_in_repository(cwd)
+
+    return in_repository(target_path(tool_input), cwd)
 
 
 def added(tool, tool_input):
@@ -228,7 +315,7 @@ def added(tool, tool_input):
     :param tool_input: the tool's input payload
     :return: list of references present in what the call adds
     """
-    path = tool_input.get("file_path") or ""
+    path = target_path(tool_input)
     prose = is_prose_suffix(path)
 
     if tool == "Write":
@@ -276,9 +363,13 @@ def main():
         sys.exit(0)
 
     tool = data.get("tool_name") or ""
-    extra = added(tool, data.get("tool_input") or {})
+    tool_input = data.get("tool_input") or {}
+    extra = added(tool, tool_input)
 
     if not extra:
+        sys.exit(0)
+
+    if not writes_into_repository(tool, tool_input, data.get("cwd") or ""):
         sys.exit(0)
 
     listed = ", ".join(sorted(set(extra))[:5])
