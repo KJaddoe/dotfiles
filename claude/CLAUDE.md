@@ -80,25 +80,29 @@ for these rules as FYI reference only; the binding text is HERE.
 
 ### Code & artifacts
 
-- Every function, class and method carries a doc-comment, and it ALWAYS lists a `@param` for each
-  parameter, a `@returns` where something is returned, and a `@throws` for each failure it raises.
-  Those tags NEVER stand alone: a block listing them also carries a description above them, because
-  the signature already gives the reader the parameter list and only a person can say what the
-  callable is FOR. The prose above those tags is ONE line saying what the name and type don't
-  already say, THREE AT THE ABSOLUTE MOST; past that it is rationale, and rationale belongs in
-  `docs/architecture.md` or an ADR, never above a declaration. The tag lines themselves don't count
-  towards that ceiling. A callable taking nothing, returning nothing and raising nothing, whose
-  name already says the whole story, earns no block at all: a line restating it is worse than
-  silence. Types, interface properties and constants are not callables: give them one line only
-  where the name and type don't already say it, and none where they do. The one exemption is a
-  layer whose doc-comments are PUBLISHED as generated API text (e.g. the `@nestjs/swagger` plugin),
-  and that project's `CLAUDE.md` must name the layer it covers. Use the language's convention
-  (JSDoc/TSDoc, C# XML `///`, Python docstrings) and match the project's doc style. Where that
-  convention is a block comment, lay it out EXPANDED: the opening delimiter alone on its first
-  line, a star prefix on every continuation, the closing delimiter alone on its last, and a bare
-  star line between the prose and the tags. Never compact a block onto its delimiters to save
-  lines. Config files stay comment-free (only what's functionally required, e.g. shebangs); commit
-  messages stay terse.
+- A doc-comment is EARNED, not owed. Write one only where it says something the declaration does
+  not already say: units, ranges, what null means, a load-bearing ordering, a failure mode, or what
+  the thing is FOR when the name says only what it is. A class, function or method whose name and
+  signature already tell the whole story gets NO block; a line restating it is worse than silence,
+  and "but the rule says document everything" is not a reason to write one. That covers
+  constructors and framework lifecycle hooks (`ngOnInit`, `OnDestroy`, `Dispose`) by default: their
+  names say WHEN they run, not what they do, so a block there needs something the body does not
+  already show. Test a draft block by deleting it and re-reading the declaration: if nothing is
+  lost, it stays deleted. Where a block IS earned it ALWAYS lists a `@param` for each parameter, a
+  `@returns` where something is returned, and a `@throws` for each failure it raises, and those
+  tags NEVER stand alone: the block also carries a description above them, because the signature
+  already gives the reader the parameter list and only a person can say what the callable is FOR.
+  That prose is ONE line, THREE AT THE ABSOLUTE MOST; past that it is rationale, and rationale
+  belongs in `docs/architecture.md` or an ADR, never above a declaration. The tag lines themselves
+  don't count towards that ceiling. Types, interface properties and constants follow the same test
+  and get one line at most. The one exemption is a layer whose doc-comments are PUBLISHED as
+  generated API text (e.g. the `@nestjs/swagger` plugin), and that project's `CLAUDE.md` must name
+  the layer it covers. Use the language's convention (JSDoc/TSDoc, C# XML `///`, Python
+  docstrings) and match the project's doc style. Where that convention is a block comment, lay it
+  out EXPANDED: the opening delimiter alone on its first line, a star prefix on every continuation,
+  the closing delimiter alone on its last, and a bare star line between the prose and the tags.
+  Never compact a block onto its delimiters to save lines. Config files stay comment-free (only
+  what's functionally required, e.g. shebangs); commit messages stay terse.
 - Inline `//` comments are the exception, not the habit. Never narrate what a line does, and never
   justify WHY an obvious branch, guard, early return or fallback exists: the code already says it,
   and "but it explains the reasoning" is not a licence. One earns its place ONLY where a competent
