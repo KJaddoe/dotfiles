@@ -36,6 +36,13 @@ COMMIT_SUBCOMMAND = re.compile(rf"\bgit\b{GIT_FLAGS}\s+commit\b", re.IGNORECASE)
 
 HEREDOC_START = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
 
+# `git -C <dir>` names the repository outright, so it wins over any preceding `cd`.
+GIT_C_TARGET = re.compile(rf"\bgit\b{GIT_FLAGS}\s+-C\s+([^\s;&|]+)")
+
+# A `cd` in command position. `cd -` and a bare `cd` are excluded: neither names a directory the
+# command text can resolve.
+CD_TARGET = re.compile(r"(?:^|[;&|]|&&)\s*cd\s+(?!-)([^\s;&|]+)")
+
 
 PROMPTING_MODES = {"default", "plan"}
 
@@ -731,3 +738,29 @@ def repo_root(cwd):
     """
     top = run_git(cwd, "rev-parse", "--show-toplevel").strip()
     return Path(top) if top else None
+
+
+def command_directory(cmd, cwd):
+    """Resolve the directory a command's git or gh invocation would act on.
+
+    A command that changes directory first, or names a repository with `git -C`, acts on THAT
+    repository rather than on the session's. Summarising the session's instead describes a tree
+    the user is not being asked about, which is the one thing an approval prompt must never do.
+
+    Only the forms a command can be read from are honoured. A destination behind a shell variable
+    or a subshell is not resolvable here, so it falls back to the session directory: the summary
+    is then wrong in the safe direction, naming a tree with nothing pending rather than a
+    different tree's changes.
+
+    :param cmd: full shell command, heredoc bodies already stripped
+    :param cwd: the session's working directory
+    :return: Path to the directory the command acts in
+    """
+    base = Path(cwd).expanduser() if cwd else Path(".")
+
+    match = GIT_C_TARGET.search(cmd) or CD_TARGET.search(cmd)
+    if not match:
+        return base
+
+    target = Path(match.group(1).strip("'\"")).expanduser()
+    return target if target.is_absolute() else base / target

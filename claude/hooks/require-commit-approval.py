@@ -31,6 +31,7 @@ from _hookutil import (
     COMMIT_SUBCOMMAND,
     approval_decision,
     clip_summary,
+    command_directory,
     emit_decision,
     read_bash_payload,
     repo_root,
@@ -87,7 +88,8 @@ def main():
     if not COMMIT_SUBCOMMAND.search(code):
         sys.exit(0)
 
-    summary = pending_summary(repo_root(data.get("cwd") or "."), code)
+    where = command_directory(code, data.get("cwd") or ".")
+    summary = pending_summary(repo_root(where), code)
     mode = data.get("permission_mode") or "default"
     emit_decision(*approval_decision(mode, "commit", summary))
     sys.exit(0)

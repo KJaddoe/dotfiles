@@ -68,6 +68,7 @@ import sys
 from _hookutil import (
     approval_decision,
     clip_summary,
+    command_directory,
     emit_decision,
     gh_invocations,
     gh_subcommand,
@@ -129,7 +130,8 @@ def main():
     if not writing:
         sys.exit(0)
 
-    summary = gh_summary(repo_root(data.get("cwd") or "."), writing)
+    target = command_directory(code, data.get("cwd") or ".")
+    summary = gh_summary(repo_root(target), writing)
     mode = data.get("permission_mode") or "default"
     emit_decision(*approval_decision(mode, "GitHub action", summary))
     sys.exit(0)

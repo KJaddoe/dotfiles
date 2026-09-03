@@ -95,6 +95,55 @@ class CommandPatterns(unittest.TestCase):
         self.assertIn("cat <<'EOF'", hookutil.strip_heredocs("cat <<'EOF'\ndangling"))
 
 
+class CommandDirectory(unittest.TestCase):
+    """A gate must summarise the repository the command acts on, not the session's."""
+
+    def test_bare_command_uses_the_session_directory(self):
+        """Without a cd or a -C, the session's own directory is the target."""
+        self.assertEqual(
+            hookutil.command_directory("git commit -m x", "/work/repo"), Path("/work/repo")
+        )
+
+    def test_leading_cd_wins(self):
+        """A command that changes directory first acts on that directory."""
+        self.assertEqual(
+            hookutil.command_directory("cd /other/repo && git commit -m x", "/work/repo"),
+            Path("/other/repo"),
+        )
+
+    def test_git_dash_c_beats_a_cd(self):
+        """`git -C` names the repository outright."""
+        self.assertEqual(
+            hookutil.command_directory("cd /other && git -C /named commit -m x", "/work/repo"),
+            Path("/named"),
+        )
+
+    def test_relative_cd_resolves_against_the_session_directory(self):
+        """A relative destination is relative to where the session already is."""
+        self.assertEqual(
+            hookutil.command_directory("cd sub/dir && git commit -m x", "/work/repo"),
+            Path("/work/repo/sub/dir"),
+        )
+
+    def test_quoted_destination_is_unquoted(self):
+        """A quoted path names a directory, so the quotes must not survive."""
+        self.assertEqual(
+            hookutil.command_directory('cd "/other/repo" && git commit -m x', "/work/repo"),
+            Path("/other/repo"),
+        )
+
+    def test_cd_dash_is_not_a_destination(self):
+        """`cd -` names no directory the command text can resolve."""
+        self.assertEqual(
+            hookutil.command_directory("cd - && git commit -m x", "/work/repo"), Path("/work/repo")
+        )
+
+    def test_unresolvable_destination_falls_back(self):
+        """A destination behind a shell variable is not resolvable, so the session answers."""
+        result = hookutil.command_directory("cd $TARGET && git commit -m x", "/work/repo")
+        self.assertEqual(result, Path("/work/repo/$TARGET"))
+
+
 class GhClassification(unittest.TestCase):
     """The gh helpers shared by require-gh-approval and block-claude-attribution.
 

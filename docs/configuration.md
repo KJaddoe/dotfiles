@@ -167,7 +167,12 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   approval; deliberately unconfigurable, since an off-switch is the failure it prevents. It prompts in
   `default`/`plan` mode and denies outright in `auto`, `acceptEdits`, `dontAsk` and `bypassPermissions`,
   where a prompt would be auto-approved, so committing from those modes means switching to `default`
-  first. `bypassPermissions` ignores hook decisions entirely and cannot be gated by any hook
+  first. `bypassPermissions` ignores hook decisions entirely and cannot be gated by any hook. The
+  summary describes the repository the COMMAND acts on, following a leading `cd` or a `git -C`,
+  which matters when a session works across repositories: summarising the session's own tree
+  showed a diff the user was not being asked to approve. A destination the command text cannot
+  resolve, one behind a shell variable, falls back to the session's directory. The push and `gh`
+  gates resolve their target the same way
 - `claude/hooks/require-push-approval.py`: the same gate for `git push`, since a push is public and
   cannot be amended away afterwards. The prompt names the branch, the baseline it is compared against,
   the commits that would be published, and whether history is being rewritten. `--dry-run` publishes
