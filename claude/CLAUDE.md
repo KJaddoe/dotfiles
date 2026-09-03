@@ -89,9 +89,13 @@ for these rules as FYI reference only; the binding text is HERE.
   type don't already say it, and none where they do. The one exemption is a layer whose doc-comments
   are PUBLISHED as generated API text (e.g. the `@nestjs/swagger` plugin), and that project's
   `CLAUDE.md` must name the layer it covers. Use the language's convention (JSDoc/TSDoc, C# XML
-  `///`, Python docstrings) and match the project's doc style. Do NOT add inline narration comments
-  explaining what a single line does; keep line-level code self-explanatory. Config files stay
-  comment-free (only what's functionally required, e.g. shebangs); commit messages stay terse.
+  `///`, Python docstrings) and match the project's doc style. Where that convention is a block
+  comment, lay it out EXPANDED: the opening delimiter alone on its first line, a star prefix on
+  every continuation, the closing delimiter alone on its last, and a bare star line between the
+  prose and the tags. Never compact a block onto its delimiters to save lines. Do NOT add inline
+  narration comments explaining what a single line does; keep line-level code self-explanatory.
+  Config files stay comment-free (only what's functionally required, e.g. shebangs); commit
+  messages stay terse.
 - Keep non-deliverables OUT of the repo. Generated planning artifacts (specs, design docs, plans) go to
   the untracked session dir `~/.claude/projects/<mapped-path>/specs/`, overriding the brainstorming
   skill's commit-to-repo default; only commit one if asked that time. Scratch goes in the session
