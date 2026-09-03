@@ -92,10 +92,16 @@ for these rules as FYI reference only; the binding text is HERE.
   `///`, Python docstrings) and match the project's doc style. Where that convention is a block
   comment, lay it out EXPANDED: the opening delimiter alone on its first line, a star prefix on
   every continuation, the closing delimiter alone on its last, and a bare star line between the
-  prose and the tags. Never compact a block onto its delimiters to save lines. Do NOT add inline
-  narration comments explaining what a single line does; keep line-level code self-explanatory.
-  Config files stay comment-free (only what's functionally required, e.g. shebangs); commit
-  messages stay terse.
+  prose and the tags. Never compact a block onto its delimiters to save lines. Config files stay
+  comment-free (only what's functionally required, e.g. shebangs); commit messages stay terse.
+- Inline `//` comments are the exception, not the habit. Never narrate what a line does, and never
+  justify WHY an obvious branch, guard, early return or fallback exists: the code already says it,
+  and "but it explains the reasoning" is not a licence. One earns its place ONLY where a competent
+  reader would otherwise make a WRONG change: an ordering that looks arbitrary but is load-bearing,
+  a workaround for an upstream quirk, a check that looks redundant beside another. Before keeping
+  one, delete it and re-read the code: if nothing is lost, it stays deleted. If it restates the
+  condition or the throw message beside it, it is already lost. Rationale that survives this test
+  and needs more than a line belongs in `docs/`, not above the statement.
 - Keep non-deliverables OUT of the repo. Generated planning artifacts (specs, design docs, plans) go to
   the untracked session dir `~/.claude/projects/<mapped-path>/specs/`, overriding the brainstorming
   skill's commit-to-repo default; only commit one if asked that time. Scratch goes in the session
