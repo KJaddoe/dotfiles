@@ -191,6 +191,40 @@ class TestSummary(unittest.TestCase):
             reason = run_hook("git commit -m 'x'", cwd=tmp)["permissionDecisionReason"]
         self.assertIn("Nothing staged", reason)
 
+    def test_summary_follows_a_cd_into_another_repository(self):
+        """Regression: the prompt must describe the repo the command commits in.
+
+        Summarising the session's repo instead showed the wrong tree, or "Nothing staged"
+        while another repo had a full diff waiting.
+        """
+        env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
+        with tempfile.TemporaryDirectory() as session, tempfile.TemporaryDirectory() as other:
+            subprocess.run(["git", "init", "-q", session], check=True, env=env, timeout=20)
+            subprocess.run(["git", "init", "-q", other], check=True, env=env, timeout=20)
+            Path(other, "elsewhere.txt").write_text("hello\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "-C", other, "add", "elsewhere.txt"], check=True, env=env, timeout=20
+            )
+            reason = run_hook(f"cd {other} && git commit -m 'x'", cwd=session)[
+                "permissionDecisionReason"
+            ]
+        self.assertIn("elsewhere.txt", reason)
+
+    def test_summary_follows_git_dash_c(self):
+        """`git -C <dir> commit` names the repository outright."""
+        env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
+        with tempfile.TemporaryDirectory() as session, tempfile.TemporaryDirectory() as other:
+            subprocess.run(["git", "init", "-q", session], check=True, env=env, timeout=20)
+            subprocess.run(["git", "init", "-q", other], check=True, env=env, timeout=20)
+            Path(other, "named.txt").write_text("hello\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "-C", other, "add", "named.txt"], check=True, env=env, timeout=20
+            )
+            reason = run_hook(f"git -C {other} commit -m 'x'", cwd=session)[
+                "permissionDecisionReason"
+            ]
+        self.assertIn("named.txt", reason)
+
     def test_sweeps_tracked_detects_all_flag(self):
         """`-a` includes unstaged tracked changes; `--amend` alone does not."""
         self.assertTrue(hook.sweeps_tracked("git commit -am 'x'"))

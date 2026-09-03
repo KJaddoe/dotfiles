@@ -26,6 +26,7 @@ from _hookutil import (
     GIT_FLAGS,
     approval_decision,
     clip_summary,
+    command_directory,
     emit_decision,
     read_bash_payload,
     repo_root,
@@ -133,7 +134,7 @@ def main():
     if not PUSH_SUBCOMMAND.search(code) or is_dry_run(code):
         sys.exit(0)
 
-    summary = push_summary(repo_root(data.get("cwd") or "."), code)
+    summary = push_summary(repo_root(command_directory(code, data.get("cwd") or ".")), code)
     mode = data.get("permission_mode") or "default"
     emit_decision(*approval_decision(mode, "push", summary))
     sys.exit(0)
