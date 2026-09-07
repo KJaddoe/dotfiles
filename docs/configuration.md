@@ -187,10 +187,19 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   nothing and is not gated. Also unconfigurable
 - `claude/hooks/require-destructive-approval.py`: the same gate for destructive and hard-to-reverse
   shell commands (bulk file delete, `git reset --hard`, history rewrites, `DROP`/`TRUNCATE`/restore,
-  migrations, `terraform apply`, `kubectl delete`). Unlike the gh gate this is a DENYLIST, because
+  migrations, `terraform apply`, `kubectl delete`), plus the in-place rewrites that leave no copy
+  behind (`sed -i` and `perl -i` in every spelling, `truncate` to a fixed size, a recursive `chmod`
+  or `chown`). Unlike the gh gate this is a DENYLIST, because
   there is no enumerable set of safe shell commands to allowlist against, so it is a safety net over
   the known-destructive set rather than a boundary. It errs toward gating: a false positive costs one
-  approval, a false negative costs unrecoverable work. Also unconfigurable
+  approval, a false negative costs unrecoverable work.
+  Overwriting in place is the one class the command text cannot settle by itself: a `>` redirect and
+  a `cp` destroy nothing when the destination is new and everything when it is not. Those two are
+  decided by STATTING the destination, so an existing file gates and a new path does not, with
+  scratch trees (`/tmp`, `$TMPDIR`, macOS `/var/folders`) carved out and an unresolvable destination
+  failing closed. Redirect targets come from the lexer rather than a regex, so a `>` inside a quoted
+  argument is not read as one, and the overwrite check runs BEFORE printed text is stripped, since
+  dropping an `echo` segment would drop its redirect with it. Also unconfigurable
 - `claude/hooks/require-outgoing-approval.py`: the same gate for everything else that leaves the
   machine, which no other gate saw because they all assume outgoing means git or `gh`: file
   transfer (`scp`, `sftp`, `rsync`, `rclone`), HTTP writes (`curl`/`wget` with a non-GET method or

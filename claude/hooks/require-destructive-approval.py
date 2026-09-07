@@ -22,19 +22,37 @@ command is not one: the first live run of this hook blocked itself on its own `e
 ..."` banner. A command that pipes into a shell keeps its printed text, because there the string
 is what executes.
 
+The overwrite check below runs on the text with heredocs stripped but printing INTACT, because
+dropping an `echo` segment drops its redirect with it, and `echo "" > live.conf` empties a file
+whatever is on the left of the `>`. Reading redirects from the lexer is what makes that safe: a
+`>` inside a quoted argument stays inside its token and is never seen as an operator.
+
+Overwriting in place is the one class this gate cannot answer from the command text alone. A `>`
+redirect and a `cp` destroy nothing when the destination is new and destroy everything when it is
+not, and the same two characters do both. Matching them by text would either gate every redirect
+in the session or none of them, so these two are decided by STATTING the destination: an existing
+file gates, a new path does not. Scratch trees (`/tmp`, `$TMPDIR`, macOS `/var/folders`) are
+carved out, since nothing there is worth an approval prompt. A destination the text cannot
+resolve, behind a variable or a glob, fails closed. Redirect targets are read from the lexer
+rather than by regex, so a `>` inside a quoted argument is not mistaken for one.
+
 Mode handling matches the commit, push and gh gates. See `approval_decision` in `_hookutil`:
 prompt where a prompt renders, deny where it cannot, never allow.
 
 Deliberately unconfigurable, with no env switch. An off-switch is the failure it exists to prevent.
 """
 
+import os
 import re
 import sys
+from pathlib import Path
 
 from _hookutil import (
     GIT_FLAGS,
     approval_decision,
     clip_summary,
+    command_directory,
+    command_segments,
     emit_decision,
     read_bash_payload,
     strip_heredocs,
@@ -155,7 +173,153 @@ DESTRUCTIVE = [
             r"\bdocker\b[^&|;\n]*(\bvolume\s+rm\b|\bsystem\s+prune\b|\sdown\s[^&|;\n]*-\S*v)"
         ),
     ),
+    (
+        "rewrite a file in place (sed -i / perl -i)",
+        re.compile(
+            rf"\b(sed|perl)\b{SAME_COMMAND}"
+            rf"\s(-[A-Za-z]*i(\.\S*)?|--in-place(=\S*)?)(?=[\s'\"]|$)"
+        ),
+    ),
+    (
+        "shrink or empty a file (truncate)",
+        re.compile(rf"\btruncate\b{SAME_COMMAND}\s(-s|--size)[=\s]*(?!\+)\d"),
+    ),
+    (
+        "change permissions or ownership recursively (chmod -R / chown -R)",
+        re.compile(rf"\bch(mod|own|grp)\b{SAME_COMMAND}\s(-\S*R\b|--recursive\b)"),
+    ),
 ]
+
+# `>>` appends and `&>>` appends both streams, so neither empties what is already there.
+TRUNCATING_REDIRECTS = {">", ">|", "&>"}
+
+REDIRECTS = TRUNCATING_REDIRECTS | {">>", "&>>", "<", "<<", "<<<"}
+
+# Writing to a stream device destroys nothing.
+DEVICE_TARGETS = {"/dev/null", "/dev/stdout", "/dev/stderr", "/dev/tty", "/dev/fd/1", "/dev/fd/2"}
+
+SCRATCH_ROOTS = ("/tmp", "/private/tmp", "/var/folders", "/private/var/folders")
+
+# A destination the command text cannot resolve: a variable, a substitution, or a glob.
+UNRESOLVABLE_PATH = re.compile(r"[$`*?]")
+
+
+def in_scratch(path):
+    """Report whether a path lives in a tree kept for throwaway files.
+
+    :param path: resolved destination path
+    :return: True when the path sits under a temporary directory
+    """
+    roots = [*SCRATCH_ROOTS, os.environ.get("TMPDIR", "")]
+    return any(root and str(path).startswith(root.rstrip("/") + "/") for root in roots)
+
+
+def already_there(path):
+    """Report whether a destination path already holds something.
+
+    An unreadable path answers True: a destination that cannot be checked is treated as occupied,
+    the same way an unresolvable one is.
+
+    :param path: resolved destination path
+    :return: True when something exists at the path
+    """
+    try:
+        return path.exists()
+    except OSError:
+        return True
+
+
+def occupied_destination(target, base):
+    """Resolve a write destination and report it when writing there would land on something.
+
+    :param target: the path as written in the command
+    :param base: the directory the command acts in
+    :return: the resolved path as text, or "" when nothing would be overwritten
+    """
+    if UNRESOLVABLE_PATH.search(target):
+        return target
+
+    path = Path(target).expanduser()
+    path = path if path.is_absolute() else base / path
+    if in_scratch(path) or not already_there(path):
+        return ""
+    return str(path)
+
+
+def truncated_files(segments, base):
+    """List existing files a truncating redirect would empty.
+
+    :param segments: the command's token lists
+    :param base: the directory the command acts in
+    :return: list of destinations that already exist
+    """
+    hits = []
+    for tokens in segments:
+        for index, token in enumerate(tokens[:-1]):
+            if token not in TRUNCATING_REDIRECTS or tokens[index + 1] in DEVICE_TARGETS:
+                continue
+            hit = occupied_destination(tokens[index + 1], base)
+            if hit:
+                hits.append(hit)
+    return hits
+
+
+def copied_over_files(segments, base):
+    """List existing files a `cp` would overwrite.
+
+    A destination DIRECTORY is not itself overwritten, so what matters there is what each source
+    would land on inside it.
+
+    :param segments: the command's token lists
+    :param base: the directory the command acts in
+    :return: list of destinations that already exist
+    """
+    hits = []
+    for tokens in segments:
+        if tokens[0] != "cp":
+            continue
+
+        stop = next((at for at, token in enumerate(tokens) if token in REDIRECTS), len(tokens))
+        paths = [token for token in tokens[1:stop] if not token.startswith("-")]
+        if len(paths) < 2:
+            continue
+
+        sources, destination = paths[:-1], paths[-1]
+        if UNRESOLVABLE_PATH.search(destination):
+            hits.append(destination)
+            continue
+
+        target = Path(destination).expanduser()
+        target = target if target.is_absolute() else base / target
+        if in_scratch(target):
+            continue
+
+        if not target.is_dir():
+            hits.extend([str(target)] if already_there(target) else [])
+        elif any(UNRESOLVABLE_PATH.search(source) for source in sources):
+            hits.append(str(target))
+        else:
+            landings = [target / Path(source).name for source in sources]
+            hits.extend(str(landing) for landing in landings if already_there(landing))
+    return hits
+
+
+def overwrite_matches(cmd, base):
+    """List what a command would overwrite in place, by label.
+
+    :param cmd: full shell command, heredoc bodies and printed text already stripped
+    :param base: the directory the command acts in
+    :return: list of labels, each naming the file that already exists
+    """
+    segments = command_segments(cmd)
+    return [
+        f"{action}: {path}"
+        for action, paths in (
+            ("empty an existing file (> redirect)", truncated_files(segments, base)),
+            ("overwrite an existing file (cp)", copied_over_files(segments, base)),
+        )
+        for path in paths
+    ]
 
 
 def destructive_matches(cmd):
@@ -189,8 +353,10 @@ def main():
     if data is None:
         sys.exit(0)
 
-    code = strip_printed_text(strip_heredocs(cmd))
-    labels = destructive_matches(code)
+    written = strip_heredocs(cmd)
+    code = strip_printed_text(written)
+    base = command_directory(code, data.get("cwd") or ".")
+    labels = destructive_matches(code) + overwrite_matches(written, base)
     if not labels:
         sys.exit(0)
 

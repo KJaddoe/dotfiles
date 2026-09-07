@@ -12,8 +12,10 @@ therefore the load-bearing half of this file, not the courtesy half.
 
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -33,12 +35,13 @@ NON_PROMPTING_MODES = ["dontAsk", "bypassPermissions"]
 ALL_MODES = PROMPTING_MODES + NON_PROMPTING_MODES
 
 
-def run_hook(command, mode="default", tool="Bash"):
+def run_hook(command, mode="default", tool="Bash", cwd=None):
     """Invoke the hook with a payload and return its parsed decision.
 
     :param command: the shell command the model would run
     :param mode: permission mode reported by the session
     :param tool: tool name to report
+    :param cwd: working directory to report, which relative destinations resolve against
     :return: the hookSpecificOutput dict, or None when the hook stayed silent
     """
     payload = json.dumps(
@@ -46,7 +49,7 @@ def run_hook(command, mode="default", tool="Bash"):
             "tool_name": tool,
             "tool_input": {"command": command},
             "permission_mode": mode,
-            "cwd": str(Path.cwd()),
+            "cwd": cwd or str(Path.cwd()),
         }
     )
     result = subprocess.run(
@@ -62,13 +65,14 @@ def run_hook(command, mode="default", tool="Bash"):
     return json.loads(result.stdout)["hookSpecificOutput"]
 
 
-def gated(command):
+def gated(command, cwd=None):
     """Report whether a command would be put to the user.
 
     :param command: the shell command the model would run
+    :param cwd: working directory to report
     :return: True when the hook returns a decision
     """
-    return run_hook(command) is not None
+    return run_hook(command, cwd=cwd) is not None
 
 
 class TestFileDeletionIsGated(unittest.TestCase):
@@ -223,6 +227,126 @@ class TestInfrastructureIsGated(unittest.TestCase):
         self.assertTrue(gated("docker compose down -v"))
 
 
+class TestInPlaceRewritesAreGated(unittest.TestCase):
+    """Rewriting a file in place leaves no copy of what was there a moment earlier."""
+
+    def test_sed_in_place(self):
+        """Every spelling of sed's in-place flag is gated, including the BSD empty suffix."""
+        for command in (
+            "sed -i 's/a/b/' config.yml",
+            "sed -i '' 's/a/b/' config.yml",
+            "sed -i.bak 's/a/b/' config.yml",
+            "sed -E -i 's/a/b/' config.yml",
+            "sed --in-place 's/a/b/' config.yml",
+        ):
+            with self.subTest(command=command):
+                self.assertTrue(gated(command))
+
+    def test_perl_in_place(self):
+        """The perl -pi -e idiom rewrites just as silently as sed does."""
+        self.assertTrue(gated("perl -pi -e 's/a/b/' config.yml"))
+
+    def test_truncate(self):
+        """Truncating discards everything past the size given."""
+        self.assertTrue(gated("truncate -s 0 app.log"))
+        self.assertTrue(gated("truncate --size=0 app.log"))
+
+    def test_recursive_permission_changes(self):
+        """A recursive chmod or chown can lock a whole tree out in one command."""
+        for command in ("chmod -R 777 .", "chown -R me:staff /srv", "chmod --recursive 700 dir"):
+            with self.subTest(command=command):
+                self.assertTrue(gated(command))
+
+
+class TestOverwritingAnExistingFileIsGated(unittest.TestCase):
+    """A `>` or a `cp` destroys nothing when the destination is new, and everything when it is not.
+
+    Only the filesystem separates the two, so these are the one group of cases in this suite that
+    needs real files on disk. The tree is built outside every scratch root, since scratch paths
+    are carved out of the check on purpose.
+    """
+
+    def setUp(self):
+        """Lay down a file, and a directory already holding a file of the same name."""
+        self.work = Path(tempfile.mkdtemp(dir=Path.home()))
+        self.addCleanup(shutil.rmtree, self.work, ignore_errors=True)
+        (self.work / "config.yml").write_text("live\n")
+        (self.work / "sub").mkdir()
+        (self.work / "sub" / "config.yml").write_text("live\n")
+
+    def gate(self, command):
+        """Run a command against the temporary tree.
+
+        :param command: the shell command the model would run
+        :return: True when the hook returns a decision
+        """
+        return gated(command, cwd=str(self.work))
+
+    def test_redirect_over_an_existing_file(self):
+        """A `>` empties the file before the left-hand command produces a byte."""
+        self.assertTrue(self.gate("./build.sh > config.yml"))
+
+    def test_redirect_from_an_echo(self):
+        """The printed-text carve-out must not carry an echo's redirect away with it."""
+        self.assertTrue(self.gate('echo "" > config.yml'))
+
+    def test_deliberate_truncation_idioms(self):
+        """The forms that exist only to empty a file are gated."""
+        self.assertTrue(self.gate("cat /dev/null > config.yml"))
+        self.assertTrue(self.gate(": > config.yml"))
+
+    def test_heredoc_written_over_an_existing_file(self):
+        """Stripping a heredoc body leaves the redirect that decides the file's fate."""
+        self.assertTrue(self.gate("cat > config.yml <<'EOF'\nnew\nEOF"))
+
+    def test_stderr_redirect(self):
+        """A stream number in front of the `>` does not stop it truncating."""
+        self.assertTrue(self.gate("./build.sh 2> config.yml"))
+
+    def test_copy_onto_an_existing_file(self):
+        """cp overwrites without a word."""
+        self.assertTrue(self.gate("cp template.yml config.yml"))
+
+    def test_copy_into_a_directory_already_holding_that_name(self):
+        """A destination directory is not overwritten; what the source lands on inside it is."""
+        self.assertTrue(self.gate("cp config.yml sub/"))
+
+    def test_unresolvable_destination(self):
+        """A destination behind a variable cannot be checked, so it is gated."""
+        self.assertTrue(self.gate("./build.sh > $OUTPUT"))
+        self.assertTrue(self.gate("cp config.yml $DEST"))
+
+    def test_new_destinations_pass(self):
+        """Writing somewhere nothing lives destroys nothing."""
+        for command in (
+            "./build.sh > report.txt",
+            "cat > notes.md <<'EOF'\nhi\nEOF",
+            "cp config.yml backup.yml",
+            "cp template.yml sub/",
+        ):
+            with self.subTest(command=command):
+                self.assertFalse(self.gate(command))
+
+    def test_appending_passes(self):
+        """`>>` adds to a file rather than replacing it."""
+        self.assertFalse(self.gate("./build.sh >> config.yml"))
+
+    def test_devices_pass(self):
+        """Writing to a stream device destroys nothing."""
+        self.assertFalse(self.gate("./build.sh > /dev/null"))
+        self.assertFalse(self.gate("./build.sh 2>/dev/null"))
+
+    def test_scratch_destinations_pass(self):
+        """Nothing under a temporary tree is worth an approval prompt."""
+        self.assertFalse(self.gate("./build.sh > /tmp/out.txt"))
+        self.assertFalse(self.gate("cp config.yml /tmp/backup.yml"))
+
+    def test_a_quoted_redirect_is_not_one(self):
+        """Reading redirects from the lexer is what keeps a `>` inside an argument out of this."""
+        self.assertFalse(self.gate("grep 'a > config.yml' notes.md"))
+        self.assertFalse(self.gate('echo "writes > config.yml when run"'))
+
+
 class TestSafeCommandsPassThrough(unittest.TestCase):
     """The load-bearing half: ordinary work must never be gated.
 
@@ -261,6 +385,27 @@ class TestSafeCommandsPassThrough(unittest.TestCase):
     def test_clean_dry_run(self):
         """`git clean -n` only reports what it would remove."""
         self.assertFalse(gated("git clean -n"))
+
+    def test_sed_and_perl_without_in_place(self):
+        """A flag that merely CONTAINS an i is not the in-place flag."""
+        for command in (
+            "sed -n '1,5p' config.yml",
+            "sed -e 's/i/x/' config.yml",
+            "sed --expression='s/a/i/' config.yml",
+            "perl -Mstrict -e 'print 1'",
+        ):
+            with self.subTest(command=command):
+                self.assertFalse(gated(command))
+
+    def test_growing_a_file_is_not_truncating_it(self):
+        """A `+` size extends the file rather than cutting it back."""
+        self.assertFalse(gated("truncate -s +1M sparse.img"))
+
+    def test_non_recursive_permission_changes(self):
+        """Only the recursive forms are gated; a single file is not the disaster case."""
+        for command in ("chmod 644 config.yml", "chmod +x script.sh", "chmod --reference=a b"):
+            with self.subTest(command=command):
+                self.assertFalse(gated(command))
 
     def test_interactive_rm_is_not_bulk(self):
         """rm -i prompts per file and is not the bulk delete the rule names."""
