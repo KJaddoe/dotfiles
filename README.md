@@ -1,5 +1,11 @@
 # KJaddoe's dotfiles
 
+## Maintainer
+
+KJaddoe is the sole maintainer. This is a personal machine setup, published so the config is
+readable and so a fresh machine can be rebuilt from it, not offered as a product: there is no
+support commitment and nothing here is triaged. Fork it and change what you need.
+
 # PHILOSOPHY
 
 > Philosophical stuff about this dotfiles structure, decisions, etc..
