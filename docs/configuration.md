@@ -116,6 +116,23 @@ The corollary: any rule that relies on a permission PROMPT rather than a hook st
 mode. That is why `require-destructive-approval.py` exists; before it, "confirm before a destructive
 operation" was enforced only by the prompt that `auto` removes.
 
+## Attribution
+
+`attribution` in `claude/settings.json` keeps Claude's name off anything colleagues read. It takes
+three fields, and the two that hide the standard trailers do NOT cover the session link:
+
+| Field        | Value   | What it governs                                                                 |
+|--------------|---------|---------------------------------------------------------------------------------|
+| `commit`     | `""`    | Attribution text in commit messages; an empty string hides it                   |
+| `pr`         | `""`    | Attribution text in pull request descriptions; an empty string hides it         |
+| `sessionUrl` | `false` | The `Claude-Session:` trailer and PR-body link; defaults to **true** when unset |
+
+`sessionUrl` is the one that is easy to miss. It is a separate boolean rather than more text, so
+emptying `commit` and `pr` leaves the session link switched on, and a session reachable from
+another device is instructed to append one. `block-claude-attribution.py` catches the known
+markers on `git` and `gh` command lines, but a body passed by file is out of its reach, which is
+why the setting matters as well as the hook.
+
 ## Git hooks
 
 | Variable     | Purpose                                                      | Required | Default | Example |
