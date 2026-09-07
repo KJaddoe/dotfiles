@@ -16,14 +16,15 @@ Scope is deliberately narrow: only `gh release create`. Read-only subcommands (v
 list, download) and `gh release edit`/`upload` are untouched, since editing a release
 to change a title or attach an asset has nothing to do with notes composition.
 
-What is being INVOKED is read from the command with heredoc bodies stripped, so a script or
-document that merely mentions creating a release is not mistaken for creating one.
+What is being INVOKED is read from the command with heredoc bodies and printed text stripped, so
+a script, document or progress line that merely mentions creating a release is not mistaken for
+creating one.
 """
 
 import re
 import sys
 
-from _hookutil import read_bash_payload, strip_heredocs
+from _hookutil import read_bash_payload, strip_heredocs, strip_printed_text
 
 # Global flags may sit between `gh` and the subcommand, e.g. `gh --repo X release create`.
 GH_FLAGS = r"(?:\s+-{1,2}[\w-]+(?:[= ]\S+)?)*"
@@ -61,7 +62,7 @@ def main():
     if data is None:
         sys.exit(0)
 
-    code = strip_heredocs(cmd)
+    code = strip_printed_text(strip_heredocs(cmd))
 
     if not creates_release(code) or has_generated_notes(code):
         sys.exit(0)

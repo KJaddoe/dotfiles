@@ -302,6 +302,34 @@ def read_bash_payload():
     return data, (data.get("tool_input") or {}).get("command") or ""
 
 
+# Piping a printed string into a shell makes it the command that runs, so the carve-out below
+# must not apply there.
+PIPED_INTO_SHELL = re.compile(r"\|\s*(?:sudo\s+)?(?:sh|bash|zsh|dash|ksh)\b")
+
+
+def strip_printed_text(cmd):
+    """Return `cmd` with `echo` and `printf` segments removed.
+
+    A banner naming a gated command is data on its way to the terminal, the same way a heredoc
+    body is data on its way to a program. Nothing is stripped when the command pipes into a shell,
+    because there the printed string is what executes.
+
+    :param cmd: full shell command, heredoc bodies already stripped
+    :return: the command with printing segments elided
+    """
+    if PIPED_INTO_SHELL.search(cmd):
+        return cmd
+
+    kept = [
+        segment
+        for segment in SHELL_SEPARATORS.split(cmd)
+        if not re.match(r"\s*(echo|printf)\b", segment)
+    ]
+    # Rejoined with `;` rather than a newline: a newline reads as whitespace to the lexer in
+    # `command_segments`, which would fuse the surviving commands into one.
+    return " ; ".join(kept)
+
+
 def strip_heredocs(cmd):
     """Return `cmd` with heredoc bodies removed, leaving the commands themselves.
 

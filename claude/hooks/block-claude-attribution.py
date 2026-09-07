@@ -22,10 +22,11 @@ inspection (`git log … | grep`, and prose like "commits ahead") is never block
 attribution can no longer slip through `git merge -m` or `git tag -a -m`. The gpg check stays
 scoped to `git commit`, which is what the rule names.
 
-Which subcommand is being INVOKED is decided from the command with heredoc bodies stripped, so
-writing a script or document that merely mentions one of them is not treated as running it. The
-attribution scan itself still reads the ORIGINAL text, because a heredoc is a normal way to pass
-a multi-line commit message, exactly where a trailer would hide.
+Which subcommand is being INVOKED is decided from the command with heredoc bodies and printed
+text stripped, so writing a script or document that merely mentions one of them is not treated as
+running it. The attribution scan itself still reads the ORIGINAL text, because a heredoc is a normal
+way to pass a multi-line commit message and an `echo` into a file is a normal way to build one:
+both are exactly where a trailer would hide.
 """
 
 import re
@@ -39,6 +40,7 @@ from _hookutil import (
     read_bash_payload,
     short_flag,
     strip_heredocs,
+    strip_printed_text,
 )
 
 WRITE_SUBCOMMAND = re.compile(
@@ -80,8 +82,10 @@ def main():
     if data is None:
         sys.exit(0)
 
+    # `low` keeps the whole command, printed text included: a trailer written by `echo` into a
+    # file IS the text being recorded. `code` answers the different question of what runs.
     low = cmd.lower()
-    code = strip_heredocs(cmd)
+    code = strip_printed_text(strip_heredocs(cmd))
 
     if not (writes_history(code) or publishes_to_github(code)):
         sys.exit(0)

@@ -158,9 +158,17 @@ class TestCoverage(unittest.TestCase):
         """A commit hidden behind && is caught."""
         self.assertEqual(run_hook("git add -A && git commit -m 'x'")["permissionDecision"], "ask")
 
+    def test_printed_command_piped_into_a_shell(self):
+        """A printed commit piped into a shell runs, so the carve-out must not hide it."""
+        self.assertEqual(run_hook('echo "git commit -m x" | sh')["permissionDecision"], "ask")
+
 
 class TestPassthrough(unittest.TestCase):
     """Anything that is not a commit must not be touched."""
+
+    def test_echo_naming_a_commit(self):
+        """A progress line that names a commit is not one."""
+        self.assertIsNone(run_hook('echo "about to run git commit -m x"'))
 
     def test_non_bash_tool(self):
         """A non-Bash tool call is ignored."""

@@ -13,6 +13,9 @@ command line says "publish", which is exactly the shape of action that should no
 The prompt carries the branch, the resolved target, the commits that would be published, and a
 loud warning when history is being rewritten (`--force`, `-f`, `--force-with-lease`).
 
+What is being INVOKED is read from the command with heredoc bodies and printed text stripped, so a
+progress line naming a push is not one.
+
 Mode handling matches the commit gate. See `approval_decision` in `_hookutil`: prompt where a
 prompt renders, deny where it cannot, never allow.
 
@@ -33,6 +36,7 @@ from _hookutil import (
     run_git,
     short_flag,
     strip_heredocs,
+    strip_printed_text,
 )
 
 PUSH_SUBCOMMAND = re.compile(rf"\bgit\b{GIT_FLAGS}\s+push\b", re.IGNORECASE)
@@ -130,7 +134,7 @@ def main():
     if data is None:
         sys.exit(0)
 
-    code = strip_heredocs(cmd)
+    code = strip_printed_text(strip_heredocs(cmd))
     if not PUSH_SUBCOMMAND.search(code) or is_dry_run(code):
         sys.exit(0)
 

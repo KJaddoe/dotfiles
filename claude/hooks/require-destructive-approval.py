@@ -19,8 +19,8 @@ Two kinds of text are data rather than commands, and both are removed before mat
 bodies, matching the other guards, so writing a script or a .sql file that CONTAINS `DROP TABLE`
 is not running one. And `echo`/`printf` arguments, because a progress line that NAMES a destructive
 command is not one: the first live run of this hook blocked itself on its own `echo "... rm -rf
-..."` banner. A printed string that is then piped into a shell is not covered by that carve-out,
-but it is not covered by the denylist either, so nothing is lost by it.
+..."` banner. A command that pipes into a shell keeps its printed text, because there the string
+is what executes.
 
 Mode handling matches the commit, push and gh gates. See `approval_decision` in `_hookutil`:
 prompt where a prompt renders, deny where it cannot, never allow.
@@ -33,12 +33,12 @@ import sys
 
 from _hookutil import (
     GIT_FLAGS,
-    SHELL_SEPARATORS,
     approval_decision,
     clip_summary,
     emit_decision,
     read_bash_payload,
     strip_heredocs,
+    strip_printed_text,
 )
 
 # Confined to one command in a compound line, so a match cannot run past a `&&` or a pipe and
@@ -156,24 +156,6 @@ DESTRUCTIVE = [
         ),
     ),
 ]
-
-
-def strip_printed_text(cmd):
-    """Return `cmd` with `echo` and `printf` segments removed.
-
-    A banner naming a destructive command is data on its way to the terminal, the same way a
-    heredoc body is data on its way to a program. Segments are split on the shell separators, so
-    only the printing command is dropped and everything chained around it is still inspected.
-
-    :param cmd: full shell command, heredoc bodies already stripped
-    :return: the command with printing segments elided
-    """
-    kept = [
-        segment
-        for segment in SHELL_SEPARATORS.split(cmd)
-        if not re.match(r"\s*(echo|printf)\b", segment)
-    ]
-    return "\n".join(kept)
 
 
 def destructive_matches(cmd):

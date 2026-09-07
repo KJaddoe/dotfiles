@@ -212,6 +212,33 @@ class ApprovalDecision(unittest.TestCase):
         self.assertNotIn("allow", decisions)
 
 
+class PrintedText(unittest.TestCase):
+    """Printed text is data on its way to the terminal, unless it is what runs."""
+
+    def test_banner_is_dropped(self):
+        """A progress line naming a gated command is not that command."""
+        self.assertEqual(hookutil.strip_printed_text('echo "run git commit"').strip(), "")
+
+    def test_chained_command_survives(self):
+        """Only the printing command is dropped; what is chained to it is still inspected."""
+        kept = hookutil.strip_printed_text('echo "starting" && git commit -m x')
+        self.assertIn("git commit", kept)
+        self.assertNotIn("starting", kept)
+
+    def test_nothing_is_dropped_when_piped_into_a_shell(self):
+        """Piped into a shell, the printed string is the command, so the carve-out is off."""
+        cmd = 'echo "git commit -m x" | sh'
+        self.assertEqual(hookutil.strip_printed_text(cmd), cmd)
+
+    def test_survivors_stay_separable(self):
+        """Regression: rejoining with a newline fused the survivors into one command."""
+        kept = hookutil.strip_printed_text("echo hi && git add -A && git commit -m x")
+        self.assertEqual(
+            hookutil.command_segments(kept),
+            [["git", "add", "-A"], ["git", "commit", "-m", "x"]],
+        )
+
+
 class GhClassification(unittest.TestCase):
     """The gh helpers shared by require-gh-approval and block-claude-attribution.
 
