@@ -5,88 +5,45 @@ Run: python3 claude/hooks/tests/test_undocumented_env_vars.py
 Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 """
 
-import importlib.util
 import json
 import os
-import shutil
-import subprocess
-import sys
 import tempfile
 import unittest
-from pathlib import Path
 
-HOOK_PATH = Path(__file__).resolve().parents[1] / "undocumented-env-vars.py"
+from _harness import RepoFixture, git, load_hook, run_standalone
 
-# Loading by file path does not put the hooks directory on sys.path, so the hook's
-# `from _hookutil import ...` would fail without this.
-sys.path.insert(0, str(HOOK_PATH.parent))
-
-spec = importlib.util.spec_from_file_location("undocumented_env_vars", HOOK_PATH)
-hook = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(hook)
+hook = load_hook("undocumented-env-vars.py")
 
 SECRET = "sk-live-51H8xQ2eZvKYlo0THISisNOTreal"
 
 
-def git(repo, *args):
-    """Run a git command in `repo`, raising on failure.
+class EnvVarFixture(RepoFixture):
+    """The shared repo fixture, with a JavaScript baseline and this hook's own invocation."""
 
-    :param repo: repository path
-    :param args: git arguments
-    """
-    subprocess.run(
-        ["git", "-C", str(repo), *args],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-
-class RepoFixture(unittest.TestCase):
-    """Base fixture creating a throwaway git repo with one committed baseline file."""
-
-    def setUp(self):
-        """Create a temp git repo with an initial commit."""
-        self.repo = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, self.repo, ignore_errors=True)
-        git(self.repo, "init", "-q")
-        git(self.repo, "config", "user.email", "test@example.com")
-        git(self.repo, "config", "user.name", "test")
-        (self.repo / "baseline.js").write_text("const a = 1;\n")
-        git(self.repo, "add", "-A")
-        git(self.repo, "commit", "-qm", "init")
-
-    def write(self, name, content):
-        """Write a file inside the fixture repo, creating parent directories.
-
-        :param name: repo-relative path
-        :param content: file contents
-        """
-        path = self.repo / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
+    baseline = ("baseline.js", "const a = 1;\n")
 
     def run_hook(self, mode, cwd=None):
-        """Invoke the hook as a subprocess with the given mode.
+        """Invoke the hook with the given mode.
+
+        Spawned rather than called in this process: the mode and the home directory are read from
+        the ENVIRONMENT, which a hook resolves at import time and an in-process call cannot vary.
 
         :param mode: DOCS_ENV_HOOK_MODE value
         :param cwd: cwd reported to the hook, defaults to the fixture repo
         :return: CompletedProcess
         """
-        env = {**os.environ, "DOCS_ENV_HOOK_MODE": mode, "HOME": str(self.repo / "fakehome")}
-        payload = json.dumps({"cwd": str(cwd or self.repo), "stop_hook_active": False})
-        return subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input=payload,
-            capture_output=True,
-            text=True,
-            env=env,
-            timeout=30,
-            check=False,
+        return run_standalone(
+            "undocumented-env-vars.py",
+            stdin=json.dumps({"cwd": str(cwd or self.repo), "stop_hook_active": False}),
+            env={
+                **os.environ,
+                "DOCS_ENV_HOOK_MODE": mode,
+                "HOME": str(self.repo / "fakehome"),
+            },
         )
 
 
-class TestDetection(RepoFixture):
+class TestDetection(EnvVarFixture):
     """Happy path and core detection behaviour."""
 
     def test_undocumented_var_is_flagged(self):
@@ -118,7 +75,7 @@ class TestDetection(RepoFixture):
         self.assertEqual(hook.find_undocumented(self.repo), ["DB_PASSWORD", "REDIS_URL"])
 
 
-class TestBoundaries(RepoFixture):
+class TestBoundaries(EnvVarFixture):
     """Edge and boundary conditions."""
 
     def test_preexisting_var_is_not_flagged(self):
@@ -167,34 +124,25 @@ class TestBoundaries(RepoFixture):
 
     def test_malformed_stdin_exits_zero(self):
         """Unparseable stdin must never break the session."""
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input="not json",
-            capture_output=True,
-            text=True,
-            check=False,
+        result = run_standalone(
+            "undocumented-env-vars.py",
+            stdin="not json",
             env={**os.environ, "DOCS_ENV_HOOK_MODE": "enforce"},
-            timeout=30,
         )
         self.assertEqual(result.returncode, 0)
 
     def test_stop_hook_active_exits_zero(self):
         """stop_hook_active short-circuits, preventing a block loop."""
-        payload = json.dumps({"cwd": str(self.repo), "stop_hook_active": True})
         self.write("api.js", "const k = process.env.STRIPE_API_KEY;\n")
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input=payload,
-            capture_output=True,
-            text=True,
-            check=False,
+        result = run_standalone(
+            "undocumented-env-vars.py",
+            stdin=json.dumps({"cwd": str(self.repo), "stop_hook_active": True}),
             env={**os.environ, "DOCS_ENV_HOOK_MODE": "enforce"},
-            timeout=30,
         )
         self.assertEqual(result.returncode, 0)
 
 
-class TestModes(RepoFixture):
+class TestModes(EnvVarFixture):
     """Mode switching must behave exactly as advertised."""
 
     def setUp(self):
@@ -225,20 +173,15 @@ class TestModes(RepoFixture):
         """Absent configuration the hook must not block."""
         env = {k: v for k, v in os.environ.items() if k != "DOCS_ENV_HOOK_MODE"}
         env["HOME"] = str(self.repo / "fakehome")
-        payload = json.dumps({"cwd": str(self.repo), "stop_hook_active": False})
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input=payload,
-            capture_output=True,
-            text=True,
+        result = run_standalone(
+            "undocumented-env-vars.py",
+            stdin=json.dumps({"cwd": str(self.repo), "stop_hook_active": False}),
             env=env,
-            timeout=30,
-            check=False,
         )
         self.assertEqual(result.returncode, 0)
 
 
-class TestSecretsMustNotLeak(RepoFixture):
+class TestSecretsMustNotLeak(EnvVarFixture):
     """Must-not-work cases: a secret value may never escape into output or logs."""
 
     def test_secret_value_absent_from_stderr(self):
