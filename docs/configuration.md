@@ -191,6 +191,20 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   there is no enumerable set of safe shell commands to allowlist against, so it is a safety net over
   the known-destructive set rather than a boundary. It errs toward gating: a false positive costs one
   approval, a false negative costs unrecoverable work. Also unconfigurable
+- `claude/hooks/require-outgoing-approval.py`: the same gate for everything else that leaves the
+  machine, which no other gate saw because they all assume outgoing means git or `gh`: file
+  transfer (`scp`, `sftp`, `rsync`, `rclone`), HTTP writes (`curl`/`wget` with a non-GET method or
+  a body flag), package publishing (npm and friends, `twine`, `cargo`, `gem`, `nuget`, `docker`,
+  `helm`) and cloud uploads (`aws s3`, `gsutil`, `gcloud storage`, `az storage blob`). A DENYLIST
+  for the same reason the destructive gate is one. Classification is token-based rather than regex
+  because DIRECTION decides half of these: `scp host:file .` and `aws s3 cp s3://bucket/x .` fetch,
+  and gating a download is friction with no protection, so a transfer reads as a download only when
+  the remote is the first positional and nothing after it is remote. `curl` is judged by the hosts
+  it names, and only loopback (`localhost`, `127.x`, `::1`, `0.0.0.0`) is carved out: a LAN address
+  is still a machine colleagues can see. Ambiguity fails closed, so a target behind a shell variable
+  or a request with no readable host is gated. `--dry-run` publishes nothing and is not gated.
+  Printed text piped into a shell is re-read as the command it becomes, since a token-based gate
+  cannot match it where a regex one would. Also unconfigurable
 - `claude/hooks/require-gh-approval.py`: the same gate for `gh` commands that write to GitHub. It
   classifies by ALLOWLIST, so an unrecognised subcommand gates rather than slips through, and it
   classifies `gh api` by method (`--method` non-GET, or `-f`/`-F`/`--input` implying a POST) rather
