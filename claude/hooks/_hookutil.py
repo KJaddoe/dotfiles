@@ -394,19 +394,20 @@ def command_head(tokens):
     return tokens[index:]
 
 
-def gh_invocations(cmd):
-    """Split a shell command into the argument list of each `gh` invocation it contains.
+def command_segments(cmd):
+    """Split a shell command into the tokens of each command it runs, in order.
 
-    `gh` counts only in COMMAND POSITION, never as a bare word somewhere in the arguments.
-    The word appears in ordinary prose, and treating it as an invocation gated `grep -rn gh docs/`
-    and, worse, any multi-line commit message with "gh" on a line of its own: the newline read as
-    a command separator, which broke the quoting and left `gh` looking like a command.
+    A command word counts only in COMMAND POSITION, never as a bare word somewhere in the
+    arguments. `gh` and `git` both appear in ordinary prose, and treating either as an invocation
+    gated `grep -rn gh docs/` and, worse, any multi-line commit message with the word on a line of
+    its own: the newline read as a command separator, which broke the quoting and left the word
+    looking like a command.
 
     That is also why the whole command is lexed BEFORE it is split on operators, rather than
     split on a newline regex first: a quoted argument spanning lines has to survive as one token.
 
     :param cmd: full shell command, heredoc bodies already stripped
-    :return: list of token lists, one per gh invocation, each excluding the `gh` itself
+    :return: list of token lists, one per command, each starting at its command word
     """
     try:
         lexer = shlex.shlex(cmd, posix=True, punctuation_chars=True)
@@ -415,16 +416,25 @@ def gh_invocations(cmd):
     except ValueError:
         tokens = cmd.split()
 
-    found, segment = [], []
+    segments, segment = [], []
     for token in [*tokens, ";"]:
         if token in SEPARATOR_TOKENS:
             head = command_head(segment)
-            if head and head[0] == "gh":
-                found.append(head[1:])
+            if head:
+                segments.append(head)
             segment = []
         else:
             segment.append(token)
-    return found
+    return segments
+
+
+def gh_invocations(cmd):
+    """Split a shell command into the argument list of each `gh` invocation it contains.
+
+    :param cmd: full shell command, heredoc bodies already stripped
+    :return: list of token lists, one per gh invocation, each excluding the `gh` itself
+    """
+    return [tokens[1:] for tokens in command_segments(cmd) if tokens[0] == "gh"]
 
 
 def gh_subcommand(tokens):

@@ -144,6 +144,29 @@ class CommandDirectory(unittest.TestCase):
         self.assertEqual(result, Path("/work/repo/$TARGET"))
 
 
+class CommandSegments(unittest.TestCase):
+    """Splitting a shell command into the commands it actually runs."""
+
+    def test_split_across_separators(self):
+        """Each command in a compound line comes back on its own, in order."""
+        found = hookutil.command_segments("git add -A && git commit -m x")
+        self.assertEqual(found, [["git", "add", "-A"], ["git", "commit", "-m", "x"]])
+
+    def test_command_word_counts_only_in_command_position(self):
+        """A command word among the arguments is an argument."""
+        self.assertEqual(hookutil.command_segments("echo git commit"), [["echo", "git", "commit"]])
+
+    def test_wrappers_and_assignments_are_stripped(self):
+        """An env assignment or a wrapper still leaves the real command word first."""
+        found = hookutil.command_segments("FOO=1 sudo git status")
+        self.assertEqual(found, [["git", "status"]])
+
+    def test_quoted_argument_spanning_lines_survives(self):
+        """A newline inside a quoted argument is not a command separator."""
+        found = hookutil.command_segments("git commit -m 'one\ntwo'")
+        self.assertEqual(found, [["git", "commit", "-m", "one\ntwo"]])
+
+
 class GhClassification(unittest.TestCase):
     """The gh helpers shared by require-gh-approval and block-claude-attribution.
 
