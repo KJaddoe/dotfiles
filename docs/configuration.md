@@ -172,7 +172,10 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   which matters when a session works across repositories: summarising the session's own tree
   showed a diff the user was not being asked to approve. A destination the command text cannot
   resolve, one behind a shell variable, falls back to the session's directory. The push and `gh`
-  gates resolve their target the same way
+  gates resolve their target the same way. Staging chained ahead of the commit is read too: the
+  gate runs before the command, so the index it sees predates a `git add` on the same line, and
+  `git add --dry-run` reports what that add would stage without staging it. Staging that cannot
+  be read this way is named in the prompt rather than left out of it
 - `claude/hooks/require-push-approval.py`: the same gate for `git push`, since a push is public and
   cannot be amended away afterwards. The prompt names the branch, the baseline it is compared against,
   the commits that would be published, and whether history is being rewritten. `--dry-run` publishes

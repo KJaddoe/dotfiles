@@ -29,6 +29,26 @@ spec.loader.exec_module(hook)
 
 NON_PROMPTING_MODES = ["auto", "acceptEdits", "dontAsk", "bypassPermissions"]
 
+GIT_ENV = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
+
+
+def git_in(repo, *args):
+    """Run a git command in `repo` with the machine's own git config kept out.
+
+    :param repo: repository directory
+    :param args: git arguments
+    :return: the command's stdout
+    """
+    done = subprocess.run(
+        ["git", "-C", str(repo), *args],
+        check=True,
+        env=GIT_ENV,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    return done.stdout
+
 
 def run_hook(command, mode="default", tool="Bash", cwd=None):
     """Invoke the hook with a payload and return its parsed decision.
@@ -230,6 +250,104 @@ class TestSummary(unittest.TestCase):
         self.assertTrue(hook.sweeps_tracked("git commit -am 'x'"))
         self.assertTrue(hook.sweeps_tracked("git commit --all -m 'x'"))
         self.assertFalse(hook.sweeps_tracked("git commit --amend --no-edit"))
+
+
+class TestChainedStaging(unittest.TestCase):
+    """A staging command chained ahead of the commit decides what the commit records.
+
+    The hook runs BEFORE the command, so the index it reads predates any `git add` on the same
+    line. The summary has to describe what the whole command would record, not what happened to
+    be staged a moment earlier.
+    """
+
+    def repo_with_one_staged_file(self, tmp):
+        """Build a repository with `already.txt` staged and `later.txt` untracked.
+
+        :param tmp: directory to initialise the repository in
+        :return: None
+        """
+        git_in(tmp, "init", "-q")
+        Path(tmp, "already.txt").write_text("one\n", encoding="utf-8")
+        Path(tmp, "later.txt").write_text("two\n", encoding="utf-8")
+        git_in(tmp, "add", "already.txt")
+
+    def test_chained_add_reaches_the_prompt(self):
+        """`git add -A` ahead of the commit puts its files in the summary."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.repo_with_one_staged_file(tmp)
+            reason = run_hook("git add -A && git commit -m 'x'", cwd=tmp)[
+                "permissionDecisionReason"
+            ]
+        self.assertIn("already.txt", reason)
+        self.assertIn("later.txt", reason)
+
+    def test_named_pathspec_reports_only_that_path(self):
+        """An add naming one path does not claim to stage the rest of the tree."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.repo_with_one_staged_file(tmp)
+            Path(tmp, "untouched.txt").write_text("three\n", encoding="utf-8")
+            reason = run_hook("git add later.txt && git commit -m 'x'", cwd=tmp)[
+                "permissionDecisionReason"
+            ]
+        self.assertIn("later.txt", reason)
+        self.assertNotIn("untouched.txt", reason)
+
+    def test_staging_after_the_commit_is_left_out(self):
+        """A file staged only after the commit is not part of what it records."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.repo_with_one_staged_file(tmp)
+            reason = run_hook("git commit -m 'x' && git add later.txt", cwd=tmp)[
+                "permissionDecisionReason"
+            ]
+        self.assertNotIn("later.txt", reason)
+
+    def test_unreadable_staging_is_named(self):
+        """A staging form the summary cannot resolve is named, not passed over in silence."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.repo_with_one_staged_file(tmp)
+            reason = run_hook("git restore --staged already.txt && git commit -m 'x'", cwd=tmp)[
+                "permissionDecisionReason"
+            ]
+        self.assertIn("git restore", reason)
+
+    def test_empty_index_still_reports_the_chained_add(self):
+        """An empty index plus a chained add is not "nothing pending"."""
+        with tempfile.TemporaryDirectory() as tmp:
+            git_in(tmp, "init", "-q")
+            Path(tmp, "later.txt").write_text("two\n", encoding="utf-8")
+            reason = run_hook("git add -A && git commit -m 'x'", cwd=tmp)[
+                "permissionDecisionReason"
+            ]
+        self.assertNotIn("Nothing staged", reason)
+        self.assertIn("later.txt", reason)
+
+    def test_reading_the_add_does_not_perform_it(self):
+        """Resolving what an add would stage must leave the index exactly as it was."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.repo_with_one_staged_file(tmp)
+            run_hook("git add -A && git commit -m 'x'", cwd=tmp)
+            staged = git_in(tmp, "diff", "--cached", "--name-only").split()
+        self.assertEqual(staged, ["already.txt"])
+
+    def test_plain_commit_summary_is_unchanged(self):
+        """With nothing chained ahead, the summary is the staged tree alone."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.repo_with_one_staged_file(tmp)
+            reason = run_hook("git commit -m 'x'", cwd=tmp)["permissionDecisionReason"]
+        self.assertIn("already.txt", reason)
+        self.assertNotIn("later.txt", reason)
+
+    def test_staging_ahead_reads_command_position_only(self):
+        """Only a real git invocation ahead of the commit counts."""
+        self.assertEqual(hook.staging_ahead("git commit -m 'x'"), [])
+        self.assertEqual(len(hook.staging_ahead("git add -A && git commit -m 'x'")), 1)
+        self.assertEqual(hook.staging_ahead("echo git add -A && git commit -m 'x'"), [])
+
+    def test_git_verb_skips_global_flags(self):
+        """A global flag and its value are not the subcommand."""
+        self.assertEqual(hook.git_verb(["git", "-C", "/tmp/repo", "commit"])[0], "commit")
+        self.assertEqual(hook.git_verb(["git", "-c", "user.name=x", "add", "f"])[0], "add")
+        self.assertEqual(hook.git_verb(["git"])[0], "")
 
 
 if __name__ == "__main__":
