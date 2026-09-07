@@ -55,6 +55,10 @@ def run_hook(command, tool="Bash"):
 class TestBlocks(unittest.TestCase):
     """Commits carrying attribution or gpg-sign must be blocked."""
 
+    def test_trailer_echoed_into_a_message_file(self):
+        """Printing the trailer into a file the commit reads is still recording it."""
+        self.assertEqual(run_hook(f"echo '{TRAILER}' >> m.txt && git commit -F m.txt"), 2)
+
     def test_coauthored_trailer(self):
         """A co-authored trailer is blocked."""
         self.assertEqual(run_hook(f"git commit -m 'feat: x\n\n{TRAILER} <{NOREPLY}>'"), 2)
@@ -111,6 +115,10 @@ class TestBlocks(unittest.TestCase):
 
 class TestAllows(unittest.TestCase):
     """Legitimate commands must pass through untouched."""
+
+    def test_echo_naming_a_trailer(self):
+        """A line printed to the terminal is not a commit being recorded."""
+        self.assertEqual(run_hook(f'echo "never add {TRAILER} to a git commit"'), 0)
 
     def test_clean_commit(self):
         """An ordinary commit is allowed."""

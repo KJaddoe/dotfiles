@@ -146,6 +146,10 @@ class TestCoverage(unittest.TestCase):
         """Pushing tags publishes too."""
         self.assertEqual(run_hook("git push --tags")["permissionDecision"], "ask")
 
+    def test_printed_command_piped_into_a_shell(self):
+        """A printed push piped into a shell runs, so the carve-out must not hide it."""
+        self.assertEqual(run_hook('echo "git push" | bash')["permissionDecision"], "ask")
+
 
 class TestPassthrough(unittest.TestCase):
     """Anything that does not publish must not be touched."""
@@ -153,6 +157,10 @@ class TestPassthrough(unittest.TestCase):
     def test_dry_run_is_not_gated(self):
         """A dry run publishes nothing."""
         self.assertIsNone(run_hook("git push --dry-run"))
+
+    def test_echo_naming_a_push(self):
+        """A progress line that names a push is not one."""
+        self.assertIsNone(run_hook('echo "then git push origin main"'))
 
     def test_non_bash_tool(self):
         """A non-Bash tool call is ignored."""

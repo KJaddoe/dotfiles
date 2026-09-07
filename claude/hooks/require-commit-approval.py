@@ -7,7 +7,9 @@ carries the user's name into branches colleagues review, so "it is only local" i
 to skip sign-off. A change that has to be rewritten later costs the reviewer, not the author.
 
 Every commit invocation is intercepted, amends included, decided from the command with heredoc
-bodies stripped, so writing a script that merely mentions committing does not raise a prompt.
+bodies and printed text stripped, so writing a script that merely mentions committing, or echoing a
+progress line that names one, does not raise a prompt. A command that pipes printed text into a
+shell keeps it, because there the string is what runs.
 What is about to land goes INTO the approval prompt (`--stat` of the staged tree, plus the
 tracked-but-unstaged changes that `-a` would sweep in). The user approves a change, not a
 command line.
@@ -41,6 +43,7 @@ from _hookutil import (
     run_git,
     short_flag,
     strip_heredocs,
+    strip_printed_text,
 )
 
 # git subcommands that change what a commit would record.
@@ -178,7 +181,7 @@ def main():
     if data is None:
         sys.exit(0)
 
-    code = strip_heredocs(cmd)
+    code = strip_printed_text(strip_heredocs(cmd))
     if not COMMIT_SUBCOMMAND.search(code):
         sys.exit(0)
 

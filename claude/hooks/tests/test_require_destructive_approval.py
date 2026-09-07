@@ -345,6 +345,10 @@ class TestPrintedTextIsData(unittest.TestCase):
         """The exact shape that misfired: a banner plus the real command."""
         self.assertTrue(gated('echo "=== rm -rf ===" && rm -rf /tmp/x'))
 
+    def test_printed_command_piped_into_a_shell(self):
+        """The carve-out is withheld when the printed string is what executes."""
+        self.assertTrue(gated('echo "rm -rf build" | sh'))
+
     def test_echo_is_not_a_general_escape_hatch(self):
         """A destructive command before a banner is still caught."""
         self.assertTrue(gated('rm -rf build && echo "done"'))

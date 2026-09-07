@@ -72,6 +72,10 @@ class TestBlocked(unittest.TestCase):
 class TestAllowed(unittest.TestCase):
     """Anything that already generates notes, or is not a release creation, passes."""
 
+    def test_echo_naming_a_release(self):
+        """A progress line that names a release is not creating one."""
+        self.assertEqual(run_hook('echo "next: gh release create v1"'), 0)
+
     def test_create_with_generate_notes(self):
         """--generate-notes passes."""
         self.assertEqual(run_hook("gh release create 1.2.4 --generate-notes"), ALLOW)
