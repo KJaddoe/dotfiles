@@ -57,6 +57,8 @@ Rejected:
   mode switch. They raise a prompt carrying the summary, and the user approves or rejects in place.
 - The gates' denial text no longer claims that a prompt "would be auto-approved" in the mode it
   names, because for the two remaining modes that is not why they deny.
+- A pending prompt does not lapse into approval. One was left unanswered for about three minutes
+  and was still waiting, so an unattended interactive session blocks rather than proceeds.
 - What a hook's `"ask"` does in a session with nowhere to render a dialog (print mode, background,
   a subagent) is unmeasured. The safe assumption is that it fails closed, but it is an assumption,
   and a session that runs unattended should not be assumed to be gated by a prompt.
