@@ -161,6 +161,21 @@ class CommandSegments(unittest.TestCase):
         found = hookutil.command_segments("FOO=1 sudo git status")
         self.assertEqual(found, [["git", "status"]])
 
+    def test_a_newline_separates_commands(self):
+        """Regression: a newline is a separator, so a command on its own line is still read.
+
+        shlex counts a newline as whitespace, which fused the two commands into one and left
+        everything after the first invocation unexamined.
+        """
+        found = hookutil.command_segments("gh issue list\ngh pr create -t x")
+        self.assertEqual(found, [["gh", "issue", "list"], ["gh", "pr", "create", "-t", "x"]])
+
+    def test_line_breaks_inside_quotes_are_left_alone(self):
+        """Only the newlines between commands are rewritten."""
+        self.assertEqual(hookutil.line_breaks_as_separators("a\nb"), "a;b")
+        self.assertEqual(hookutil.line_breaks_as_separators("'a\nb'"), "'a\nb'")
+        self.assertEqual(hookutil.line_breaks_as_separators('"a\nb" c\nd'), '"a\nb" c;d')
+
     def test_quoted_argument_spanning_lines_survives(self):
         """A newline inside a quoted argument is not a command separator."""
         found = hookutil.command_segments("git commit -m 'one\ntwo'")

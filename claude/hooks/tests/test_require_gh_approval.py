@@ -71,6 +71,11 @@ class TestWritesAreGated(unittest.TestCase):
         """Opening a PR is gated."""
         self.assertEqual(run_hook("gh pr create --fill")["permissionDecision"], "ask")
 
+    def test_write_on_its_own_line(self):
+        """Regression: a newline hid a write entirely, and the gate stayed silent."""
+        out = run_hook("gh issue list\ngh pr create -t x -b y")
+        self.assertEqual(out["permissionDecision"], "ask")
+
     def test_pr_comment(self):
         """Commenting notifies people and is gated."""
         self.assertEqual(run_hook("gh pr comment 12 -b 'lgtm'")["permissionDecision"], "ask")
