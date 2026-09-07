@@ -104,11 +104,13 @@ set `auto` at all, and Claude Code ignores the value there.
 | `permissions.defaultMode` | `auto`    | Reads and local edits flow; the gates below still stop |
 | `permissions.allow`       | 5 entries | Read-only `gh project`/`gh label` calls and `git grep` |
 
-The mode is only safe because of how `approval_decision` in `_hookutil.py` behaves: `default` and
-`plan` are the only modes where a prompt renders, so in `auto` every gated action is **denied**
-rather than asked. Committing, pushing, writing to GitHub, or running a destructive command from
-`auto` therefore fails with an explanation, and doing it means switching to `default` first. That
-switch is the review checkpoint, not an obstacle to route around.
+The mode is only safe because the gates still intercept. A hook's `"ask"` renders a dialog in
+`auto` and `acceptEdits` as well as `default` and `plan`, so `approval_decision` in
+`_hookutil.py` **asks** in all four: committing, pushing, writing to GitHub or running a
+destructive command from `auto` raises a prompt carrying a summary of what it would do, and
+approving that prompt is the review checkpoint. `dontAsk` and `bypassPermissions` are the
+exceptions, since neither can raise it, so both are **denied** instead. ADR 0005 records the
+measurement, and ADR 0004 the superseded reasoning.
 
 The corollary: any rule that relies on a permission PROMPT rather than a hook stops holding in this
 mode. That is why `require-destructive-approval.py` exists; before it, "confirm before a destructive
@@ -165,9 +167,9 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   (`gh pr create -F body.md`) is out of reach, since the text never appears in the command
 - `claude/hooks/require-commit-approval.py`: PreToolUse gate that puts every commit to the user for
   approval; deliberately unconfigurable, since an off-switch is the failure it prevents. It prompts in
-  `default`/`plan` mode and denies outright in `auto`, `acceptEdits`, `dontAsk` and `bypassPermissions`,
-  where a prompt would be auto-approved, so committing from those modes means switching to `default`
-  first. `bypassPermissions` ignores hook decisions entirely and cannot be gated by any hook. The
+  every mode that can render a dialog (`default`, `plan`, `auto`, `acceptEdits`) and denies in
+  `dontAsk` and `bypassPermissions`, which cannot; `bypassPermissions` ignores hook decisions
+  entirely and cannot be gated by any hook. The
   summary describes the repository the COMMAND acts on, following a leading `cd` or a `git -C`,
   which matters when a session works across repositories: summarising the session's own tree
   showed a diff the user was not being asked to approve. A destination the command text cannot

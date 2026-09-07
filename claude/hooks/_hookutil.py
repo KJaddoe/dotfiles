@@ -44,7 +44,9 @@ GIT_C_TARGET = re.compile(rf"\bgit\b{GIT_FLAGS}\s+-C\s+([^\s;&|]+)")
 CD_TARGET = re.compile(r"(?:^|[;&|]|&&)\s*cd\s+(?!-)([^\s;&|]+)")
 
 
-PROMPTING_MODES = {"default", "plan"}
+# Modes measured to render a dialog when a hook returns "ask". `dontAsk` is absent
+# because nothing has measured it, `bypassPermissions` because it ignores hook decisions.
+PROMPTING_MODES = {"default", "plan", "auto", "acceptEdits"}
 
 SUMMARY_LINE_LIMIT = 40
 
@@ -227,10 +229,9 @@ def clip_summary(text):
 def approval_decision(mode, action, summary):
     """Build the PreToolUse decision that puts an action to the user for approval.
 
-    "ask" is only honoured where a prompt can render. In the modes that auto-approve, asking
-    would silently become allowing, precisely where the model runs unsupervised, so the action
-    is denied instead, with instructions to get approval in the conversation and re-run from
-    `default`. Allowing is never an outcome.
+    A hook's "ask" renders a dialog in every mode but `dontAsk`, which is unmeasured, and
+    `bypassPermissions`, which ignores hook decisions outright. Those two are denied instead,
+    with instructions to get approval in the conversation. Allowing is never an outcome.
 
     :param mode: the session's reported permission mode
     :param action: what is being gated, named for the user ("commit", "push")
@@ -244,11 +245,11 @@ def approval_decision(mode, action, summary):
         )
 
     return "deny", (
-        f"BLOCKED: permission mode is '{mode}', where an approval prompt is auto-approved, so "
-        f"this {action} cannot be put to the user ({RULE_REFERENCE}).\n\n"
+        f"BLOCKED: permission mode is '{mode}', where this gate cannot raise an approval "
+        f"prompt, so this {action} cannot be put to the user ({RULE_REFERENCE}).\n\n"
         f"{summary}\n\n"
         f"Show this to the user, get explicit approval in the conversation, and re-run the "
-        f"{action} in 'default' permission mode."
+        f"{action} from a mode that prompts, such as 'default'."
     )
 
 

@@ -27,7 +27,10 @@ spec = importlib.util.spec_from_file_location("require_commit_approval", HOOK_PA
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
-NON_PROMPTING_MODES = ["auto", "acceptEdits", "dontAsk", "bypassPermissions"]
+# Measured: a hook's "ask" renders a dialog in all four of these. See ADR 0005.
+PROMPTING_MODES = ["default", "plan", "auto", "acceptEdits"]
+NON_PROMPTING_MODES = ["dontAsk", "bypassPermissions"]
+ALL_MODES = PROMPTING_MODES + NON_PROMPTING_MODES
 
 GIT_ENV = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
 
@@ -86,7 +89,7 @@ def decisions_for(command):
     :param command: the shell command the model would run
     :return: list of permissionDecision strings
     """
-    modes = ["default", "plan"] + NON_PROMPTING_MODES
+    modes = ALL_MODES
     return [run_hook(command, mode=m)["permissionDecision"] for m in modes]
 
 
@@ -102,6 +105,13 @@ class TestPromptingModes(unittest.TestCase):
         out = run_hook("git commit -m 'feat: x'", mode="plan")
         self.assertEqual(out["permissionDecision"], "ask")
 
+    def test_every_prompting_mode_asks(self):
+        """default, plan, auto and acceptEdits all raise the prompt rather than denying."""
+        for mode in PROMPTING_MODES:
+            with self.subTest(mode=mode):
+                out = run_hook("git commit -m 'feat: x'", mode=mode)
+                self.assertEqual(out["permissionDecision"], "ask")
+
     def test_reason_names_the_rule(self):
         """The prompt points at the rule it enforces."""
         out = run_hook("git commit -m 'feat: x'")
@@ -109,10 +119,10 @@ class TestPromptingModes(unittest.TestCase):
 
 
 class TestNonPromptingModes(unittest.TestCase):
-    """Where a prompt would be auto-approved, the commit is denied instead."""
+    """Where a prompt cannot render, the commit is denied instead."""
 
     def test_every_non_prompting_mode_denies(self):
-        """auto, acceptEdits, dontAsk and bypassPermissions all deny."""
+        """dontAsk and bypassPermissions deny, since neither can raise a prompt."""
         for mode in NON_PROMPTING_MODES:
             with self.subTest(mode=mode):
                 out = run_hook("git commit -m 'feat: x'", mode=mode)
@@ -120,7 +130,7 @@ class TestNonPromptingModes(unittest.TestCase):
 
     def test_denial_explains_the_way_out(self):
         """The denial tells the model to get approval and switch mode."""
-        reason = run_hook("git commit -m 'x'", mode="acceptEdits")["permissionDecisionReason"]
+        reason = run_hook("git commit -m 'x'", mode="dontAsk")["permissionDecisionReason"]
         self.assertIn("default", reason)
 
     def test_never_allows(self):

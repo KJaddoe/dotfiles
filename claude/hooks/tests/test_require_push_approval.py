@@ -28,7 +28,10 @@ spec = importlib.util.spec_from_file_location("require_push_approval", HOOK_PATH
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
-NON_PROMPTING_MODES = ["auto", "acceptEdits", "dontAsk", "bypassPermissions"]
+# Measured: a hook's "ask" renders a dialog in all four of these. See ADR 0005.
+PROMPTING_MODES = ["default", "plan", "auto", "acceptEdits"]
+NON_PROMPTING_MODES = ["dontAsk", "bypassPermissions"]
+ALL_MODES = PROMPTING_MODES + NON_PROMPTING_MODES
 
 GIT_ENV = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
 
@@ -89,19 +92,26 @@ class TestPromptingModes(unittest.TestCase):
         """Plan mode also prompts."""
         self.assertEqual(run_hook("git push", mode="plan")["permissionDecision"], "ask")
 
+    def test_every_prompting_mode_asks(self):
+        """default, plan, auto and acceptEdits all raise the prompt rather than denying."""
+        for mode in PROMPTING_MODES:
+            with self.subTest(mode=mode):
+                out = run_hook("git push", mode=mode)
+                self.assertEqual(out["permissionDecision"], "ask")
+
 
 class TestNonPromptingModes(unittest.TestCase):
-    """Where a prompt would be auto-approved, the push is denied instead."""
+    """Where a prompt cannot render, the push is denied instead."""
 
     def test_every_non_prompting_mode_denies(self):
-        """auto, acceptEdits, dontAsk and bypassPermissions all deny."""
+        """dontAsk and bypassPermissions deny, since neither can raise a prompt."""
         for mode in NON_PROMPTING_MODES:
             with self.subTest(mode=mode):
                 self.assertEqual(run_hook("git push", mode=mode)["permissionDecision"], "deny")
 
     def test_never_allows(self):
         """No mode produces an allow decision for a real push."""
-        modes = ["default", "plan"] + NON_PROMPTING_MODES
+        modes = ALL_MODES
         decisions = [run_hook("git push", mode=m)["permissionDecision"] for m in modes]
         self.assertNotIn("allow", decisions)
 

@@ -27,7 +27,10 @@ spec = importlib.util.spec_from_file_location("require_destructive_approval", HO
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
-NON_PROMPTING_MODES = ["auto", "acceptEdits", "dontAsk", "bypassPermissions"]
+# Measured: a hook's "ask" renders a dialog in all four of these. See ADR 0005.
+PROMPTING_MODES = ["default", "plan", "auto", "acceptEdits"]
+NON_PROMPTING_MODES = ["dontAsk", "bypassPermissions"]
+ALL_MODES = PROMPTING_MODES + NON_PROMPTING_MODES
 
 
 def run_hook(command, mode="default", tool="Bash"):
@@ -367,21 +370,21 @@ class TestModes(unittest.TestCase):
     """Mode handling matches the commit, push and gh gates."""
 
     def test_every_non_prompting_mode_denies(self):
-        """Where a prompt would be auto-approved, the command is denied."""
+        """Where a prompt cannot render, the command is denied."""
         for mode in NON_PROMPTING_MODES:
             with self.subTest(mode=mode):
                 out = run_hook("rm -rf build", mode=mode)
                 self.assertEqual(out["permissionDecision"], "deny")
 
     def test_prompting_modes_ask(self):
-        """Where a prompt renders, the user is asked."""
-        for mode in ("default", "plan"):
+        """default, plan, auto and acceptEdits all raise the prompt."""
+        for mode in PROMPTING_MODES:
             with self.subTest(mode=mode):
                 self.assertEqual(run_hook("rm -rf build", mode=mode)["permissionDecision"], "ask")
 
     def test_never_allows(self):
         """No mode produces an allow decision."""
-        modes = ["default", "plan"] + NON_PROMPTING_MODES
+        modes = ALL_MODES
         decisions = [run_hook("rm -rf build", mode=m)["permissionDecision"] for m in modes]
         self.assertNotIn("allow", decisions)
 

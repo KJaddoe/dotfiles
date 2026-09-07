@@ -167,6 +167,36 @@ class CommandSegments(unittest.TestCase):
         self.assertEqual(found, [["git", "commit", "-m", "one\ntwo"]])
 
 
+class ApprovalDecision(unittest.TestCase):
+    """The mode policy the four approval gates all delegate to."""
+
+    def test_measured_prompting_modes_ask(self):
+        """A mode where a dialog renders gets "ask", carrying the summary into it."""
+        for mode in ("default", "plan", "auto", "acceptEdits"):
+            with self.subTest(mode=mode):
+                decision, reason = hookutil.approval_decision(mode, "commit", "SUMMARY")
+                self.assertEqual(decision, "ask")
+                self.assertIn("SUMMARY", reason)
+
+    def test_unmeasured_and_ungatable_modes_deny(self):
+        """dontAsk is unmeasured and bypassPermissions ignores hook decisions."""
+        for mode in ("dontAsk", "bypassPermissions"):
+            with self.subTest(mode=mode):
+                decision, reason = hookutil.approval_decision(mode, "commit", "SUMMARY")
+                self.assertEqual(decision, "deny")
+                self.assertIn("SUMMARY", reason)
+
+    def test_an_unknown_mode_denies(self):
+        """A mode nobody has measured fails closed rather than open."""
+        self.assertEqual(hookutil.approval_decision("modeFromTheFuture", "push", "s")[0], "deny")
+
+    def test_never_allows(self):
+        """No mode produces an allow, which is not a legal outcome of any gate."""
+        modes = ("default", "plan", "auto", "acceptEdits", "dontAsk", "bypassPermissions", "x")
+        decisions = [hookutil.approval_decision(m, "commit", "s")[0] for m in modes]
+        self.assertNotIn("allow", decisions)
+
+
 class GhClassification(unittest.TestCase):
     """The gh helpers shared by require-gh-approval and block-claude-attribution.
 
