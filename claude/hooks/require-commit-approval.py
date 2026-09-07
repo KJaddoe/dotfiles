@@ -38,6 +38,7 @@ from _hookutil import (
     command_directory,
     command_segments,
     emit_decision,
+    heredoc_bodies,
     read_bash_payload,
     repo_root,
     run_git,
@@ -51,6 +52,10 @@ INDEX_VERBS = {"add", "rm", "mv", "restore", "reset", "stash", "apply"}
 
 # Global flags that carry their value as a separate token, so the value is not the subcommand.
 GIT_VALUE_FLAGS = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path"}
+
+# A message built by the shell (a substitution, a variable) is not resolvable from the command
+# text, and printing the unexpanded source would describe a commit nobody is making.
+SHELL_EXPANSION = ("$(", "`", "${")
 
 # Flags that make an add a conversation rather than a fixed set of paths, which `--dry-run`
 # cannot answer for.
@@ -136,6 +141,59 @@ def chained_staging_sections(repo, cmd):
     return sections
 
 
+def message_flag_value(tokens):
+    """Return the message a commit invocation carries on its command line.
+
+    Handles `-m`, a short-flag cluster such as `-am`, and both `--message` forms.
+
+    :param tokens: the commit invocation's tokens, starting with `git`
+    :return: the message as written, or "" when the command line carries none
+    """
+    for index, token in enumerate(tokens):
+        if token.startswith("--message="):
+            return token.split("=", 1)[1]
+        named = token in ("-m", "--message")
+        clustered = token.startswith("-") and not token.startswith("--") and short_flag(token, "m")
+        if (named or clustered) and index + 1 < len(tokens):
+            return tokens[index + 1]
+    return ""
+
+
+def commit_subject(repo, cmd):
+    """Return the subject line the commit would record.
+
+    Two prompts raised by one session look alike when each shows only a file list, and approving
+    the wrong one is then a click. The subject is what tells them apart. A message the shell would
+    build, or one read from a file on disk, yields nothing rather than a guess.
+
+    :param repo: repository root path, or None when not inside one
+    :param cmd: full shell command, heredoc bodies INTACT
+    :return: the subject line, or "" when it cannot be read from the command
+    """
+    tokens = next(
+        (
+            segment
+            for segment in command_segments(strip_heredocs(cmd))
+            if segment[0] == "git" and git_verb(segment)[0] == "commit"
+        ),
+        [],
+    )
+    if not tokens:
+        return ""
+
+    message = message_flag_value(tokens)
+    if not message:
+        bodies = [body for body in heredoc_bodies(cmd) if body.strip()]
+        message = bodies[0] if bodies else ""
+    if not message and "--amend" in tokens and repo is not None:
+        message = run_git(repo, "log", "-1", "--format=%s")
+
+    subject = next((line for line in message.splitlines() if line.strip()), "")
+    if any(marker in subject for marker in SHELL_EXPANSION):
+        return ""
+    return subject.strip()
+
+
 def sweeps_tracked(cmd):
     """Report whether the invocation stages tracked changes on the user's behalf.
 
@@ -185,8 +243,11 @@ def main():
     if not COMMIT_SUBCOMMAND.search(code):
         sys.exit(0)
 
-    where = command_directory(code, data.get("cwd") or ".")
-    summary = pending_summary(repo_root(where), code)
+    repo = repo_root(command_directory(code, data.get("cwd") or "."))
+    summary = pending_summary(repo, code)
+    subject = commit_subject(repo, cmd)
+    if subject:
+        summary = f'Subject: "{subject}"\n\n{summary}'
     mode = data.get("permission_mode") or "default"
     emit_decision(*approval_decision(mode, "commit", summary))
     sys.exit(0)

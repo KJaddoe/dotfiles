@@ -170,6 +170,9 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   every mode that can render a dialog (`default`, `plan`, `auto`, `acceptEdits`) and denies in
   `dontAsk` and `bypassPermissions`, which cannot; `bypassPermissions` ignores hook decisions
   entirely and cannot be gated by any hook. The
+  prompt leads with the commit's subject line, read from `-m`, a heredoc message, or the commit an
+  `--amend` would rewrite, so two prompts raised in one session are distinguishable at a glance; a
+  message the shell would build is left blank rather than guessed at. The
   summary describes the repository the COMMAND acts on, following a leading `cd` or a `git -C`,
   which matters when a session works across repositories: summarising the session's own tree
   showed a diff the user was not being asked to approve. A destination the command text cannot

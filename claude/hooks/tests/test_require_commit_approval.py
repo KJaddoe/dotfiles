@@ -375,5 +375,80 @@ class TestChainedStaging(unittest.TestCase):
         self.assertEqual(hook.git_verb(["git"])[0], "")
 
 
+class TestSubject(unittest.TestCase):
+    """The prompt names the commit, so two of them in one session are distinguishable."""
+
+    def subject_line(self, command, cwd=None):
+        """Return the prompt's Subject line for `command`, or "" when it carries none.
+
+        :param command: the shell command the model would run
+        :param cwd: working directory to report
+        :return: the Subject line, or "" when the prompt has none
+        """
+        reason = run_hook(command, cwd=cwd)["permissionDecisionReason"]
+        return next((l for l in reason.splitlines() if l.startswith("Subject:")), "")
+
+    def test_message_flag(self):
+        """A -m message is the subject."""
+        self.assertIn("plain subject", self.subject_line("git commit -m 'plain subject'"))
+
+    def test_clustered_flag(self):
+        """-am carries its message in the next token, like -m."""
+        self.assertIn("swept", self.subject_line("git commit -am 'swept subject'"))
+
+    def test_long_form(self):
+        """--message=x is read too."""
+        self.assertIn("long form", self.subject_line("git commit --message='long form'"))
+
+    def test_first_message_wins(self):
+        """A second -m is the body, not the subject."""
+        line = self.subject_line("git commit -m 'the subject' -m 'the body'")
+        self.assertIn("the subject", line)
+        self.assertNotIn("the body", line)
+
+    def test_heredoc_message(self):
+        """A message fed by heredoc still has a subject, on its first line."""
+        cmd = "git commit -F - <<'EOF'\nheredoc subject\n\nbody\nEOF"
+        self.assertIn("heredoc subject", self.subject_line(cmd))
+
+    def test_shell_substitution_yields_nothing(self):
+        """A message the shell would build cannot be read, so nothing is claimed."""
+        self.assertEqual(self.subject_line('git commit -m "$(cat msg.txt)"'), "")
+
+    def test_no_message_yields_nothing(self):
+        """A commit that opens an editor carries no subject to show."""
+        self.assertEqual(self.subject_line("git commit"), "")
+
+    def test_amend_reuses_the_recorded_subject(self):
+        """An amend carries no message of its own, so the prompt shows the one it rewrites."""
+        with tempfile.TemporaryDirectory() as tmp:
+            git_in(tmp, "init", "-q")
+            Path(tmp, "a.txt").write_text("x\n", encoding="utf-8")
+            git_in(tmp, "add", "a.txt")
+            git_in(
+                tmp,
+                "-c",
+                "user.email=t@example.com",
+                "-c",
+                "user.name=T",
+                "commit",
+                "-qm",
+                "the original subject",
+            )
+            line = self.subject_line("git commit --amend --no-edit", cwd=tmp)
+        self.assertIn("the original subject", line)
+
+    def test_subject_leads_the_prompt(self):
+        """It has to be the first thing read, not buried under the file list."""
+        with tempfile.TemporaryDirectory() as tmp:
+            git_in(tmp, "init", "-q")
+            Path(tmp, "already.txt").write_text("one\n", encoding="utf-8")
+            git_in(tmp, "add", "already.txt")
+            reason = run_hook("git commit -m 'leading subject'", cwd=tmp)[
+                "permissionDecisionReason"
+            ]
+        self.assertLess(reason.index('Subject: "leading subject"'), reason.index("Staged:"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
