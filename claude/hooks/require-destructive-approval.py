@@ -23,7 +23,7 @@ command is not one: the first live run of this hook blocked itself on its own `e
 but it is not covered by the denylist either, so nothing is lost by it.
 
 Mode handling matches the commit, push and gh gates. See `approval_decision` in `_hookutil`:
-prompt where a prompt renders, deny where it would be auto-approved, never allow.
+prompt where a prompt renders, deny where it cannot, never allow.
 
 Deliberately unconfigurable, with no env switch. An off-switch is the failure it exists to prevent.
 """

@@ -25,7 +25,10 @@ spec = importlib.util.spec_from_file_location("require_gh_approval", HOOK_PATH)
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
-NON_PROMPTING_MODES = ["auto", "acceptEdits", "dontAsk", "bypassPermissions"]
+# Measured: a hook's "ask" renders a dialog in all four of these. See ADR 0005.
+PROMPTING_MODES = ["default", "plan", "auto", "acceptEdits"]
+NON_PROMPTING_MODES = ["dontAsk", "bypassPermissions"]
+ALL_MODES = PROMPTING_MODES + NON_PROMPTING_MODES
 
 
 def run_hook(command, mode="default", tool="Bash"):
@@ -286,15 +289,22 @@ class TestModes(unittest.TestCase):
     """Mode handling matches the commit and push gates."""
 
     def test_every_non_prompting_mode_denies(self):
-        """Where a prompt would be auto-approved, the action is denied."""
+        """Where a prompt cannot render, the action is denied."""
         for mode in NON_PROMPTING_MODES:
             with self.subTest(mode=mode):
                 out = run_hook("gh issue create -t x", mode=mode)
                 self.assertEqual(out["permissionDecision"], "deny")
 
+    def test_every_prompting_mode_asks(self):
+        """default, plan, auto and acceptEdits all raise the prompt rather than denying."""
+        for mode in PROMPTING_MODES:
+            with self.subTest(mode=mode):
+                out = run_hook("gh issue create -t x", mode=mode)
+                self.assertEqual(out["permissionDecision"], "ask")
+
     def test_never_allows(self):
         """No mode produces an allow decision for a write."""
-        modes = ["default", "plan"] + NON_PROMPTING_MODES
+        modes = ALL_MODES
         decisions = [run_hook("gh issue create -t x", mode=m)["permissionDecision"] for m in modes]
         self.assertNotIn("allow", decisions)
 

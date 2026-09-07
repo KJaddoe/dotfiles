@@ -14,7 +14,7 @@ The prompt carries the branch, the resolved target, the commits that would be pu
 loud warning when history is being rewritten (`--force`, `-f`, `--force-with-lease`).
 
 Mode handling matches the commit gate. See `approval_decision` in `_hookutil`: prompt where a
-prompt renders, deny where it would be auto-approved, never allow.
+prompt renders, deny where it cannot, never allow.
 
 Deliberately unconfigurable, with no env switch. An off-switch is the failure it exists to prevent.
 """

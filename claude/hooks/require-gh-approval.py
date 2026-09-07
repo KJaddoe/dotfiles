@@ -57,7 +57,7 @@ subscription, or root fields hidden behind a fragment spread all fail closed, be
 selection read would not be provably the one that writes.
 
 Mode handling matches the commit and push gates. See `approval_decision` in `_hookutil`: prompt
-where a prompt renders, deny where it would be auto-approved, never allow.
+where a prompt renders, deny where it cannot, never allow.
 
 Deliberately unconfigurable, with no env switch. An off-switch is the failure it exists to prevent.
 """

@@ -19,15 +19,9 @@ is git's own answer to what it would stage and leaves the index untouched. Stagi
 be read that way is NAMED in the prompt rather than passed over, because a summary that quietly
 omits part of the change is the failure this gate exists to prevent.
 
-Permission mode decides how that is delivered, because "ask" is only honoured where a prompt can
-actually render:
-
-- `default` / `plan`: permissionDecision "ask", and the prompt carries the summary.
-- anything else (`auto`, `acceptEdits`, `dontAsk`, `bypassPermissions`): the prompt would be
-  auto-approved, so the call is DENIED instead, with instructions to get approval in the
-  conversation and re-run from `default`. Silently allowing is the one outcome the rule forbids.
-
-`bypassPermissions` ignores hook decisions outright; nothing this file does can gate that mode.
+Mode handling matches the push, gh and destructive gates. See `approval_decision` in `_hookutil`:
+prompt where a prompt renders, deny where it cannot, never allow. Silently allowing is the one
+outcome the rule forbids.
 
 Deliberately unconfigurable, with no env switch. An off-switch is the failure it exists to prevent.
 """
