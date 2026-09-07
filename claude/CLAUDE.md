@@ -74,7 +74,9 @@ for these rules as FYI reference only; the binding text is HERE.
   remote, Slack/email), draft it and get explicit sign-off on the exact content first. Authorization for
   the task is not authorization for the content. Local file edits and branch creation are exempt;
   commits are NOT; see Git & GitHub. `claude/hooks/require-push-approval.py` and
-  `require-gh-approval.py` enforce the push and `gh` halves.
+  `require-gh-approval.py` enforce the push and `gh` halves, and `require-outgoing-approval.py`
+  the rest of what leaves the machine: file transfer, HTTP writes, package publishing and cloud
+  uploads.
 - New issue on a project board → set Status = "To Be Refined". Editing an existing board issue → set
   Status back to "To Be Refined" AND post a comment noting Claude made changes a human must review.
 
