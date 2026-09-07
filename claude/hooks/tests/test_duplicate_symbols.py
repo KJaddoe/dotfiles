@@ -5,7 +5,6 @@ Run: python3 claude/hooks/tests/test_duplicate_symbols.py
 Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 """
 
-import importlib.util
 import json
 import os
 import shutil
@@ -15,64 +14,15 @@ import tempfile
 import unittest
 from pathlib import Path
 
-HOOK_PATH = Path(__file__).resolve().parents[1] / "duplicate-symbols.py"
+from _harness import HOOKS_DIR, RepoFixture, load_hook, run_standalone
 
-# Loading by file path does not put the hooks directory on sys.path, so the hook's
-# `from _hookutil import ...` would fail without this.
-sys.path.insert(0, str(HOOK_PATH.parent))
+HOOK_PATH = HOOKS_DIR / "duplicate-symbols.py"
 
-spec = importlib.util.spec_from_file_location("duplicate_symbols", HOOK_PATH)
-hook = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(hook)
+hook = load_hook("duplicate-symbols.py")
 
 
-def git(repo, *args):
-    """Run a git command in `repo`, raising on failure.
-
-    :param repo: repository path
-    :param args: git arguments
-    """
-    subprocess.run(
-        ["git", "-C", str(repo), *args],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-
-class RepoFixture(unittest.TestCase):
-    """Base fixture creating a throwaway git repo with one committed baseline file."""
-
-    def setUp(self):
-        """Create a temp git repo with an initial commit."""
-        self.repo = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, self.repo, ignore_errors=True)
-        git(self.repo, "init", "-q")
-        git(self.repo, "config", "user.email", "test@example.com")
-        git(self.repo, "config", "user.name", "test")
-        (self.repo / "baseline.md").write_text("baseline\n")
-        git(self.repo, "add", "-A")
-        git(self.repo, "commit", "-qm", "init")
-
-    def write(self, name, content):
-        """Write a file inside the repo, creating parent directories.
-
-        :param name: repo-relative path
-        :param content: file body
-        :return: absolute Path written
-        """
-        path = self.repo / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
-        return path
-
-    def commit(self, message="change"):
-        """Stage and commit everything currently in the working tree.
-
-        :param message: commit message
-        """
-        git(self.repo, "add", "-A")
-        git(self.repo, "commit", "-qm", message)
+class SymbolFixture(RepoFixture):
+    """The shared repo fixture, plus a shorthand for running the analyser over it."""
 
     def analyse(self, changed=None):
         """Run the analyser over the fixture repo.
@@ -85,7 +35,7 @@ class RepoFixture(unittest.TestCase):
         return hook.analyse(self.repo, changed)
 
 
-class ExactTier(RepoFixture):
+class ExactTier(SymbolFixture):
     """The high-confidence tier: one symbol name declared in two files."""
 
     def test_clean_repo_reports_nothing(self):
@@ -144,7 +94,7 @@ class ExactTier(RepoFixture):
         self.assertEqual(result["other_exact"], 0)
 
 
-class ExactTierMustNotFire(RepoFixture):
+class ExactTierMustNotFire(SymbolFixture):
     """Cases that must stay unflagged: the noise this tier would otherwise drown in."""
 
     def test_declarations_in_one_file_are_not_a_collision(self):
@@ -188,7 +138,7 @@ class ExactTierMustNotFire(RepoFixture):
         self.assertEqual(self.analyse()["exact"], {})
 
 
-class CSharpSupport(RepoFixture):
+class CSharpSupport(SymbolFixture):
     """C# type declarations are indexed; methods deliberately are not."""
 
     def test_duplicate_type_is_flagged(self):
@@ -204,7 +154,7 @@ class CSharpSupport(RepoFixture):
         self.assertEqual(self.analyse()["exact"], {})
 
 
-class NearTier(RepoFixture):
+class NearTier(SymbolFixture):
     """The low-confidence tier, constrained to a single directory."""
 
     def test_similar_names_in_one_directory_are_flagged(self):
@@ -239,7 +189,7 @@ class NearTier(RepoFixture):
         self.assertEqual(self.analyse()["near"], [])
 
 
-class HookBehaviour(RepoFixture):
+class HookBehaviour(SymbolFixture):
     """End-to-end behaviour of the Stop-hook entry point."""
 
     def run_hook(self, mode=None, cwd=None):
@@ -306,16 +256,11 @@ class HookBehaviour(RepoFixture):
 
     def test_malformed_stdin_is_survived(self):
         """Bad hook input must never crash the session."""
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input="not json",
-            capture_output=True,
-            text=True,
-        )
+        result = run_standalone("duplicate-symbols.py", stdin="not json")
         self.assertEqual(result.returncode, 0)
 
 
-class CliBehaviour(RepoFixture):
+class CliBehaviour(SymbolFixture):
     """The --path CLI form used by CI."""
 
     def test_exits_one_when_findings_exist(self):
@@ -323,11 +268,7 @@ class CliBehaviour(RepoFixture):
         self.write("src/a.ts", "export interface Page {}\n")
         self.write("src/b.ts", "export interface Page {}\n")
         self.commit("committed duplication")
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH), "--path", str(self.repo), "--all"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_standalone("duplicate-symbols.py", "--path", str(self.repo), "--all")
         self.assertEqual(result.returncode, 1)
         self.assertIn("Page", result.stdout)
 
@@ -335,11 +276,7 @@ class CliBehaviour(RepoFixture):
         """A clean repo exits 0 with a plain message."""
         self.write("src/a.ts", "export function alpha() {}\n")
         self.commit("clean")
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH), "--path", str(self.repo), "--all"],
-            capture_output=True,
-            text=True,
-        )
+        result = run_standalone("duplicate-symbols.py", "--path", str(self.repo), "--all")
         self.assertEqual(result.returncode, 0)
         self.assertIn("No duplicated symbol names", result.stdout)
 
