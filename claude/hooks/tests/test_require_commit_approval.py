@@ -291,6 +291,13 @@ class TestChainedStaging(unittest.TestCase):
         self.assertIn("already.txt", reason)
         self.assertIn("later.txt", reason)
 
+    def test_a_multi_line_chained_add_is_reported(self):
+        """Regression: an add on its own line fused onto the commit and reported nothing."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.repo_with_one_staged_file(tmp)
+            reason = run_hook("git add -A\ngit commit -m 'x'", cwd=tmp)["permissionDecisionReason"]
+        self.assertIn("later.txt", reason)
+
     def test_named_pathspec_reports_only_that_path(self):
         """An add naming one path does not claim to stage the rest of the tree."""
         with tempfile.TemporaryDirectory() as tmp:

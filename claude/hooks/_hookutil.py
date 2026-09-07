@@ -395,6 +395,36 @@ def command_head(tokens):
     return tokens[index:]
 
 
+def line_breaks_as_separators(cmd):
+    """Rewrite the newlines that separate commands as `;`, leaving quoted ones alone.
+
+    `shlex` counts a newline as whitespace, so a command on its own line fuses onto the previous
+    one and only the first is read. A quoted argument spanning lines is a single token and must
+    survive as one, which is why this cannot be a plain replace.
+
+    :param cmd: full shell command, possibly multi-line
+    :return: the command with command-separating newlines rewritten as `;`
+    """
+    out, quote, escaped = [], None, False
+    for char in cmd:
+        if escaped:
+            out.append(char)
+            escaped = False
+        elif char == "\\" and quote != "'":
+            out.append(char)
+            escaped = True
+        elif quote:
+            out.append(char)
+            if char == quote:
+                quote = None
+        elif char in "'\"":
+            out.append(char)
+            quote = char
+        else:
+            out.append(";" if char == "\n" else char)
+    return "".join(out)
+
+
 def command_segments(cmd):
     """Split a shell command into the tokens of each command it runs, in order.
 
@@ -404,18 +434,20 @@ def command_segments(cmd):
     its own: the newline read as a command separator, which broke the quoting and left the word
     looking like a command.
 
-    That is also why the whole command is lexed BEFORE it is split on operators, rather than
-    split on a newline regex first: a quoted argument spanning lines has to survive as one token.
+    That is also why the whole command is lexed BEFORE it is split on operators, and why
+    `line_breaks_as_separators` is quote-aware rather than a plain replace: a quoted argument
+    spanning lines has to survive as one token.
 
     :param cmd: full shell command, heredoc bodies already stripped
     :return: list of token lists, one per command, each starting at its command word
     """
+    text = line_breaks_as_separators(cmd)
     try:
-        lexer = shlex.shlex(cmd, posix=True, punctuation_chars=True)
+        lexer = shlex.shlex(text, posix=True, punctuation_chars=True)
         lexer.whitespace_split = True
         tokens = list(lexer)
     except ValueError:
-        tokens = cmd.split()
+        tokens = text.split()
 
     segments, segment = [], []
     for token in [*tokens, ";"]:
