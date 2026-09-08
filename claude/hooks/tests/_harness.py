@@ -7,7 +7,10 @@ interpreter per case, and the two fixture-heavy suites rebuilt a git repository 
 of that. Measured, those two accounted for half the suite's wall clock from a twelfth of its
 tests.
 
-The git fixture is therefore built ONCE per baseline and copied per test rather than rebuilt.
+A hook is therefore invoked in THIS process by default, and `run_standalone` is kept only for
+the cases that are about being run as a program.
+
+The git fixture is likewise built ONCE per baseline and copied per test rather than rebuilt.
 `git init` plus a config plus a commit is five subprocesses; a copy of the finished tree is one
 filesystem walk, and it leaves each test with the same untouched repository it had before.
 
@@ -16,12 +19,16 @@ imported, never run.
 """
 
 import atexit
+import contextlib
 import importlib.util
+import io
+import json
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from collections import namedtuple
 from pathlib import Path
 
 HOOKS_DIR = Path(__file__).resolve().parents[1]
@@ -32,6 +39,17 @@ if str(HOOKS_DIR) not in sys.path:
     sys.path.insert(0, str(HOOKS_DIR))
 
 GIT_TIMEOUT_SECONDS = 30
+
+# Literal copies of _hookutil's, on purpose: a test that read the constant it is checking would
+# pass whatever the hook was later changed to say.
+# Measured: a hook's "ask" renders a dialog in all four prompting modes. See ADR 0005.
+PROMPTING_MODES = ["default", "plan", "auto", "acceptEdits"]
+NON_PROMPTING_MODES = ["dontAsk", "bypassPermissions"]
+ALL_MODES = PROMPTING_MODES + NON_PROMPTING_MODES
+
+# Field names match subprocess.CompletedProcess, so a suite moving off run_standalone keeps its
+# existing assertions.
+HookRun = namedtuple("HookRun", "returncode stdout stderr")
 
 _TEMPLATES = {}
 
@@ -47,6 +65,56 @@ def load_hook(filename):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def invoke(module, payload):
+    """Run a loaded hook's `main` in this process, feeding it `payload` as stdin.
+
+    Spawning an interpreter per case cost roughly 45ms, more than every hook body put together.
+    Reusing one module across a suite is safe only because each hook's module-level state is
+    read-only lookup tables; a hook that started caching would need a fresh load per case.
+
+    :param module: a module returned by `load_hook`
+    :param payload: the hook payload to feed it
+    :return: a HookRun carrying the exit code and both captured streams
+    """
+    out, err = io.StringIO(), io.StringIO()
+    real_stdin = sys.stdin
+    sys.stdin = io.StringIO(json.dumps(payload))
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            try:
+                module.main()
+                code = 0
+            except SystemExit as exit_call:
+                code = exit_call.code or 0
+    finally:
+        sys.stdin = real_stdin
+    return HookRun(code, out.getvalue(), err.getvalue())
+
+
+def bash_decision(module, command, mode="default", tool="Bash", cwd=None):
+    """Ask a Bash approval gate what it would decide about `command`.
+
+    :param module: a module returned by `load_hook`
+    :param command: the shell command the model would run
+    :param mode: permission mode to report as the session's
+    :param tool: tool name to report, for the cases checking a gate ignores other tools
+    :param cwd: working directory to report, or None for this process's own
+    :return: the hookSpecificOutput dict, or None when the gate stayed silent
+    """
+    stdout = invoke(
+        module,
+        {
+            "tool_name": tool,
+            "tool_input": {"command": command},
+            "permission_mode": mode,
+            "cwd": cwd or str(Path.cwd()),
+        },
+    ).stdout
+    if not stdout.strip():
+        return None
+    return json.loads(stdout)["hookSpecificOutput"]
 
 
 def run_standalone(filename, *args, stdin="", env=None):
