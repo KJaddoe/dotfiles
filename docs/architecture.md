@@ -81,6 +81,9 @@ and works in throwaway repos, so unlike `script/test` it cannot touch your real 
 so formatting is reproducible across machines. Tests use stdlib `unittest` for the same reason:
 no dependency to install. `black` and `pylint` are dev-only; neither is needed to run a hook.
 
+Its pylint `init-hook` puts `claude/hooks/tests` on the path so the suites' `_harness` import
+resolves. The path is relative, so run the lint command from the repo root.
+
 ## Git commit hook
 
 `git/template/hooks/pre-commit` ships via `init.templateDir` (`~/.git-template`), so **every repo

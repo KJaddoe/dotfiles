@@ -4,3 +4,6 @@ target-version = ["py311"]
 
 [tool.pylint.format]
 max-line-length = 100
+
+[tool.pylint.main]
+init-hook = 'import sys; sys.path.append("claude/hooks/tests")'
