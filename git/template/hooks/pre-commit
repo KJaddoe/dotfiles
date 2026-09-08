@@ -8,8 +8,12 @@
 
 git diff --cached --check || exit 1
 
+# Resolved once: fifteen callers asking git the same question cost more than every
+# linter this hook runs.
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
 staged() {
-    git diff --cached --name-only --diff-filter=ACM | grep -E "$1"
+    printf '%s\n' "$STAGED_FILES" | grep -E "$1"
 }
 
 have() {
