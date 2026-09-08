@@ -7,6 +7,7 @@ repo with the global and system git config neutralised, so the developer's own c
 and hooks can never influence a result.
 """
 
+import atexit
 import os
 import random
 import shutil
@@ -14,32 +15,46 @@ import string
 import subprocess
 import tempfile
 import unittest
+from functools import cache
 from pathlib import Path
 
 HOOK = Path(__file__).resolve().parents[1] / "template" / "hooks" / "pre-commit"
+
+ENV = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
+ENV.pop("SKIP_HOOKS", None)
+
+
+@cache
+def template():
+    """Build, once, an initialised repo with the hook installed.
+
+    :return: path to the template repository, which callers copy rather than modify
+    """
+    path = Path(tempfile.mkdtemp())
+    atexit.register(shutil.rmtree, path, ignore_errors=True)
+    for args in (
+        ("init", "--template=", "-q", "."),
+        ("config", "user.name", "test"),
+        ("config", "user.email", "test@example.com"),
+    ):
+        subprocess.run(["git", *args], cwd=path, env=ENV, capture_output=True, check=True)
+    hooks = path / ".git" / "hooks"
+    hooks.mkdir(parents=True, exist_ok=True)
+    target = hooks / "pre-commit"
+    target.write_text(HOOK.read_text(encoding="utf-8"), encoding="utf-8")
+    target.chmod(0o755)
+    return path
 
 
 class HookTestCase(unittest.TestCase):
     """Base case providing a throwaway repo with the hook installed."""
 
     def setUp(self):
-        """Create an isolated repo, install the hook, and stage nothing yet."""
-        self.repo = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, self.repo, ignore_errors=True)
-        self.env = {
-            **os.environ,
-            "GIT_CONFIG_GLOBAL": os.devnull,
-            "GIT_CONFIG_SYSTEM": os.devnull,
-        }
-        self.env.pop("SKIP_HOOKS", None)
-        self.git("init", "--template=", "-q", ".")
-        self.git("config", "user.name", "test")
-        self.git("config", "user.email", "test@example.com")
-        hooks = self.repo / ".git" / "hooks"
-        hooks.mkdir(parents=True, exist_ok=True)
-        target = hooks / "pre-commit"
-        target.write_text(HOOK.read_text(encoding="utf-8"), encoding="utf-8")
-        target.chmod(0o755)
+        """Copy the prebuilt repo, hook and all, into a directory of this test's own."""
+        self.repo = Path(tempfile.mkdtemp()) / "repo"
+        self.addCleanup(shutil.rmtree, self.repo.parent, ignore_errors=True)
+        self.env = ENV
+        shutil.copytree(template(), self.repo)
 
     def git(self, *args, env=None):
         """Run a git command in the throwaway repo and return its CompletedProcess."""

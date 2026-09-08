@@ -7,38 +7,60 @@ with the global and system git config neutralised, so the developer's own config
 can never influence a result and nothing touches a real repository.
 """
 
+import atexit
 import os
 import shutil
 import subprocess
 import tempfile
 import unittest
+from functools import cache
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[2] / "bin" / "git-gone"
+
+ENV = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
+
+
+@cache
+def template():
+    """Build, once, a bare remote plus a clone holding one pushed commit.
+
+    Seven git subprocesses per test was most of this file's runtime. Callers copy the result
+    rather than modify it.
+
+    :return: path to the template directory, holding remote.git and clone
+    """
+    path = Path(tempfile.mkdtemp())
+    atexit.register(shutil.rmtree, path, ignore_errors=True)
+    remote, repo = path / "remote.git", path / "clone"
+
+    def run(*args, cwd):
+        subprocess.run(list(args), cwd=cwd, env=ENV, capture_output=True, check=True)
+
+    run("git", "init", "--bare", "--template=", "-q", "-b", "main", str(remote), cwd=path)
+    run("git", "clone", "--template=", "-q", str(remote), str(repo), cwd=path)
+    run("git", "config", "user.name", "test", cwd=repo)
+    run("git", "config", "user.email", "test@example.com", cwd=repo)
+    (repo / "file.txt").write_text("x\n", encoding="utf-8")
+    run("git", "add", "file.txt", cwd=repo)
+    run("git", "commit", "-q", "-m", "initial", cwd=repo)
+    run("git", "push", "-q", "-u", "origin", "main", cwd=repo)
+    return path
 
 
 class GitGoneTestCase(unittest.TestCase):
     """Base case providing a bare remote and a clone tracking it."""
 
     def setUp(self):
-        """Create a bare remote, clone it, and commit an initial file."""
-        self.tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
-        self.env = {
-            **os.environ,
-            "GIT_CONFIG_GLOBAL": os.devnull,
-            "GIT_CONFIG_SYSTEM": os.devnull,
-        }
+        """Copy the prebuilt remote and clone into a directory of this test's own."""
+        self.tmp = Path(tempfile.mkdtemp()) / "fixture"
+        self.addCleanup(shutil.rmtree, self.tmp.parent, ignore_errors=True)
+        self.env = ENV
+        shutil.copytree(template(), self.tmp)
         self.remote = self.tmp / "remote.git"
         self.repo = self.tmp / "clone"
-        self.shell("git", "init", "--bare", "--template=", "-q", "-b", "main", str(self.remote))
-        self.shell("git", "clone", "--template=", "-q", str(self.remote), str(self.repo))
-        self.git("config", "user.name", "test")
-        self.git("config", "user.email", "test@example.com")
-        (self.repo / "file.txt").write_text("x\n", encoding="utf-8")
-        self.git("add", "file.txt")
-        self.git("commit", "-q", "-m", "initial")
-        self.git("push", "-q", "-u", "origin", "main")
+        # The clone records its remote as an absolute path, which the copy has just invalidated.
+        self.git("remote", "set-url", "origin", str(self.remote))
 
     def shell(self, *args, cwd=None):
         """Run a command and return its CompletedProcess."""
