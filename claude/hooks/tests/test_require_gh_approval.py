@@ -8,56 +8,30 @@ Two properties matter: nothing that writes to GitHub reaches the API unapproved,
 GitHub stays friction-free: a gate that fires on `gh pr view` is a gate that gets switched off.
 """
 
-import importlib.util
-import json
-import subprocess
-import sys
 import unittest
-from pathlib import Path
 
-HOOK_PATH = Path(__file__).resolve().parents[1] / "require-gh-approval.py"
+from _harness import (
+    ALL_MODES,
+    NON_PROMPTING_MODES,
+    PROMPTING_MODES,
+    bash_decision,
+    load_hook,
+    run_standalone,
+)
 
-# Loading by file path does not put the hooks directory on sys.path, so the hook's
-# own `from _hookutil import ...` would fail without this.
-sys.path.insert(0, str(HOOK_PATH.parent))
-
-spec = importlib.util.spec_from_file_location("require_gh_approval", HOOK_PATH)
-hook = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(hook)
-
-# Measured: a hook's "ask" renders a dialog in all four of these. See ADR 0005.
-PROMPTING_MODES = ["default", "plan", "auto", "acceptEdits"]
-NON_PROMPTING_MODES = ["dontAsk", "bypassPermissions"]
-ALL_MODES = PROMPTING_MODES + NON_PROMPTING_MODES
+HOOK = "require-gh-approval.py"
+hook = load_hook(HOOK)
 
 
 def run_hook(command, mode="default", tool="Bash"):
-    """Invoke the hook with a payload and return its parsed decision.
+    """Ask the gate what it would decide about `command`.
 
     :param command: the shell command the model would run
     :param mode: permission mode reported by the session
     :param tool: tool name to report
     :return: the hookSpecificOutput dict, or None when the hook stayed silent
     """
-    payload = json.dumps(
-        {
-            "tool_name": tool,
-            "tool_input": {"command": command},
-            "permission_mode": mode,
-            "cwd": str(Path.cwd()),
-        }
-    )
-    result = subprocess.run(
-        [sys.executable, str(HOOK_PATH)],
-        input=payload,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=20,
-    )
-    if not result.stdout.strip():
-        return None
-    return json.loads(result.stdout)["hookSpecificOutput"]
+    return bash_decision(hook, command, mode, tool)
 
 
 class TestWritesAreGated(unittest.TestCase):
@@ -279,15 +253,7 @@ class TestReadsPassThrough(unittest.TestCase):
 
     def test_malformed_payload(self):
         """Garbage on stdin exits quietly rather than crashing the tool call."""
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input="not json",
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=20,
-        )
-        self.assertEqual(result.returncode, 0)
+        self.assertEqual(run_standalone(HOOK, stdin="not json").returncode, 0)
 
 
 class TestModes(unittest.TestCase):

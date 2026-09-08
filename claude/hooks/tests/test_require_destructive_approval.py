@@ -10,33 +10,25 @@ a sloppy pattern does not cost a prompt, it costs a dead end. TestSafeCommandsPa
 therefore the load-bearing half of this file, not the courtesy half.
 """
 
-import importlib.util
-import json
 import shutil
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-HOOK_PATH = Path(__file__).resolve().parents[1] / "require-destructive-approval.py"
+from _harness import (
+    ALL_MODES,
+    NON_PROMPTING_MODES,
+    PROMPTING_MODES,
+    bash_decision,
+    load_hook,
+)
 
-# Loading by file path does not put the hooks directory on sys.path, so the hook's
-# own `from _hookutil import ...` would fail without this.
-sys.path.insert(0, str(HOOK_PATH.parent))
-
-spec = importlib.util.spec_from_file_location("require_destructive_approval", HOOK_PATH)
-hook = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(hook)
-
-# Measured: a hook's "ask" renders a dialog in all four of these. See ADR 0005.
-PROMPTING_MODES = ["default", "plan", "auto", "acceptEdits"]
-NON_PROMPTING_MODES = ["dontAsk", "bypassPermissions"]
-ALL_MODES = PROMPTING_MODES + NON_PROMPTING_MODES
+HOOK = "require-destructive-approval.py"
+hook = load_hook(HOOK)
 
 
 def run_hook(command, mode="default", tool="Bash", cwd=None):
-    """Invoke the hook with a payload and return its parsed decision.
+    """Ask the gate what it would decide about `command`.
 
     :param command: the shell command the model would run
     :param mode: permission mode reported by the session
@@ -44,25 +36,7 @@ def run_hook(command, mode="default", tool="Bash", cwd=None):
     :param cwd: working directory to report, which relative destinations resolve against
     :return: the hookSpecificOutput dict, or None when the hook stayed silent
     """
-    payload = json.dumps(
-        {
-            "tool_name": tool,
-            "tool_input": {"command": command},
-            "permission_mode": mode,
-            "cwd": cwd or str(Path.cwd()),
-        }
-    )
-    result = subprocess.run(
-        [sys.executable, str(HOOK_PATH)],
-        input=payload,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=20,
-    )
-    if not result.stdout.strip():
-        return None
-    return json.loads(result.stdout)["hookSpecificOutput"]
+    return bash_decision(hook, command, mode, tool, cwd)
 
 
 def gated(command, cwd=None):
