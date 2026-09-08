@@ -9,23 +9,15 @@ matching the convention in test_block_claude_attribution.py. Editing this file m
 guard it tests.
 """
 
-import importlib.util
-import json
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-HOOK_PATH = Path(__file__).resolve().parents[1] / "block-typographic-dashes.py"
+from _harness import HOOKS_DIR, invoke, load_hook, run_standalone
 
-# Loading by file path does not put the hooks directory on sys.path, so the hook's
-# own `from _hookutil import ...` would fail without this.
-sys.path.insert(0, str(HOOK_PATH.parent))
-
-spec = importlib.util.spec_from_file_location("block_typographic_dashes", HOOK_PATH)
-hook = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(hook)
+HOOK = "block-typographic-dashes.py"
+HOOK_PATH = HOOKS_DIR / HOOK
+hook = load_hook(HOOK)
 
 EM = "\u2014"
 EN = "\u2013"
@@ -41,16 +33,7 @@ def run_hook(tool, tool_input):
     :param tool_input: the tool's input payload
     :return: hook exit code (2 blocks, 0 allows)
     """
-    payload = json.dumps({"tool_name": tool, "tool_input": tool_input})
-    result = subprocess.run(
-        [sys.executable, str(HOOK_PATH)],
-        input=payload,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=20,
-    )
-    return result.returncode
+    return invoke(hook, {"tool_name": tool, "tool_input": tool_input}).returncode
 
 
 class TestWrite(unittest.TestCase):
@@ -185,15 +168,7 @@ class TestOtherTools(unittest.TestCase):
 
     def test_malformed_payload(self):
         """Garbage on stdin exits quietly rather than crashing the tool call."""
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input="not json",
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=20,
-        )
-        self.assertEqual(result.returncode, ALLOW)
+        self.assertEqual(run_standalone(HOOK, stdin="not json").returncode, ALLOW)
 
 
 class TestMessage(unittest.TestCase):
@@ -201,22 +176,13 @@ class TestMessage(unittest.TestCase):
 
     def test_message_names_the_dash_and_the_fix(self):
         """The model is told which dash was found and to reword rather than swap."""
-        payload = json.dumps(
-            {
-                "tool_name": "Edit",
-                "tool_input": {"old_string": "a", "new_string": f"a {EM} b"},
-            }
-        )
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input=payload,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=20,
-        )
-        self.assertIn("U+2014", result.stderr)
-        self.assertIn("reword", result.stderr)
+        payload = {
+            "tool_name": "Edit",
+            "tool_input": {"old_string": "a", "new_string": f"a {EM} b"},
+        }
+        stderr = invoke(hook, payload).stderr
+        self.assertIn("U+2014", stderr)
+        self.assertIn("reword", stderr)
 
 
 class TestSourceIsClean(unittest.TestCase):
