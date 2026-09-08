@@ -5,22 +5,12 @@ Run: python3 claude/hooks/tests/test_require_generated_release_notes.py
 Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 """
 
-import importlib.util
-import json
-import subprocess
-import sys
 import unittest
-from pathlib import Path
 
-HOOK_PATH = Path(__file__).resolve().parents[1] / "require-generated-release-notes.py"
+from _harness import invoke, load_hook, run_standalone
 
-# Loading by file path does not put the hooks directory on sys.path, so the hook's
-# own `from _hookutil import ...` would fail without this.
-sys.path.insert(0, str(HOOK_PATH.parent))
-
-spec = importlib.util.spec_from_file_location("require_generated_release_notes", HOOK_PATH)
-hook = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(hook)
+HOOK = "require-generated-release-notes.py"
+hook = load_hook(HOOK)
 
 BLOCK = 2
 ALLOW = 0
@@ -33,16 +23,7 @@ def run_hook(command, tool="Bash"):
     :param tool: tool name to report
     :return: hook exit code (2 blocks, 0 allows)
     """
-    payload = json.dumps({"tool_name": tool, "tool_input": {"command": command}})
-    result = subprocess.run(
-        [sys.executable, str(HOOK_PATH)],
-        input=payload,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=20,
-    )
-    return result.returncode
+    return invoke(hook, {"tool_name": tool, "tool_input": {"command": command}}).returncode
 
 
 class TestBlocked(unittest.TestCase):
@@ -117,28 +98,12 @@ class TestMalformedInput(unittest.TestCase):
 
     def test_invalid_json_allows(self):
         """Unparseable stdin allows rather than blocks."""
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input="not json",
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=20,
-        )
-        self.assertEqual(result.returncode, ALLOW)
+        self.assertEqual(run_standalone(HOOK, stdin="not json").returncode, ALLOW)
 
     def test_missing_command_allows(self):
         """A payload with no command allows rather than blocks."""
-        payload = json.dumps({"tool_name": "Bash", "tool_input": {}})
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input=payload,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=20,
-        )
-        self.assertEqual(result.returncode, ALLOW)
+        payload = {"tool_name": "Bash", "tool_input": {}}
+        self.assertEqual(invoke(hook, payload).returncode, ALLOW)
 
 
 class TestHeredocBodiesAreData(unittest.TestCase):

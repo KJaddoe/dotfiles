@@ -5,42 +5,27 @@ Run: python3 claude/hooks/tests/test_block_artifact_publish.py
 Uses stdlib unittest only, no third-party dependencies, identical on macOS and Linux.
 """
 
-import importlib.util
-import json
-import subprocess
-import sys
 import unittest
-from pathlib import Path
 
-HOOK_PATH = Path(__file__).resolve().parents[1] / "block-artifact-publish.py"
+from _harness import invoke, load_hook, run_standalone
 
-# Loading by file path does not put the hooks directory on sys.path, so the hook's
-# own `from _hookutil import ...` would fail without this.
-sys.path.insert(0, str(HOOK_PATH.parent))
-
-spec = importlib.util.spec_from_file_location("block_artifact_publish", HOOK_PATH)
-hook = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(hook)
+HOOK = "block-artifact-publish.py"
+hook = load_hook(HOOK)
 
 BLOCK = 2
 ALLOW = 0
 
 
-def run_payload(payload):
-    """Invoke the hook with a raw stdin string and return its exit code.
+def run_stdin(text):
+    """Feed the hook a raw stdin string and return its exit code.
 
-    :param payload: the exact text fed to the hook on stdin
+    Stays a subprocess because its cases feed text that is deliberately not a payload, which
+    `invoke` cannot express: it serialises a dict.
+
+    :param text: the exact text fed to the hook on stdin
     :return: hook exit code (2 blocks, 0 allows)
     """
-    result = subprocess.run(
-        [sys.executable, str(HOOK_PATH)],
-        input=payload,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=20,
-    )
-    return result.returncode
+    return run_standalone(HOOK, stdin=text).returncode
 
 
 def run_hook(tool_input, tool="Artifact"):
@@ -50,7 +35,7 @@ def run_hook(tool_input, tool="Artifact"):
     :param tool: tool name to report
     :return: hook exit code (2 blocks, 0 allows)
     """
-    return run_payload(json.dumps({"tool_name": tool, "tool_input": tool_input}))
+    return invoke(hook, {"tool_name": tool, "tool_input": tool_input}).returncode
 
 
 class TestPublishingIsBlocked(unittest.TestCase):
@@ -92,7 +77,7 @@ class TestPublishingIsBlocked(unittest.TestCase):
 
     def test_missing_tool_input_fails_closed(self):
         """A payload with no tool_input reads as a publish and is blocked, not waved through."""
-        self.assertEqual(run_payload(json.dumps({"tool_name": "Artifact"})), BLOCK)
+        self.assertEqual(invoke(hook, {"tool_name": "Artifact"}).returncode, BLOCK)
 
 
 class TestUnknownActionsFailClosed(unittest.TestCase):
@@ -150,11 +135,11 @@ class TestMalformedInput(unittest.TestCase):
 
     def test_invalid_json_allows(self):
         """Unparseable stdin allows rather than blocks."""
-        self.assertEqual(run_payload("not json"), ALLOW)
+        self.assertEqual(run_stdin("not json"), ALLOW)
 
     def test_empty_stdin_allows(self):
         """Empty stdin allows rather than blocks."""
-        self.assertEqual(run_payload(""), ALLOW)
+        self.assertEqual(run_stdin(""), ALLOW)
 
 
 class TestMessage(unittest.TestCase):
@@ -162,14 +147,7 @@ class TestMessage(unittest.TestCase):
 
     def test_reason_names_the_local_route(self):
         """The refusal points at writing a local file and at asking where."""
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input=json.dumps({"tool_name": "Artifact", "tool_input": {"action": "publish"}}),
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=20,
-        )
+        result = invoke(hook, {"tool_name": "Artifact", "tool_input": {"action": "publish"}})
         self.assertEqual(result.returncode, BLOCK)
         self.assertIn("local .html file", result.stderr)
         self.assertIn("specs/", result.stderr)

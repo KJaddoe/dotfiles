@@ -8,22 +8,12 @@ Trigger strings are assembled from fragments so this file never contains the lit
 the hook blocks on, otherwise editing it would trip the hook on its own test data.
 """
 
-import importlib.util
-import json
-import subprocess
-import sys
 import unittest
-from pathlib import Path
 
-HOOK_PATH = Path(__file__).resolve().parents[1] / "block-claude-attribution.py"
+from _harness import invoke, load_hook
 
-# Loading by file path does not put the hooks directory on sys.path, so the hook's
-# own `from _hookutil import ...` would fail without this.
-sys.path.insert(0, str(HOOK_PATH.parent))
-
-spec = importlib.util.spec_from_file_location("block_claude_attribution", HOOK_PATH)
-hook = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(hook)
+HOOK = "block-claude-attribution.py"
+hook = load_hook(HOOK)
 
 TRAILER = "Co-Authored" + "-By: " + "Claude"
 GENERATED = "Generated with " + "Claude Code"
@@ -40,16 +30,7 @@ def run_hook(command, tool="Bash"):
     :param tool: tool name to report
     :return: hook exit code (2 blocks, 0 allows)
     """
-    payload = json.dumps({"tool_name": tool, "tool_input": {"command": command}})
-    result = subprocess.run(
-        [sys.executable, str(HOOK_PATH)],
-        input=payload,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=20,
-    )
-    return result.returncode
+    return invoke(hook, {"tool_name": tool, "tool_input": {"command": command}}).returncode
 
 
 class TestBlocks(unittest.TestCase):

@@ -9,24 +9,16 @@ matching the convention in test_block_typographic_dashes.py. Editing this file m
 guard it tests.
 """
 
-import importlib.util
-import json
 import shutil
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-HOOK_PATH = Path(__file__).resolve().parents[1] / "block-issue-references.py"
+from _harness import invoke, load_hook, run_standalone
 
-# Loading by file path does not put the hooks directory on sys.path, so the hook's
-# own `from _hookutil import ...` would fail without this.
-sys.path.insert(0, str(HOOK_PATH.parent))
-
-spec = importlib.util.spec_from_file_location("block_issue_references", HOOK_PATH)
-hook = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(hook)
+HOOK = "block-issue-references.py"
+hook = load_hook(HOOK)
 
 HASH = "#"
 
@@ -51,16 +43,7 @@ def run_hook(tool, tool_input, cwd=""):
     :param cwd: session working directory to report
     :return: hook exit code (2 blocks, 0 allows)
     """
-    payload = json.dumps({"tool_name": tool, "tool_input": tool_input, "cwd": str(cwd)})
-    result = subprocess.run(
-        [sys.executable, str(HOOK_PATH)],
-        input=payload,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=20,
-    )
-    return result.returncode
+    return invoke(hook, {"tool_name": tool, "tool_input": tool_input, "cwd": str(cwd)}).returncode
 
 
 class HookFixture(unittest.TestCase):
@@ -328,15 +311,7 @@ class TestPayload(unittest.TestCase):
 
     def test_malformed_payload_allows(self):
         """Unreadable stdin exits 0."""
-        result = subprocess.run(
-            [sys.executable, str(HOOK_PATH)],
-            input="not json",
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=20,
-        )
-        self.assertEqual(result.returncode, ALLOW)
+        self.assertEqual(run_standalone(HOOK, stdin="not json").returncode, ALLOW)
 
     def test_unrelated_tool_allows(self):
         """A tool carrying no file content is ignored."""
