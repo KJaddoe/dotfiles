@@ -127,7 +127,8 @@ for these rules as FYI reference only; the binding text is HERE.
 - NEVER cite an issue or ticket in anything that lives in a repository: no number, no tracker key,
   no issue URL, not even an upstream project's. Trackers and repositories have different lifetimes,
   so what survives is a pointer to nothing; write the substance the number stood for instead. A
-  number belongs only in a commit message, a PR body, or a branch name.
+  number belongs only in a commit message, a branch name, or a body handed to the tracker itself,
+  where issues carry their own parent and depends-on links.
   `claude/hooks/block-issue-references.py` enforces the file half.
 - In Markdown, align table columns: pad every cell with trailing spaces so the pipes line up and the
   raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
