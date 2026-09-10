@@ -90,8 +90,13 @@ Unlike the three Stop hooks above, this one never blocks and never exits non-zer
 `enforce` value. Its whole output is context for the model.
 
 **Where the value comes from:** none needed; both are local behaviour switches with safe defaults.
-Start on `dry-run`, read the log for a few days, and tune the byte threshold before switching to
-`on`.
+
+`settings.json` sets `FRESH_SESSION_HOOK_MODE` to `dry-run`, so the nudge currently logs and never
+injects. `FRESH_SESSION_HOOK_BYTES` is still the shipped 600000, a starting guess rather than a
+tuned number: transcript bytes track tool output far more than conversation length, so the two come
+apart. Read `~/.claude/logs/fresh-session-hook.log` over several working days before setting a
+threshold and switching to `on`. If the log shows it firing on sessions that have barely been
+talked to, the answer is a turn count alongside the byte count, not a bigger byte count.
 
 ## Permission mode
 
