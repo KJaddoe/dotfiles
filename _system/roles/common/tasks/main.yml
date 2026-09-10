@@ -1,3 +1,4 @@
+---
 - name: Update package manager (Ubuntu)
   become: true
   apt:
