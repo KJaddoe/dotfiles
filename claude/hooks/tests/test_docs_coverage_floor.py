@@ -14,6 +14,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from _harness import git
+
 HOOK_PATH = Path(__file__).resolve().parents[1] / "docs-coverage-floor.py"
 
 # Loading by file path does not put the hooks directory on sys.path, so the hook's
@@ -67,37 +69,21 @@ To roll back, redeploy the previous tag from the Actions tab.
 """
 
 
-def git(repo, *args):
-    """Run a git command in `repo`, raising on failure.
-
-    :param repo: repository path
-    :param args: git arguments
-    """
-    subprocess.run(
-        ["git", "-C", str(repo), *args],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-
 class RepoFixture(unittest.TestCase):
     """Base fixture creating a throwaway git repo."""
 
     def setUp(self):
         """Create a temp git repo with an initial commit.
 
-        The repo is initialised from an empty template so the developer's own
-        `init.templateDir` (which installs this repo's pre-commit hook) cannot reach into the
-        fixture and reject its throwaway files.
+        The harness neutralises the developer's global and system git config, without which
+        `core.hooksPath` would point this fixture at the repo's own pre-commit hook and it would
+        reject the deliberately rough files these tests commit.
         """
         self.repo = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.repo, ignore_errors=True)
         self.home = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.home, ignore_errors=True)
-        empty_template = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, empty_template, ignore_errors=True)
-        git(self.repo, "init", "-q", f"--template={empty_template}")
+        git(self.repo, "init", "-q")
         git(self.repo, "config", "user.email", "test@example.com")
         git(self.repo, "config", "user.name", "test")
         (self.repo / "baseline.txt").write_text("x\n", encoding="utf-8")
