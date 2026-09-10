@@ -57,12 +57,13 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
 Hooks are plain Python 3, no third-party runtime dependencies, since they must work on a freshly
 bootstrapped machine before anything is installed.
 
-| Task      | Command                                                                            |
-|-----------|------------------------------------------------------------------------------------|
-| Test      | `for s in claude/hooks/tests/test_*.py git/tests/test_*.py; do python3 "$s"; done` |
-| Test nvim | `python3 nvim/tests/test_lint.py`                                                  |
-| Format    | `black claude/hooks/ git/tests/ nvim/tests/`                                       |
-| Lint      | `pylint claude/hooks/ git/tests/ nvim/tests/`                                      |
+| Task       | Command                                                                      |
+|------------|------------------------------------------------------------------------------|
+| Test hooks | `unittest-parallel -t claude/hooks/tests -s claude/hooks/tests --level test` |
+| Test git   | `unittest-parallel -t git/tests -s git/tests --level test`                   |
+| Test nvim  | `python3 nvim/tests/test_lint.py`                                            |
+| Format     | `black claude/hooks/ git/tests/ nvim/tests/`                                 |
+| Lint       | `pylint claude/hooks/ git/tests/ nvim/tests/`                                |
 
 `script/test` runs the hook suites first, before its (destructive) bootstrap steps.
 
@@ -78,8 +79,14 @@ folder inside it would ship too. The suite neutralises `GIT_CONFIG_GLOBAL` and `
 and works in throwaway repos, so unlike `script/test` it cannot touch your real git config.
 
 `pyproject.toml` at the repo root holds the shared `black` / `pylint` settings (line length 100)
-so formatting is reproducible across machines. Tests use stdlib `unittest` for the same reason:
-no dependency to install. `black` and `pylint` are dev-only; neither is needed to run a hook.
+so formatting is reproducible across machines. The tests themselves import nothing but stdlib
+`unittest`, so `python3 -m unittest discover -t <dir> -s <dir>` runs any suite on a machine with
+nothing installed. `unittest-parallel` only discovers and runs them, across all cores by default;
+it is a faster runner, never something a test imports. `black`, `pylint` and `unittest-parallel`
+are dev-only; none is needed to run a hook.
+
+`--level test` is what makes the git suite worth parallelising: it is one module, so the default
+module-level split leaves it serial.
 
 Its pylint `init-hook` puts `claude/hooks/tests` on the path so the suites' `_harness` import
 resolves. The path is relative, so run the lint command from the repo root.
