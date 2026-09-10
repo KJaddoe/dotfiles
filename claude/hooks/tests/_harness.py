@@ -23,6 +23,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -39,6 +40,11 @@ if str(HOOKS_DIR) not in sys.path:
     sys.path.insert(0, str(HOOKS_DIR))
 
 GIT_TIMEOUT_SECONDS = 30
+
+# The developer's own git config reaches into a throwaway repo: core.hooksPath points every repo
+# at this repo's pre-commit hook, which then rejects the fixtures' deliberately rough files.
+# `git init --template=` does not help, because hooksPath is config, not template content.
+GIT_ENV = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
 
 # Literal copies of _hookutil's, on purpose: a test that read the constant it is checking would
 # pass whatever the hook was later changed to say.
@@ -151,6 +157,7 @@ def git(repo, *args):
         check=True,
         capture_output=True,
         text=True,
+        env=GIT_ENV,
         timeout=GIT_TIMEOUT_SECONDS,
     )
 
