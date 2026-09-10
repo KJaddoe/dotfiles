@@ -5,6 +5,7 @@ uv_tools:
   - isort
   - pylint
   - yamllint
+  - unittest-parallel
   - rshell
   - jedi-language-server
   - ansible-lint
