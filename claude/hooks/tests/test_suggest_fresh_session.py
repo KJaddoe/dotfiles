@@ -233,7 +233,10 @@ def run_hook(payload, args=(), env=None):
     :param env: env vars to add to the child's environment
     :return: the completed process
     """
-    child_env = dict(os.environ)
+    # The developer's own FRESH_SESSION_* vars would otherwise decide these results: settings.json
+    # sets the mode to dry-run, under which the hook logs instead of emitting and every assertion
+    # about its stdout fails.
+    child_env = {k: v for k, v in os.environ.items() if not k.startswith("FRESH_SESSION_")}
     child_env.update(env or {})
     return subprocess.run(
         [sys.executable, str(HOOK_PATH), *args],

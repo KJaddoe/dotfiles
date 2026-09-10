@@ -4,6 +4,9 @@
     "pr": "",
     "sessionUrl": false
   },
+  "env": {
+    "FRESH_SESSION_HOOK_MODE": "dry-run"
+  },
   "permissions": {
     "allow": [
       "Bash(gh project item-list *)",
