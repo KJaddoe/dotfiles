@@ -1,11 +1,11 @@
 {
+  "env": {
+    "FRESH_SESSION_HOOK_MODE": "dry-run"
+  },
   "attribution": {
     "commit": "",
     "pr": "",
     "sessionUrl": false
-  },
-  "env": {
-    "FRESH_SESSION_HOOK_MODE": "dry-run"
   },
   "permissions": {
     "allow": [
