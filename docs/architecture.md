@@ -93,17 +93,22 @@ resolves. The path is relative, so run the lint command from the repo root.
 
 ## Git commit hook
 
-`git/template/hooks/pre-commit` ships via `init.templateDir` (`~/.git-template`), so **every repo
-created with `git init` from this machine** gets it. Existing repos do not, so copy it in manually.
+`git/template/hooks/pre-commit` reaches every repo on this machine through `core.hooksPath`, set in
+`git/gitconfig.local` to `~/.git-template/hooks`. That path is a dotbot symlink to `git/template` in
+this repo, so git runs the working-tree file itself: editing the hook changes it everywhere at once,
+with no copy to refresh and no repo left behind on an older version.
 
-This repo is always one of those, on every machine. `init.templateDir` is set by
-`git/gitconfig.local`, which dotbot links only once the clone already exists, so the dotfiles clone
-is made before the setting exists and never picks the hook up. Part of bootstrapping a fresh
-machine is therefore:
+A repo that sets its **own** `core.hooksPath` overrides the global one and gets no hook from here.
+That is how husky projects keep their hooks, and it is the only exception.
 
-```sh
-cp ~/.git-template/hooks/pre-commit .git/hooks/pre-commit
-```
+`core.hooksPath` also replaces `.git/hooks` entirely, so a `pre-commit` sitting in a repo's
+`.git/hooks` is ignored while the global setting is in force. Copies left there by an earlier setup
+are inert, not competing.
+
+This is why `init.templateDir` is **not** set: `git/template` holds nothing but the hook, and a
+template only ever copied it into repos created after the setting existed. That left the dotfiles
+clone itself, made before dotbot links the config, permanently without a hook, and every existing
+repo pinned to whatever the hook looked like on the day it was created.
 
 It enforces the format+lint half of the definition of done on staged files: whitespace errors, then
 betterleaks, prettier/eslint, black/pylint, shellcheck, `zsh -n`, stylua/selene, csharpier, hadolint,

@@ -15,6 +15,7 @@
 [core]
 	excludesfile = ~/.gitignore
 	attributesfile = ~/.gitattributes
+	hooksPath = ~/.git-template/hooks
 	editor = nvim
 	compression = -1
 	autocrlf = input
@@ -49,7 +50,6 @@
 	rebase = false
 [init]
 	defaultBranch = main
-	templateDir = ~/.git-template
 [interactive]
 	diffFilter = delta --color-only
 [delta]
