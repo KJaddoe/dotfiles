@@ -41,9 +41,13 @@ Scope is file content, whichever tool carries it. Under `Bash` only heredoc BODI
 those are the content; other shell write forms (`echo >> f`, `sed -i`) are still uncovered, and a
 `grep` for a reference is deliberately left alone.
 
-Nothing in the harness lets a hook see the assistant's chat prose, and a commit message, a pull
-request body and a branch name are all outside a hook's reach as file content. That is correct:
-the rule permits a number in exactly those places, because their lifetime matches the tracker's.
+Nothing in the harness lets a hook see the assistant's chat prose, and a commit message and a
+branch name are both outside a hook's reach as file content. That is correct: the rule permits a
+number in exactly those places, because their lifetime matches the tracker's. A body handed to the
+tracker itself is the same case and IS within reach, since it travels as a heredoc, so a `gh issue`
+or `gh pr` command that redirects into no file is passed through: its content lives in the tracker,
+dies with the tracker, and is where the repository's own issues carry their parent and depends-on
+links.
 
 Every pattern below is assembled from a HASH constant rather than written literally, so this file
 never contains a reference it would itself refuse.
@@ -95,6 +99,8 @@ PROJECT_KEY = re.compile(r"\b([A-Z][A-Z0-9]{1,9})-(\d{1,6})\b")
 BARE_NUMBER = re.compile(rf"{HASH}(\d{{1,6}})\b")
 
 WORD_BEFORE = re.compile(r"([A-Za-z]+)[\s:,]*$")
+
+TRACKER_COMMAND = re.compile(r"\bgh\s+(?:issue|pr)\s+[a-z-]+")
 
 
 def is_prose_suffix(path):
@@ -225,10 +231,17 @@ def redirect_targets(command):
     Quotes are stripped, so a target carrying a space survives as the path it names rather than
     as a token that no suffix and no repository test would recognise.
 
+    Heredoc bodies are removed before the scan, because they are content rather than shell: a
+    markdown blockquote or a shell example inside one is not a redirect, and reading it as one
+    invents a target the command never writes to.
+
     :param command: the shell command
     :return: list of redirect target paths, empty when the command redirects nowhere
     """
-    return [target.strip("'\"") for target in re.findall(r">>?\s*([^\s;&|]+)", command) if target]
+    shell = command
+    for body in heredoc_bodies(command):
+        shell = shell.replace(body, "")
+    return [target.strip("'\"") for target in re.findall(r">>?\s*([^\s;&|]+)", shell) if target]
 
 
 def heredoc_targets_prose(command):
@@ -238,6 +251,18 @@ def heredoc_targets_prose(command):
     :return: True when any redirect target has a prose suffix
     """
     return any(is_prose_suffix(target) for target in redirect_targets(command))
+
+
+def posts_to_tracker(command):
+    """Report whether a shell command hands its content to the tracker rather than to a file.
+
+    A command that also redirects is judged as a file write, since that is the half the rule is
+    about.
+
+    :param command: the shell command
+    :return: True when the content reaches the tracker and no file
+    """
+    return bool(TRACKER_COMMAND.search(command)) and not redirect_targets(command)
 
 
 def directory_in_repository(directory):
@@ -329,6 +354,8 @@ def added(tool, tool_input):
 
     if tool == "Bash":
         command = tool_input.get("command") or ""
+        if posts_to_tracker(command):
+            return []
         bodies = "\n".join(heredoc_bodies(command))
         return references(bodies, heredoc_targets_prose(command))
 
@@ -379,8 +406,8 @@ def main():
         "anything that lives in the repository.\nIssues get closed, renumbered, migrated and "
         "deleted, leaving a pointer to nothing; git log and git blame keep the history instead.\n"
         "Write the substance the number stood for: what the behaviour is, what broke, and why it "
-        "must not come back. A number belongs only in a commit message, a pull request body, or a "
-        "branch name, where the medium's lifetime matches the tracker's.",
+        "must not come back. A number belongs only in a commit message, a branch name, or a body "
+        "handed to the tracker itself, where the medium's lifetime matches the tracker's.",
         file=sys.stderr,
     )
     sys.exit(2)
