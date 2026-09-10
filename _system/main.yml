@@ -1,3 +1,4 @@
+---
 - hosts: localhost
   vars:
     should_be_root: "{{ true if ansible_pkg_mgr != 'brew' else false }}"
