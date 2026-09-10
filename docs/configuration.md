@@ -14,6 +14,7 @@ never the value itself.
 | `DOCS_ENV_HOOK_MODE`       | Behaviour of the `undocumented-env-vars` Stop hook (`claude/hooks/`) | No       | `dry-run`                               | `enforce`    |
 | `DOCS_FLOOR_HOOK_MODE`     | Behaviour of the `docs-coverage-floor` Stop hook (`claude/hooks/`)   | No       | `dry-run`                               | `enforce`    |
 | `DUPE_SYMBOL_HOOK_MODE`    | Behaviour of the `duplicate-symbols` Stop hook (`claude/hooks/`)     | No       | `dry-run`                               | `enforce`    |
+| `DOC_SHAPE_HOOK_MODE`      | Behaviour of the `doc-comment-shape` Stop hook (`claude/hooks/`)     | No       | `dry-run`                               | `enforce`    |
 | `CLAUDE_PROJECT_DIR`       | Project root the memory hook maps to a session dir                   | No       | current dir                             | -            |
 | `FRESH_SESSION_HOOK_MODE`  | Behaviour of the `suggest-fresh-session` UserPromptSubmit hook       | No       | `on`                                    | `off`        |
 | `FRESH_SESSION_HOOK_BYTES` | Transcript bytes at which that hook starts injecting                 | No       | `600000`                                | `900000`     |
@@ -42,6 +43,17 @@ DOCS_ENV_HOOK_MODE=enforce claude
 **Where the value comes from:** none needed: it's a local behaviour switch with a safe default,
 not a credential. Start on `dry-run`, review the log, then flip to `enforce` once the findings
 look right for your projects.
+
+`DOC_SHAPE_HOOK_MODE` governs `doc-comment-shape.py` and takes the same three values, logging to
+`~/.claude/logs/doc-comment-shape.log` under `dry-run` and exiting 2 under `enforce`.
+
+It checks only what is mechanically checkable about a doc-comment's SHAPE: tags with no prose
+above them, more than three prose lines before the first tag, a block compacted onto one line, and
+a continuation line missing its `*` or the bare `*` between prose and tags. It deliberately does
+not judge whether the prose merely restates the declaration, which is the question the rule
+actually turns on and the one that needs a reader. Scope is files holding uncommitted work, and
+only languages whose convention is a `/** */` block: C# `///`, Python docstrings and Go `//` are
+out of scope rather than silently mis-measured.
 
 `DOCS_FLOOR_HOOK_MODE` takes the same three values and logs to
 `~/.claude/logs/docs-floor-hook.log`. It governs `docs-coverage-floor.py`, which reports the
