@@ -185,7 +185,8 @@ tooling present but no repo-level command, so running them over this repo is man
 | Shell    | `shellcheck` + `shfmt` (each its own ansible role) | Linter gated, shfmt manual    |
 | Lua      | `stylua` (own topic), `selene` (own topic)         | Command below, gated          |
 | zsh      | none exists, `zsh -n` only                         | Syntax gated, never formatted |
-| Ansible  | 32 roles under `_system/`                          | Linted in-editor, not gated   |
+| Ansible  | 32 roles under `_system/`                          | `ansible-lint` in-editor only |
+| YAML     | `yamllint` (`.yamllint`)                           | Gated repo-wide               |
 | Markdown | `markdownlint-cli2` (`.markdownlint-cli2.jsonc`)   | Gated repo-wide               |
 
 109 `ansible-lint` findings remain across `_system/`, so that is reported in the editor but not yet
@@ -193,10 +194,18 @@ gated. zsh is the second-largest filetype here (26 files) and the only one with 
 linter in existence: `shfmt` and `shellcheck` both refuse to parse it, so a syntax check is the
 ceiling, not a placeholder for something better.
 
+`yamllint` covers those same ansible files and **is** gated. Its config raises
+`braces.max-spaces-inside` to 1, because the default of 0 rejects the `{{ var }}` spacing every
+ansible template uses, while a sloppy `{  var  }` still fails. `line-length` sits at 100 to match
+`pyproject.toml` and is demoted to a warning, since 37 long lines in working ansible are not worth
+blocking a commit over. 73 warnings remain, 37 `line-length` and 35 `truthy`, and warnings do not
+fail the gate.
+
 Markdown is gated because `.markdownlint-cli2.jsonc` at the repo root is what switches the hook's
 markdown check on: it only runs where a project ships a config. The config governs this repo's own
 sources, so like `pyproject.toml` and `.editorconfig` it stays at the root and is not linked into
-`$HOME`.
+`$HOME`. `.yamllint` is the same arrangement for YAML: shipping it is what turns that check on, and
+it stays at the root for the same reason.
 
 `ignores` excludes only what this repo carries but does not author: vendored `dotbot/`.
 `claude/memory/` and `claude/CLAUDE.md` are symlinked into `~/.claude/` as payload, but they are
@@ -214,6 +223,12 @@ Lint markdown with:
 
 ```sh
 markdownlint-cli2 "**/*.md"
+```
+
+Lint YAML with:
+
+```sh
+yamllint _system/ dotbot.conf.yaml
 ```
 
 Lint shell with:
