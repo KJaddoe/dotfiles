@@ -904,6 +904,16 @@ require("lazy").setup({
         }
       end
 
+      --- Find the nearest ancestor directory of the current buffer holding a
+      --- package.json, i.e. the Node service's own root -- not necessarily
+      --- nvim's cwd, which may be a monorepo root above it.
+      ---@return string|nil dir
+      local function node_service_root()
+        return vim.fs.root(0, function(fname)
+          return fname == "package.json"
+        end)
+      end
+
       for _, language in ipairs({ "typescript", "javascript" }) do
         dap.configurations[language] = {
           {
@@ -923,6 +933,33 @@ require("lazy").setup({
             restart = true,
             cwd = "${workspaceFolder}",
             sourceMaps = true,
+            skipFiles = { "<node_internals>/**" },
+          },
+          {
+            type = "pwa-node",
+            request = "attach",
+            name = "Attach to Node in Docker (9229)",
+            port = 9229,
+            restart = true,
+            -- The container mounts the service directory at /app; resolve the
+            -- matching host directory from the current buffer rather than
+            -- trusting `${workspaceFolder}`, since a monorepo may be opened at
+            -- its root instead of the service subdirectory.
+            localRoot = node_service_root,
+            remoteRoot = "/app",
+            -- localRoot/remoteRoot alone correctly maps the compiled dist/*.js
+            -- file, but a breakpoint on its source-mapped .ts origin stayed
+            -- "provisional" (never binding) without also giving js-debug a
+            -- `cwd`, an `outFiles` glob for the compiled output, and an
+            -- unrestricted `resolveSourceMapLocations` -- its default is
+            -- scoped to a workspace folder this config never otherwise sets.
+            cwd = node_service_root,
+            sourceMaps = true,
+            outFiles = function()
+              local dir = node_service_root()
+              return dir and { dir .. "/dist/**/*.js" } or nil
+            end,
+            resolveSourceMapLocations = { "**", "!**/node_modules/**" },
             skipFiles = { "<node_internals>/**" },
           },
           {
