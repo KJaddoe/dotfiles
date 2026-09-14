@@ -105,70 +105,8 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 
 ## Project docs (the repo's own documentation)
 
-- 2026-08-04: Standing rule the user added after noticing docs were being left stale. Docs update in
-  the SAME commit/PR as the change, never a later pass. The concrete misses that motivated it: a new
-  env var added without recording what the value should be or where to get it; project
-  structure/architecture undocumented; no deploy instructions. Why the first draft wasn't enough: it
-  was purely reactive (fires only when something *changes*), so anything never documented in the first
-  place never triggered, and deployment wasn't listed at all. Hence the **coverage floor**: what it is,
-  setup/install + tooling versions, run, test, structure/architecture, config & env vars,
-  deploy/release, CHANGELOG for versioned projects, project `CLAUDE.md` on convention changes. Filled
-  in when work touches that area (report what's still missing), NOT backfilled wholesale unasked.
-  Also added: removals must delete the docs for the removed thing; docs must state what the code
-  ACTUALLY does (verified, not aspirational); env vars need
-  name/purpose/required/default/placeholder + where the real value lives: the LOCATION, never the
-  value (ties to Confidentiality & secrets).
-  How to apply: treat the docs edit as the same unit of work as the code edit. Do NOT confuse with
-  "Generated specs & docs" above: project docs ARE a repo deliverable and get committed.
-  Binding copy in CLAUDE.md → Project documentation.
-- 2026-08-04: Docs knowledge is split across THREE places by design; keep ownership strict or they
-  drift. (1) `CLAUDE.md` → Project documentation = the always-on OBLIGATION (triggers, removals delete
-  docs, coverage floor, verified-not-aspirational): must stay in context or it never fires; a skill
-  alone can't fix a *forgetting* problem. (2) The `writing-project-docs` SKILL = the procedure
-  (inline/audit/remediate modes, the claim→where-to-verify table, env-var doc fields, anti-patterns).
-  (3) `claude/templates/docs-pointer/` = the STRUCTURE (root `CLAUDE.md` pointer + `docs/README.md`,
-  `architecture.md`, `decisions/` ADRs, `erd.md` for DB projects). Same shape as `pending-pr-review`
-  (`5db1a9e`): terse rule in CLAUDE.md pointing at a skill that holds the detail.
-- 2026-08-04: The `docs-pointer` template is scoped "why, not what: rationale and relations the code
-  doesn't make obvious", so it deliberately does NOT cover env vars, deploy, setup/run/test or API
-  contracts. Those are "what" and belong in the README or a dedicated `docs/` page, so do NOT cram them
-  into `architecture.md`. NOTE: `claude/templates` was committed in `d7e874a` but never linked into
-  `~/.claude/` by dotbot until 2026-08-04; the link entry was added so
-  `~/.claude/templates/docs-pointer/` actually resolves from other projects.
-- 2026-08-04: A CHANGELOG is a doc of a DIFFERENT KIND and needs its own handling. Every other doc
-  describes CURRENT STATE (verifiable against code, fixable any time); a changelog is an append-only
-  record for an AUDIENCE: it can't be verified against code, never "drifts", and can only be
-  INCOMPLETE. A missed entry is unrecoverable (you can't reconstruct what mattered to a consumer six
-  months on), so it must land in the same commit. Trigger is "does someone downstream need to know"
-  (feature, breaking change, deprecation, security fix), NOT "did code change": internal refactors
-  get no entry. Audit technique: `git log $(git describe --tags --abbrev=0)..HEAD --oneline` and look
-  for user-visible commits with no entry. Backfilling from commit messages produces plausible fiction
-  and only reconstruct what the commits genuinely support.
-- 2026-08-04: DRIFT LESSON (learned the hard way, same session): after splitting docs knowledge
-  across CLAUDE.md / skill / template, the coverage floor got restated in BOTH the rule and the
-  skill. One edit later they contradicted each other, and the "update the project's own CLAUDE.md on
-  convention change" clause was silently dropped from the rule while the skill still asserted it.
-  Fix applied: the skill now POINTS at CLAUDE.md for the floor instead of restating it. Rule of
-  thumb: when the same fact lives in two files, it is already drifting; make one the owner and have
-  the other link.
-- 2026-08-04: Docs rules are ENFORCED, not just written: `claude/hooks/undocumented-env-vars.py`
-  is a Stop hook that diffs the session's added lines for new env var reads (JS/TS, .NET, Python)
-  and blocks/reports any that appear in no doc. Modes via `DOCS_ENV_HOOK_MODE`: `dry-run`
-  (default, logs to `~/.claude/logs/env-doc-hook.log`), `enforce`, `off`, documented in
-  `docs/configuration.md`. Why: the user's complaint ("sometimes lacking") was a COMPLIANCE
-  problem, and prose rule #41 in a file of 40 rules doesn't fix forgetting: same reasoning that
-  produced `block-claude-attribution.py`. Rule of thumb: a "whenever X" behaviour needs a hook;
-  CLAUDE.md alone cannot deliver it. Security constraint: the hook captures variable NAMES only,
-  never the matched line, so secret VALUES in a diff can't leak into the log, locked in by
-  regression tests. Dry-running it against this repo immediately caught a real false-positive
-  class (its own test fixtures), which is why test/fixture paths are excluded.
-- 2026-08-04: `writing-project-docs` was written inline without the subagent pressure-testing
-  `superpowers:writing-skills` mandates, then tested and rewritten the same day (`6b7a0dc`): three
-  fresh agents applying it adversarially found six real defects: the anti-pattern and the coverage
-  floor gave OPPOSITE answers on API/flags/exit codes, the audit taxonomy had no class for "list
-  grew, doc didn't", and an audit that RUNS commands to verify them clobbers HOME and the global git
-  identity via `script/test`. Lesson: an inline-written skill reads fine to its author; only a fresh
-  agent applying it surfaces the contradictions.
+Full history and the three-way ownership split moved to `domain/project-docs-policy.md` (2026-09-14).
+Binding copy in CLAUDE.md → Project documentation.
 
 ## GitHub issue status (project boards)
 
@@ -176,42 +114,17 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 
 ## Code Quality (format / lint / test)
 
-- 2026-07-13: Standing code-quality gate the user asked to add. (1) Format touched code with the project's formatter, else a locally available one; never mass-reformat untouched lines/files. (2) Lint every change with the project's linter, else a local one; if the project has NO linting, notify the user + propose options rather than skip. (3) Drive lint messages toward zero: fix root causes, don't blanket-suppress (`eslint-disable`, `#pragma warning disable`, `any`); justify any unavoidable suppression. (4) Write tests when possible; if no test setup, notify + propose options. (5) Definition of done = format + lint + tests all green, reported honestly (say so if anything fails/was skipped); on a large/slow suite run the changed-scope/affected tests each time (stating the scope run) and the full suite only when cheap or before merge/release. (6) Commit any formatter/linter/test config introduced, keeping mac/linux parity. Why: the user wants a consistently higher baseline and to be told (with options) when a project lacks linting/testing instead of having it silently skipped. How to apply: run these gates when finishing any code change; overlaps the verification-before-completion skill. Binding copy in CLAUDE.md → Code quality.
-- 2026-07-13: Global coding best practices the user chose to adopt (all four offered): (1) follow the codebase's existing conventions: read surrounding code first, mirror its patterns/naming/libraries, reuse existing helpers, no new dependency or parallel approach without sign-off; (2) never hardcode secrets in source (env/config/secret store); (3) leave the tree clean: delete dead/commented-out code and debug artifacts introduced (stray logging, `debugger`, throwaway TODOs); (4) input & injection safety: validate external input, parameterized queries not string-built SQL, escape output. Why: the user asked which global best practices would raise baseline quality and picked all four; the first is the highest-value lever (fit the codebase, don't reinvent). Binding copy in CLAUDE.md → Code quality.
-- 2026-07-13: Two more global rules added after reviewing the stacks worked on often (Angular, .NET/C#+SQL Server, dotfiles ansible/dotbot, RN): (1) don't swallow errors: no empty catch/silent fallback, surface or handle meaningfully, log with context, fail loud/early; (2) scripts & automation (ansible, dotbot, migrations, version pinning) must be idempotent and safe to re-run (guard on state, expect changed=0). Why: both are language-agnostic and recurred in practice: the idempotency one is grounded in the mise-migration ansible work. NOTE: the biggest remaining gap is .NET/C# backend conventions, but those are stack-specific and belong in that project's own CLAUDE.md, not the global file (user declined a starter template for now). Binding copy in CLAUDE.md → Code quality.
-- 2026-07-21: Made the test-coverage bar explicit: every suite must cover THREE kinds of case, each at the layer where it's real: (1) the happy path; (2) edge/boundary cases; (3) what must NOT work and must stay broken (authorization/access denials, invalid or malformed input rejection, abuse/injection). Split by layer: server-side = SQL injection + authz bypass; client-side = output-escaping/XSS, authz-gated UI, input rejection. When a bug or bad input is found, lock it out with a regression test asserting it stays rejected. Why: "write tests when possible" (2026-07-13) was too loose: the negative/must-stay-broken cases are the ones most often skipped, and a found bug should never be able to silently return. How to apply: when writing or reviewing a test suite, check all three buckets are present, not just the happy path. Binding copy in CLAUDE.md → Code quality.
-
-- 2026-08-05: RESOLVED the 11 menu-origin rules the provenance gate flagged on 2026-08-04. Deciding
-  test applied: origin FLAGS a rule, it does not convict it: what decides is "does this change
-  behaviour I'd otherwise get wrong." Eight kept (they correct real failure modes, several in use for
-  weeks). Three acted on: CHANGELOG cut from CLAUDE.md entirely (compressed 6→3 first, then removed on
-  the user's call: the `writing-project-docs` skill owns it and its own description still triggers on
-  changelog work); idempotency demoted to the dotfiles repo's own CLAUDE.md (one project, fails the 3+ promotion test;
-  the migrations half lost global coverage deliberately); dependency audit converted to a pre-commit
-  notice per the file's own gate that a check beats prose. Do NOT re-raise these: the gate governs
-  new rules from here.
-
-- 2026-08-20: Two rules sharpened after a breakage the test suite could not see: a client web app's ETag / conditional-request (`If-None-Match` → 304) handling stopped working, because the edit that broke it was never requested AND the path was never exercised against a live response. (1) Definition of done now states that green tests are evidence about the tests, not the system: anything crossing a real boundary (HTTP/API, DB, cache/CDN or conditional-request headers, auth, queue, filesystem) counts as working ONLY after being exercised with the actual response quoted (status/headers/rows/output); if it can't be run, say "unverified: needs a real call", never "working". (2) The scope rule now states that every hunk must trace to the request or to a gate it must pass (format/lint/test/docs), working code not asked about stays untouched (no drive-by refactors/renames/"while I'm here" cleanups), and anything out of scope worth changing is raised as an AskUserQuestion PROMPT, never buried in prose where it is lost in a wall of text, with no permission mode, auto/auto-accept included, ever counting as that answer. Why: the pre-existing gates were ALL command-output gates (format/lint/tests/docs), so a green mocked suite satisfied them completely while the live behaviour was broken; and every scope rule fired at commit time, so an unrequested edit inside a file already being edited never looked like bundling. Rule (1) catches the consequence, rule (2) the cause: neither alone closes it. Binding copies in CLAUDE.md → Code quality (Definition of done) and Working method (scope).
-
-- 2026-09-02: Evaluated DietrichGebert/ponytail (an always-on "laziest solution that works" ruleset)
-  and declined the plugin: six of its seven ladder rungs already existed here as sharper rules, and
-  its testing stance (one runnable check, no per-function suites) plus "fewest files possible"
-  contradict the test-coverage, docs-in-the-same-commit and Angular-CLI rules. Adopted the one gap:
-  prefer the stdlib and native platform features over custom code even when an already-installed
-  dependency could do the job. Why: the existing SEARCH rule stopped at the project boundary and the
-  stdlib check only fired when ADDING a dependency, so nothing covered writing custom code with deps
-  already present. How to apply: don't re-propose ponytail or a similar always-on minimalism plugin.
-  Binding copy in CLAUDE.md → Code quality (folded into the existing-conventions rule).
+Full rule history moved to `domain/code-quality-policy.md` (2026-09-14). Binding copy in CLAUDE.md →
+Code quality.
 
 ## Code & Writing Style
 
-- 2026-06-01: Don't add explanatory/descriptive comments to code or config files. Keep only what's functionally required (e.g. shebangs) and match the surrounding file's existing comment density, which is near-zero. Why: the user explicitly rejected added comments in a zsh dotfile and expects this as a standing preference. How to apply: write code without narration comments unless the user asks for them; the same terse style applies to commit messages (see Commits & PRs).
-- 2026-07-13: REFINED (function commenting): the user now wants a structured doc-comment (purpose + params + returns) on EVERY function, class, and method: JSDoc/TSDoc, C# XML `///`, or Python docstrings, matching the project's existing doc style. The 2026-06-01 rule still governs INLINE narration comments (explaining what a single line does) and config files, which stay comment-free. Net policy: API-level doc-comments YES, line-level narration NO. Why: the user asked to make function/class documentation a standing coding rule while keeping code self-explanatory line-by-line. Binding copy in CLAUDE.md → Code & artifacts.
-- 2026-09-02: REFINED AGAIN (doc-comment length): the doc-comment is still required on every function, class and method, but must be as SHORT as it can be: one line for the purpose, and a `@param`/`@returns` only where it adds what the signature cannot say (units, ranges, what null means, failure modes). Never restate a typed name back at the reader. Why: the 2026-07-13 "purpose + params + returns" wording mandated a line per param, so a 3-param TypeScript function carried six comment lines that only echoed the signature; the user agreed docs in code should be as few lines as possible. Note: a linter can enforce doc-comment PRESENCE (eslint-plugin-jsdoc, StyleCop SA1600) but not brevity, which is why this stayed a rule rather than becoming a check. Binding copy in CLAUDE.md → Code & artifacts.
-- 2026-09-03: REFINED AGAIN (doc-comment ceiling): `@param`/`@returns`/`@throws` are ALWAYS listed on every function, class and method; the user corrected an earlier draft of this rule that made them conditional, so the 2026-09-02 "only where it adds what the signature cannot say" does NOT apply to the tags. The ceiling governs the PROSE above them: one line, three at the most, and the tag lines do not count towards it. Types, interface properties and constants are not callables and keep the one-line treatment, none where the name and type already say it. Anything longer routes to `docs/architecture.md` or an ADR. A layer whose doc-comments are published as generated API text is the only exemption and the project's `CLAUDE.md` must name it. Why: measured across the active repos. a client NestJS API sat at 75% comment-to-code in `src/`, roughly double the next repo, but the shape recurred everywhere: `application/ports/*.port.ts` hit 293% in a second client project, which has no Swagger justification at all, so the project convention was not the whole cause. The decisive number is block LENGTH, not block count: in the first repo 285 blocks of 6+ lines carried 78% of all docblock lines, while the second has MORE blocks (1078 vs 640) at an average of 3.0 lines and reads fine. `@param`/`@returns` restatement is real but small, 11-20% of comment lines. How to apply: cap the block, and treat a long block as rationale in the wrong file. Note: comment-to-code RATIO is the wrong thing for a hook to gate, since a file of small declarations each earning a one-liner scores high legitimately; block length is the measurable dimension. Binding copy in CLAUDE.md → Code & artifacts.
-- 2026-09-03: REFINED AGAIN (doc-comment LAYOUT): a block doc-comment stays EXPANDED. The opening delimiter sits alone on its first line, every continuation carries a star prefix, the closing delimiter sits alone on its last, and a bare star line separates the prose from the tags. Why: a compact form that starts text on the opening delimiter and ends it before the closing one was applied across two client-repo passes and the user rejected it on sight, saying it reads badly. The brevity ceiling governs how MUCH is written, never whether it is squeezed onto the delimiters, and nothing about the compact form was ever asked for. Note: prettier does not reformat JSDoc internals, so no formatter in these projects enforces this today; `prettier-plugin-jsdoc` would, and adding it is a per-project dependency decision. Binding copy in CLAUDE.md -> Code & artifacts.
-- 2026-09-03: NEW (inline comments): an inline `//` comment is the exception. Narrating what a line does was already banned; this adds that JUSTIFYING an obvious branch, guard, early return or fallback is banned too. Why: the user pointed at two three-line blocks above an `if` and a `return` in a client API and said they were not needed. Both explained WHY rather than what, so they passed the older wording cleanly, which is exactly how they survived. The test that replaces it: delete the comment and re-read the code, and keep it only where a competent reader would otherwise make a WRONG change (a load-bearing ordering, an upstream workaround, a check that looks redundant beside another). A comment restating the condition or the throw message next to it always goes. Note: no linter can judge this, so it stays a rule. Binding copy in CLAUDE.md -> Code & artifacts.
-- 2026-09-03: INVERTED (doc-comment default): a doc-comment is now EARNED, not owed. The obligation was an absolute ("Every function, class and method carries a doc-comment") with the quality bar sitting in a qualifier on the prose, so the absolute won every time and the codebases filled with blocks restating the declaration. Tested against the four cases the user named: a class docblock (`UnsavedChangesStore`, rejected with "NOT EVER"), a constructor, an Angular lifecycle hook, and a self-explanatory method that takes a parameter. The exemption added earlier the same day covered only a CALLABLE taking nothing, returning nothing and raising nothing whose name says the whole story, so it reached none of the four: a class is not a callable, and `constructor`/`ngOnInit` names say WHEN they run rather than what they do. Evidence: the Fair Furniture portal still carried 13 blocks on constructors and lifecycle hooks and 76 blocks across 170 top-level declarations AFTER a dedicated cleanup pass. How to apply: write a block only where it says what the declaration cannot, and delete-then-re-read a draft block to test it. The tags-always preference from earlier today survives, scoped to blocks that are written at all: an earned block still lists every `@param`/`@returns`/`@throws` and still carries a description above them. Note: `claude/hooks/doc-comment-shape.py` checks the shape of blocks that exist and deliberately does not judge restatement, which needs the name, the type and the domain at once, so this half stays a rule. Binding copy in CLAUDE.md -> Code & artifacts.
+Doc-comment evolution (five revisions, 2026-07-13 to 2026-09-03) moved to
+`domain/doc-comment-style.md` (2026-09-14). Binding copy in CLAUDE.md → Code & artifacts. What stays
+here: 2026-06-01, don't add explanatory/descriptive comments to code or config files; keep only
+what's functionally required (e.g. shebangs) and match the surrounding file's existing near-zero
+comment density. Why: the user explicitly rejected added comments in a zsh dotfile and expects this
+as a standing preference; the same terse style applies to commit messages (see Commits & PRs).
 
 ## Terminal Tooling Preference
 
