@@ -989,30 +989,31 @@ require("lazy").setup({
         args = { "--interpreter=vscode" },
       }
 
-      -- Runs netcoredbg INSIDE a running Docker Compose "api" container via
+      -- Runs netcoredbg INSIDE a running Docker Compose container via
       -- `docker exec -i`, so no local netcoredbg install is needed to debug a
       -- containerized app. The container is discovered from the nearest
       -- docker-compose.yml above the current buffer; see user/dap/docker.lua.
+      -- Compose service names vary per project, so this reuses the container
+      -- id resolved by "Attach to .NET in Docker"'s processId below rather
+      -- than prompting (and possibly picking a different container) again.
       -- dap resolves adapters as async callbacks, the same idiom
       -- `dap.configurations.cs`'s process picker below already relies on.
+      local docker_attach_container
       dap.adapters["coreclr-docker"] = function(callback)
-        local docker = require("user.dap.docker")
-        docker.find_container("api", function(container)
-          if not container then
-            return
-          end
-          callback({
-            type = "executable",
-            command = "docker",
-            args = {
-              "exec",
-              "-i",
-              container,
-              "netcoredbg",
-              "--interpreter=vscode",
-            },
-          })
-        end)
+        if not docker_attach_container then
+          return
+        end
+        callback({
+          type = "executable",
+          command = "docker",
+          args = {
+            "exec",
+            "-i",
+            docker_attach_container,
+            "netcoredbg",
+            "--interpreter=vscode",
+          },
+        })
       end
 
       --- Find the nearest ancestor directory of the current buffer that holds a
@@ -1183,21 +1184,23 @@ require("lazy").setup({
           name = "Attach to .NET in Docker",
           -- dap resolves configs inside a coroutine (see find_dotnet_dll
           -- above), so the same yield-on-async-callback shape works here.
+          -- Compose service names and how the app process shows up in
+          -- `pgrep -f` both vary per project (a dev bind-mount running
+          -- `dotnet watch` looks nothing like a published binary run
+          -- directly), so both are asked for rather than guessed.
           processId = function()
             local docker = require("user.dap.docker")
             local co = coroutine.running()
-            docker.find_container("api", function(container)
+            local service = vim.fn.input("Docker compose service: ", "api")
+            docker.find_container(service, function(container)
               if not container then
                 coroutine.resume(co, nil)
                 return
               end
-              -- `dotnet watch run` launches the built apphost binary
-              -- directly, not `dotnet <name>.dll`, so its command line has no
-              -- .dll suffix to match on. bin/Debug/ is the standard dev build
-              -- output path segment for any .NET project, and distinguishes
-              -- the app process from dotnet-watch's own supervisor and
-              -- MSBuild helper processes without naming this project.
-              docker.find_pid(container, "bin/Debug/", function(pid)
+              docker_attach_container = container
+              local pattern =
+                vim.fn.input("Process match (pgrep -f): ", "bin/Debug/")
+              docker.find_pid(container, pattern, function(pid)
                 coroutine.resume(co, pid and tonumber(pid))
               end)
             end)
