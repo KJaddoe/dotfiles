@@ -989,6 +989,32 @@ require("lazy").setup({
         args = { "--interpreter=vscode" },
       }
 
+      -- Runs netcoredbg INSIDE a running Docker Compose "api" container via
+      -- `docker exec -i`, so no local netcoredbg install is needed to debug a
+      -- containerized app. The container is discovered from the nearest
+      -- docker-compose.yml above the current buffer; see user/dap/docker.lua.
+      -- dap resolves adapters as async callbacks, the same idiom
+      -- `dap.configurations.cs`'s process picker below already relies on.
+      dap.adapters["coreclr-docker"] = function(callback)
+        local docker = require("user.dap.docker")
+        docker.find_container("api", function(container)
+          if not container then
+            return
+          end
+          callback({
+            type = "executable",
+            command = "docker",
+            args = {
+              "exec",
+              "-i",
+              container,
+              "netcoredbg",
+              "--interpreter=vscode",
+            },
+          })
+        end)
+      end
+
       --- Find the nearest ancestor directory of the current buffer that holds a
       --- file matching `pattern` (e.g. a `.csproj` or `.sln`).
       ---@param pattern string Lua pattern a filename must match
@@ -1150,6 +1176,37 @@ require("lazy").setup({
           request = "attach",
           name = "Attach to process",
           processId = require("dap.utils").pick_process,
+        },
+        {
+          type = "coreclr-docker",
+          request = "attach",
+          name = "Attach to .NET in Docker",
+          -- dap resolves configs inside a coroutine (see find_dotnet_dll
+          -- above), so the same yield-on-async-callback shape works here.
+          processId = function()
+            local docker = require("user.dap.docker")
+            local co = coroutine.running()
+            docker.find_container("api", function(container)
+              if not container then
+                coroutine.resume(co, nil)
+                return
+              end
+              -- `dotnet watch run` launches the built apphost binary
+              -- directly, not `dotnet <name>.dll`, so its command line has no
+              -- .dll suffix to match on. bin/Debug/ is the standard dev build
+              -- output path segment for any .NET project, and distinguishes
+              -- the app process from dotnet-watch's own supervisor and
+              -- MSBuild helper processes without naming this project.
+              docker.find_pid(container, "bin/Debug/", function(pid)
+                coroutine.resume(co, pid and tonumber(pid))
+              end)
+            end)
+            return coroutine.yield()
+          end,
+          sourceFileMap = function()
+            local root = nearest_root("%.sln[x]?$") or vim.fn.getcwd()
+            return { ["/src"] = root }
+          end,
         },
       }
 
