@@ -132,6 +132,7 @@ for these rules as FYI reference only; the binding text is HERE.
   `claude/hooks/block-issue-references.py` enforces the file half.
 - In Markdown, align table columns: pad every cell with trailing spaces so the pipes line up and the
   raw source reads like a table (as a table formatter would). Applies to tables you write or edit.
+  `claude/hooks/table-alignment.py` enforces this on uncommitted work.
 
 ### Project documentation
 
