@@ -327,6 +327,6 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   `backups/`, but not `~/.claude/state/`
 - `claude/hooks/pre-tool-memory.sh`: the wrapper `settings.json` invokes for PreToolUse; it execs
   `pre-tool-memory.py`, which SessionStart calls directly
-- `claude/hooks/tests/`: run every suite:
-  `for s in claude/hooks/tests/test_*.py; do python3 "$s"; done`
+- `claude/hooks/tests/`: run every suite (`git/tests/` included) via `script/test-hooks`, also
+  what `.github/workflows/hook-tests.yml` runs on every push and pull request
 - `~/.claude/CLAUDE.md` → **Project documentation**: the rule the env-var hook enforces
