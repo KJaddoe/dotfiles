@@ -87,4 +87,4 @@ When creating test plans, provide:
 4. Findings with severity (Critical/High/Medium/Low)
 5. Specific fix recommendations
 
-Adapted from jeffallan/claude-skills (<https://github.com/jeffallan/claude-skills>). License terms in LICENSE.txt.
+Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

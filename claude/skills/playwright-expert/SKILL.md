@@ -162,4 +162,4 @@ When implementing Playwright tests, provide:
 
 Playwright, Page Object Model, auto-waiting, locators, fixtures, API mocking, trace viewer, visual comparisons, parallel execution, CI/CD integration
 
-Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in LICENSE.txt.
+Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

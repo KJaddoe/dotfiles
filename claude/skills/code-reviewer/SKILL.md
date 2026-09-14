@@ -117,4 +117,4 @@ Code review report must include:
 
 SOLID, DRY, KISS, YAGNI, design patterns, OWASP Top 10, language idioms, testing patterns
 
-Adapted from jeffallan/claude-skills (<https://github.com/jeffallan/claude-skills>). License terms in LICENSE.txt.
+Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

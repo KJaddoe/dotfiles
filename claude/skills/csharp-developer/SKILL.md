@@ -125,4 +125,4 @@ app.Run();
 
 C# 12, .NET 8, ASP.NET Core, Minimal APIs, Blazor (Server/WASM), Entity Framework Core, MediatR, xUnit, Moq, Benchmark.NET, SignalR, gRPC, Azure SDK, Polly, FluentValidation, Serilog
 
-Adapted from jeffallan/claude-skills (<https://github.com/jeffallan/claude-skills>). License terms in LICENSE.txt.
+Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

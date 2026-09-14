@@ -139,4 +139,4 @@ When implementing GraphQL features, provide:
 
 Apollo Server, Apollo Federation 2.5+, GraphQL SDL, DataLoader, GraphQL Subscriptions, WebSocket, Redis pub/sub, schema composition, query complexity, persisted queries, schema stitching, type generation
 
-Adapted from jeffallan/claude-skills (<https://github.com/jeffallan/claude-skills>). License terms in LICENSE.txt.
+Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

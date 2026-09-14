@@ -100,4 +100,4 @@ Include:
 6. Uncertainties and questions
 7. Recommendations
 
-Adapted from jeffallan/claude-skills (<https://github.com/jeffallan/claude-skills>). License terms in LICENSE.txt.
+Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.
