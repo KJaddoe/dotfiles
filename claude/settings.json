@@ -140,6 +140,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/duplicate-symbols.py",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/table-alignment.py",
+            "timeout": 15
           }
         ]
       }

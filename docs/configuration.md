@@ -15,6 +15,7 @@ never the value itself.
 | `DOCS_FLOOR_HOOK_MODE`     | Behaviour of the `docs-coverage-floor` Stop hook (`claude/hooks/`)   | No       | `dry-run`                               | `enforce`    |
 | `DUPE_SYMBOL_HOOK_MODE`    | Behaviour of the `duplicate-symbols` Stop hook (`claude/hooks/`)     | No       | `dry-run`                               | `enforce`    |
 | `DOC_SHAPE_HOOK_MODE`      | Behaviour of the `doc-comment-shape` Stop hook (`claude/hooks/`)     | No       | `dry-run`                               | `enforce`    |
+| `TABLE_ALIGN_HOOK_MODE`    | Behaviour of the `table-alignment` Stop hook (`claude/hooks/`)       | No       | `dry-run`                               | `enforce`    |
 | `CLAUDE_PROJECT_DIR`       | Project root the memory hook maps to a session dir                   | No       | current dir                             | -            |
 | `FRESH_SESSION_HOOK_MODE`  | Behaviour of the `suggest-fresh-session` UserPromptSubmit hook       | No       | `on`                                    | `off`        |
 | `FRESH_SESSION_HOOK_BYTES` | Transcript bytes at which that hook starts injecting                 | No       | `600000`                                | `900000`     |
@@ -54,6 +55,21 @@ not judge whether the prose merely restates the declaration, which is the questi
 actually turns on and the one that needs a reader. Scope is files holding uncommitted work, and
 only languages whose convention is a `/** */` block: C# `///`, Python docstrings and Go `//` are
 out of scope rather than silently mis-measured.
+
+`TABLE_ALIGN_HOOK_MODE` takes the same three values and logs to
+`~/.claude/logs/table-alignment.log`. It governs `table-alignment.py`, which reports Markdown table
+rows whose padding does not match the rest of their column: the table rule in
+`~/.claude/CLAUDE.md` → Code & artifacts. The check is internal consistency against the header
+row's own width, not a recomputed minimal width, so a table padded wider than its content needs is
+left alone as long as every row agrees; only a row that disagrees with its own table is reported.
+Scope is files holding uncommitted work, and only `.md` files. The same script doubles as a CI
+check:
+
+```sh
+python3 ~/.claude/hooks/table-alignment.py --path . --all
+```
+
+It exits 1 when a row is misaligned.
 
 `DOCS_FLOOR_HOOK_MODE` takes the same three values and logs to
 `~/.claude/logs/docs-floor-hook.log`. It governs `docs-coverage-floor.py`, which reports the
@@ -191,6 +207,8 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
 - `claude/hooks/docs-coverage-floor.py`: the coverage-floor check; a Stop hook and, with `--path`,
   a CI command
 - `claude/hooks/duplicate-symbols.py`: the duplicate-symbol check; a Stop hook and, with `--path`,
+  a CI command
+- `claude/hooks/table-alignment.py`: the table-alignment check; a Stop hook and, with `--path`,
   a CI command
 - `claude/hooks/_hookutil.py`: git helpers, command patterns, and the `gh` write-classification,
   shared by the Stop hooks, the approval gates and the attribution guard; internal, never invoked
