@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+cd "$(dirname "$0")/.."
+
+for suite in claude/hooks/tests/test_*.py git/tests/test_*.py; do
+    echo "  $suite"
+    python3 "$suite" >/dev/null
+done

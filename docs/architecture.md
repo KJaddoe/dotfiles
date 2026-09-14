@@ -65,7 +65,10 @@ bootstrapped machine before anything is installed.
 | Format     | `black claude/hooks/ git/tests/ nvim/tests/`                                 |
 | Lint       | `pylint claude/hooks/ git/tests/ nvim/tests/`                                |
 
-`script/test` runs the hook suites first, before its (destructive) bootstrap steps.
+`script/test-hooks` runs the hook suites (`claude/hooks/tests/` and `git/tests/`) standalone.
+`script/test` calls it first, before its (destructive) bootstrap steps, and
+`.github/workflows/hook-tests.yml` calls it on every push and pull request, on both Ubuntu and
+macOS.
 
 `nvim/tests/` is the exception it does **not** run. Those tests drive a real headless nvim against
 `nvim/config`, so they need nvim, an installed plugin set and pylint on PATH, while the hook suites

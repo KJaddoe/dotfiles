@@ -122,7 +122,9 @@ That last case needs a real merge, and it stays a decision for a human at a term
 overwrites your global git identity, and runs a full bootstrap, so it is meant for a throwaway
 machine or CI, not your working setup.
 
-For the hook unit tests alone (safe to run anywhere), see `docs/architecture.md`.
+For the hook unit tests alone (safe to run anywhere, and what CI runs on every push and pull
+request), run `script/test-hooks`; see `docs/architecture.md` for the per-suite dev commands
+(parallel runners, formatting, linting).
 
 ## Tmux
 
