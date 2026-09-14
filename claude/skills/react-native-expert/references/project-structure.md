@@ -85,7 +85,7 @@ my-app/
     }
   }
 }
-```text
+```
 
 ## tsconfig.json
 
@@ -131,7 +131,7 @@ module.exports = function (api) {
     ],
   };
 };
-```text
+```
 
 ## Essential Dependencies
 

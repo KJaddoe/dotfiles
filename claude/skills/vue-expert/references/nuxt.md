@@ -85,7 +85,7 @@ const slug = route.params.slug // ['2024', '12', 'my-post']
 <template>
   <div>Blog post: {{ slug }}</div>
 </template>
-```text
+```
 
 ## Layouts
 
@@ -200,7 +200,7 @@ function handleRefresh() {
     </div>
   </div>
 </template>
-```text
+```
 
 ## Server API Routes
 
@@ -307,7 +307,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 export default defineEventHandler((event) => {
   console.log(`[${event.method}] ${event.path}`)
 })
-```text
+```
 
 ## Composables
 
@@ -390,7 +390,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 const { $api } = useNuxtApp()
 const users = await $api('/users')
 </script>
-```text
+```
 
 ## Configuration
 
@@ -484,7 +484,7 @@ useSeoMeta({
   ogImage: 'https://example.com/image.png'
 })
 </script>
-```text
+```
 
 ## Custom SSR with Fastify (Non-Nuxt)
 
@@ -538,7 +538,7 @@ if (window.__INITIAL_STATE__) {
 }
 
 app.mount('#app')
-```text
+```
 
 ```typescript
 // vite.config.ts for SSR
@@ -581,7 +581,7 @@ const HeavyChart = defineAsyncComponent(() =>
     </template>
   </ClientOnly>
 </template>
-```text
+```
 
 ### Hydration Mismatch Prevention
 
@@ -634,7 +634,7 @@ definePageMeta({
     <LazyBelowFoldContent />
   </div>
 </template>
-```text
+```
 
 ```typescript
 // nuxt.config.ts - Configure delay hydration

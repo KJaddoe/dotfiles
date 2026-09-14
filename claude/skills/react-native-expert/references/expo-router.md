@@ -43,7 +43,7 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
-```text
+```
 
 ## Tab Layout
 
@@ -112,7 +112,7 @@ function DetailsScreen() {
   const { id, title } = useLocalSearchParams<{ id: string; title?: string }>();
   return <Text>Details for {id}</Text>;
 }
-```text
+```
 
 ## Protected Routes
 
@@ -163,7 +163,7 @@ export default function TabLayout() {
     }
   }
 }
-```text
+```
 
 ```typescript
 // Handle: myapp://details/123
