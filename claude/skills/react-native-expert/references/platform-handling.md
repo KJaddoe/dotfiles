@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     }),
   },
 });
-```text
+```
 
 ## Platform.OS
 
@@ -61,7 +61,7 @@ components/
 ```typescript
 // Import resolves to correct platform file
 import Button from './components/Button';
-```text
+```
 
 ## SafeAreaView
 
@@ -120,7 +120,7 @@ function FormScreen() {
     </KeyboardAvoidingView>
   );
 }
-```text
+```
 
 ## StatusBar
 
@@ -169,7 +169,7 @@ function Screen() {
     return false; // Allow default back
   });
 }
-```text
+```
 
 ## Quick Reference
 

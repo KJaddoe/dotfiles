@@ -153,7 +153,7 @@ router.post('/', async (req, res, next) => {
 });
 
 module.exports = router;
-```text
+```
 
 ### After: NestJS Controller
 
@@ -273,7 +273,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
   const user = await userService.findById(req.user.id);
   res.json({ success: true, data: user });
 });
-```text
+```
 
 ### After: NestJS Guard
 
@@ -347,7 +347,7 @@ function loggerMiddleware(req, res, next) {
 
 // app.js
 app.use(loggerMiddleware);
-```text
+```
 
 ### After: NestJS Interceptor
 
@@ -431,7 +431,7 @@ async function createUser(req, res) {
   const user = await userService.create(req.body);
   res.json({ success: true, data: user });
 }
-```text
+```
 
 ### After: NestJS Dependency Injection
 
@@ -553,7 +553,7 @@ function errorHandler(err, req, res, next) {
 
 // app.js
 app.use(errorHandler);
-```text
+```
 
 ### After: NestJS Exception Filter
 
@@ -655,7 +655,7 @@ router.post(
     }
   }
 );
-```text
+```
 
 ### After: NestJS with class-validator
 
@@ -768,7 +768,7 @@ describe('Users API', () => {
     });
   });
 });
-```text
+```
 
 ### After: NestJS with Jest
 
@@ -1011,7 +1011,7 @@ async function bootstrap() {
   await app.listen(3000);
 }
 bootstrap();
-```text
+```
 
 **Migration steps:**
 
@@ -1101,7 +1101,7 @@ export class UsersService {
     this.emailService = new EmailService(); // Don't do this!
   }
 }
-```text
+```
 
 **Solution:**
 
@@ -1132,7 +1132,7 @@ async create(@Body() body: any) {
   }
   // ...
 }
-```text
+```
 
 **Solution:**
 
@@ -1158,7 +1158,7 @@ async create(@Body() createUserDto: CreateUserDto) {
   exports: [UsersService], // Export for other modules
 })
 export class UsersModule {}
-```text
+```
 
 ### 6. Forgetting to Enable CORS
 
@@ -1186,7 +1186,7 @@ app.enableCors({
 throw new NotFoundException('User not found');
 throw new BadRequestException('Invalid input');
 throw new UnauthorizedException('Invalid credentials');
-```text
+```
 
 ### 8. Not Configuring ValidationPipe Globally
 

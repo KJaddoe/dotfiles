@@ -68,7 +68,7 @@ export default function RootLayout({
     </html>
   )
 }
-```text
+```
 
 ## Nested Layouts
 
@@ -114,7 +114,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
 
   return <div>{children}</div>
 }
-```text
+```
 
 ## Loading States
 
@@ -149,7 +149,7 @@ export default function Error({
     </div>
   )
 }
-```text
+```
 
 ## Route Groups
 
@@ -192,7 +192,7 @@ export default function Layout({
 export default function Analytics() {
   return <div>Analytics Dashboard</div>
 }
-```text
+```
 
 ## Intercepting Routes
 
@@ -233,7 +233,7 @@ export const dynamic = 'force-dynamic'
 
 // Revalidate every 60 seconds
 export const revalidate = 60
-```text
+```
 
 ## Catch-All Routes
 
@@ -273,7 +273,7 @@ export async function GET(
   const user = await db.user.findUnique({ where: { id: params.id } })
   return NextResponse.json(user)
 }
-```text
+```
 
 ## Metadata API
 
