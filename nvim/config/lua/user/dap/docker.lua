@@ -27,10 +27,13 @@ function M.find_container(service, callback)
     callback(nil)
     return
   end
+  -- vim.system's callback runs in a fast-event context; scheduling back onto
+  -- the main loop before invoking callback is required because dap's own
+  -- internals (e.g. its logger) call Neovim APIs that fast contexts forbid.
   vim.system(
     { "docker", "compose", "ps", "-q", service },
     { cwd = root, text = true },
-    function(result)
+    vim.schedule_wrap(function(result)
       local id = result.stdout and result.stdout:match("%S+")
       if result.code ~= 0 or not id then
         vim.notify(
@@ -46,7 +49,7 @@ function M.find_container(service, callback)
         return
       end
       callback(id)
-    end
+    end)
   )
 end
 
@@ -59,7 +62,7 @@ function M.find_pid(container, pattern, callback)
   vim.system(
     { "docker", "exec", container, "pgrep", "-f", pattern },
     { text = true },
-    function(result)
+    vim.schedule_wrap(function(result)
       local pid = result.stdout and result.stdout:match("%d+")
       if result.code ~= 0 or not pid then
         vim.notify(
@@ -74,7 +77,7 @@ function M.find_pid(container, pattern, callback)
         return
       end
       callback(pid)
-    end
+    end)
   )
 end
 
