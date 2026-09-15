@@ -6,3 +6,4 @@ ruby_global_gems:
   - rake
   - rubocop
   - solargraph
+  - ruby-lsp
