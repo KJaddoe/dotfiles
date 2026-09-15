@@ -60,7 +60,6 @@
       - selene
       - taplo
       - zls
-      - rust-analyzer
     state: present
   when: ansible_facts.os_family == "Darwin"
 
@@ -126,19 +125,6 @@
   ansible.builtin.shell:
     cmd: "gunzip -c {{ ansible_env.HOME }}/.local/share/taplo-{{ neovim_taplo_version }}.gz > {{ ansible_env.HOME }}/.local/bin/taplo && chmod +x {{ ansible_env.HOME }}/.local/bin/taplo"
     creates: "{{ ansible_env.HOME }}/.local/bin/taplo"
-  when: ansible_facts.os_family == "Debian"
-
-- name: Download rust-analyzer archive (Ubuntu)
-  ansible.builtin.get_url:
-    url: "https://github.com/rust-lang/rust-analyzer/releases/download/{{ neovim_rust_analyzer_version }}/rust-analyzer-x86_64-unknown-linux-gnu.gz"
-    dest: "{{ ansible_env.HOME }}/.local/share/rust-analyzer-{{ neovim_rust_analyzer_version }}.gz"
-    mode: "0644"
-  when: ansible_facts.os_family == "Debian"
-
-- name: Extract rust-analyzer into PATH (Ubuntu)
-  ansible.builtin.shell:
-    cmd: "gunzip -c {{ ansible_env.HOME }}/.local/share/rust-analyzer-{{ neovim_rust_analyzer_version }}.gz > {{ ansible_env.HOME }}/.local/bin/rust-analyzer && chmod +x {{ ansible_env.HOME }}/.local/bin/rust-analyzer"
-    creates: "{{ ansible_env.HOME }}/.local/bin/rust-analyzer"
   when: ansible_facts.os_family == "Debian"
 
 - name: Create zls versioned install directory (Ubuntu)
