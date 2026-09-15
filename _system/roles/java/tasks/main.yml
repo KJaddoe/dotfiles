@@ -16,3 +16,50 @@
 - name: Show Java version
   ansible.builtin.debug:
     msg: "{{ java_version_output.stderr_lines[0] }}"
+
+- name: Install dedicated JDK {{ jdtls_java_version }} for jdtls
+  ansible.builtin.command: mise install java@{{ jdtls_java_version }}
+  when: jdtls_java_version not in mise_java_installed.stdout
+
+- name: Install jdtls (macOS)
+  community.general.homebrew:
+    name: jdtls
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Create jdtls versioned install directory (Ubuntu)
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.local/share/jdtls-v{{ jdtls_version }}"
+    state: directory
+    mode: "0755"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Download jdtls tarball (Ubuntu)
+  ansible.builtin.get_url:
+    url: "https://download.eclipse.org/jdtls/milestones/{{ jdtls_version }}/jdt-language-server-{{ jdtls_version }}-{{ jdtls_timestamp }}.tar.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/jdtls-v{{ jdtls_version }}/jdtls.tar.gz"
+    mode: "0644"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Extract jdtls (Ubuntu)
+  ansible.builtin.command:
+    cmd: tar -xzf jdtls.tar.gz
+    chdir: "{{ ansible_env.HOME }}/.local/share/jdtls-v{{ jdtls_version }}"
+    creates: "{{ ansible_env.HOME }}/.local/share/jdtls-v{{ jdtls_version }}/plugins"
+  when: ansible_facts.os_family == "Debian"
+
+# a plain symlink can't work here: the launcher jar filename embeds a build
+# number nvim-jdtls doesn't know, so the wrapper resolves it at run time
+# (same reasoning as the netcoredbg wrapper: exec the real binary, don't symlink it).
+# Runs on the dedicated jdtls_java_version, not the ambient `java` on PATH,
+# since that stays pinned to java_version.
+- name: Install jdtls wrapper into PATH (Ubuntu)
+  ansible.builtin.copy:
+    content: |
+      #!/bin/sh
+      launcher=$(find "{{ ansible_env.HOME }}/.local/share/jdtls-v{{ jdtls_version }}/plugins" -name 'org.eclipse.equinox.launcher_*.jar' | sort | tail -1)
+      java_bin="$(mise where java@{{ jdtls_java_version }})/bin/java"
+      exec "$java_bin" -jar "$launcher" -configuration "{{ ansible_env.HOME }}/.local/share/jdtls-v{{ jdtls_version }}/config_linux" "$@"
+    dest: "{{ ansible_env.HOME }}/.local/bin/jdtls"
+    mode: "0755"
+  when: ansible_facts.os_family == "Debian"
