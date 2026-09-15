@@ -845,6 +845,70 @@ require("lazy").setup({
     end,
   },
   {
+    -- jdtls needs a per-project workspace data directory computed at attach
+    -- time, which nvim-lspconfig's plain enable-list can't express - it has
+    -- its own start_or_attach API instead of a vim.lsp.enable entry. jdtls
+    -- also requires a JDK 21+ runtime, one release newer than this repo's
+    -- project-default JDK 17 (_system/roles/java pins 17 for actual builds),
+    -- so a dedicated temurin-21 installed by that role is pointed at
+    -- explicitly here rather than resolving the ambient `java` on PATH.
+    "mfussenegger/nvim-jdtls",
+    ft = "java",
+    config = function()
+      local jdtls_group =
+        vim.api.nvim_create_augroup("user.jdtls", { clear = true })
+
+      --- Resolves the dedicated JDK 21 mise installed for jdtls's own
+      --- runtime (see _system/roles/java/vars/main.yml: jdtls_java_version).
+      ---@return string? path to the java executable, nil if unresolved
+      local function jdtls_java_executable()
+        local result = vim
+          .system({ "mise", "where", "java@temurin-21" }, { text = true })
+          :wait()
+        if result.code ~= 0 then
+          return nil
+        end
+        return vim.trim(result.stdout) .. "/bin/java"
+      end
+
+      local function start_jdtls()
+        local root_dir = vim.fs.root(0, { "gradlew", "mvnw", ".git" })
+        if not root_dir then
+          return
+        end
+
+        local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
+        local workspace_dir = vim.fn.stdpath("data")
+          .. "/site/java/workspace-root/"
+          .. project_name
+
+        local cmd = { "jdtls", "-data", workspace_dir }
+        --- Homebrew's jdtls launcher accepts --java-executable directly; the
+        --- Ubuntu tarball install has no such launcher, so its own wrapper
+        --- (_system/roles/java) resolves the dedicated JDK itself instead.
+        if vim.fn.has("mac") == 1 then
+          local java_executable = jdtls_java_executable()
+          if java_executable then
+            table.insert(cmd, 2, java_executable)
+            table.insert(cmd, 2, "--java-executable")
+          end
+        end
+
+        require("jdtls").start_or_attach({
+          cmd = cmd,
+          root_dir = root_dir,
+        })
+      end
+
+      vim.api.nvim_create_autocmd("FileType", {
+        group = jdtls_group,
+        pattern = "java",
+        callback = start_jdtls,
+        desc = "jdtls: start or attach for the current project",
+      })
+    end,
+  },
+  {
     -- Lazy on its keymaps: nothing here runs until a breakpoint is set or a
     -- session starts. dap-ui rides along as a dependency instead of loading on
     -- its own keys, because its listeners have to be registered before the
@@ -1620,6 +1684,7 @@ require("lazy").setup({
         "graphql",
         "html",
         "http",
+        "java",
         "javascript",
         "jsdoc",
         "json",

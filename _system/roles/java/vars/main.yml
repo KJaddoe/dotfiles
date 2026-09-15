@@ -1,2 +1,9 @@
 ---
 java_version: 17
+jdtls_version: "1.61.0"
+jdtls_timestamp: "202609031315"
+# jdtls 1.61.0 refuses to start under Java < 21 (confirmed 2026-09-15: it
+# raises "jdtls requires at least Java 21" at launch). Installed alongside
+# java_version, never set as the global default, so project builds still get
+# the pinned java_version.
+jdtls_java_version: "temurin-21"
