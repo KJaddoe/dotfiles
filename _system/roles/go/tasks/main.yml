@@ -1,0 +1,33 @@
+---
+- name: Get installed Go versions from mise
+  ansible.builtin.command: mise ls --installed go
+  register: mise_go_installed
+  changed_when: false
+
+- name: Install and pin Go {{ go_version }} via mise
+  ansible.builtin.command: mise use -g go@{{ go_version }}
+  when: go_version not in mise_go_installed.stdout
+
+- name: Verify Go installation
+  ansible.builtin.command: mise exec -- go version
+  register: go_version_output
+  changed_when: false
+
+- name: Show Go version
+  ansible.builtin.debug:
+    msg: "{{ go_version_output.stdout }}"
+
+- name: Check gopls installation
+  ansible.builtin.command: which gopls
+  register: gopls_installed
+  changed_when: false
+  failed_when: false
+
+# GOBIN is set explicitly to this repo's existing ~/.local/bin convention
+# (already used by every Ubuntu-side LSP wrapper in the neovim role) - go
+# install's own default (~/go/bin) is not on PATH anywhere in this repo.
+- name: Install gopls via go install
+  ansible.builtin.command: mise exec -- go install golang.org/x/tools/gopls@latest
+  environment:
+    GOBIN: "{{ ansible_facts.env.HOME }}/.local/bin"
+  when: gopls_installed.rc != 0
