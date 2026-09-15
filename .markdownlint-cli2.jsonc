@@ -3,6 +3,7 @@
   "config": {
     "MD013": false,
     "MD025": false,
-    "MD041": false
+    "MD041": false,
+    "MD010": { "code_blocks": false }
   }
 }
