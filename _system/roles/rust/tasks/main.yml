@@ -1,0 +1,37 @@
+---
+- name: Get installed Rust versions from mise
+  ansible.builtin.command: mise ls --installed rust
+  register: mise_rust_installed
+  changed_when: false
+
+- name: Install and pin Rust {{ rust_version }} via mise
+  ansible.builtin.command: mise use -g rust@{{ rust_version }}
+  when: rust_version not in mise_rust_installed.stdout
+
+- name: Verify Rust installation
+  ansible.builtin.command: mise exec -- rustc --version
+  register: rust_version_output
+  changed_when: false
+
+- name: Show Rust version
+  ansible.builtin.debug:
+    msg: "{{ rust_version_output.stdout }}"
+
+- name: Install rust-analyzer (macOS)
+  community.general.homebrew:
+    name: rust-analyzer
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Download rust-analyzer archive (Ubuntu)
+  ansible.builtin.get_url:
+    url: "https://github.com/rust-lang/rust-analyzer/releases/download/{{ rust_analyzer_version }}/rust-analyzer-x86_64-unknown-linux-gnu.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/rust-analyzer-{{ rust_analyzer_version }}.gz"
+    mode: "0644"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Extract rust-analyzer into PATH (Ubuntu)
+  ansible.builtin.shell:
+    cmd: "gunzip -c {{ ansible_env.HOME }}/.local/share/rust-analyzer-{{ rust_analyzer_version }}.gz > {{ ansible_env.HOME }}/.local/bin/rust-analyzer && chmod +x {{ ansible_env.HOME }}/.local/bin/rust-analyzer"
+    creates: "{{ ansible_env.HOME }}/.local/bin/rust-analyzer"
+  when: ansible_facts.os_family == "Debian"
