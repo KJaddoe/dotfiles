@@ -119,9 +119,61 @@ Returns the review with `state: CHANGES_REQUESTED` (or matching state) and `subm
 
 **Only do this after the user explicitly approves.**
 
+### Editing a comment already attached to the pending review
+
+REST `PATCH /repos/{owner}/{repo}/pulls/comments/{comment_id}` returns `404 Not Found` against a
+comment on a still-PENDING review, even with the correct `databaseId`. Use GraphQL instead:
+
+```bash
+gh api graphql -f query='
+{
+  repository(owner: "OWNER", name: "REPO") {
+    pullRequest(number: N) {
+      reviews(first: 20, states: [PENDING]) {
+        nodes { id databaseId author { login } comments(first: 10) { nodes { id databaseId path } } }
+      }
+    }
+  }
+}'
+```
+
+Filter by `states: [PENDING]` and match `databaseId` to find your own review among any other
+pending reviews on the same PR (from another reviewer, say); don't touch those. Grab the comment's
+node `id` (`PRRC_...`), then:
+
+```graphql
+mutation UpdateComment($commentId: ID!, $body: String!) {
+  updatePullRequestReviewComment(input: { pullRequestReviewCommentId: $commentId, body: $body }) {
+    pullRequestReviewComment { id body }
+  }
+}
+```
+
+### Lines outside the diff context can't take an inline `LINE` comment
+
+`addPullRequestReviewThread` with `subjectType: LINE` silently returns `{"thread": null}`, with no
+error, when `line` falls outside the PR's actual diff hunks (GitHub's default 3-line context; a
+file whose only change is near the top, but the finding sits 70+ lines further down with no
+intervening diff, for instance). Symptom: the mutation reports success but nothing shows up when
+you re-query the review's comments. There is no line-based workaround; fall back to a file-level
+comment instead:
+
+```graphql
+mutation AddThread($reviewId: ID!, $path: String!, $body: String!) {
+  addPullRequestReviewThread(input: {
+    pullRequestReviewId: $reviewId, path: $path, body: $body, subjectType: FILE
+  }) { thread { id comments(first: 1) { nodes { databaseId url } } } }
+}
+```
+
+List every affected line number and the fix in the body text itself: a file-level comment carries
+no `suggestion` block, so there's no "Apply suggestion" button; say so when presenting it for sign-off.
+
 ## Common pitfalls
 
-- Using REST `POST .../pulls/{n}/comments` after the pending review exists → `422 user_id can only have one pending review per pull request`. Use GraphQL instead.
-- Passing the REST `databaseId` (integer) as `pullRequestReviewId` to GraphQL → error. You need the node ID (string, e.g. `PRR_...`).
-- Inlining a multi-line body with backticks via `-f body="..."` → quoting hell, suggestion fences get mangled. Use a file + shell variable + `-F`.
+- Using REST `POST .../pulls/{n}/comments` after the pending review exists: `422 user_id can only have one pending review per pull request`. Use GraphQL instead.
+- Passing the REST `databaseId` (integer) as `pullRequestReviewId` to GraphQL is an error. You need the node ID (string, e.g. `PRR_...`).
+- Inlining a multi-line body with backticks via `-f body="..."` causes quoting hell; suggestion fences get mangled. Use a file + shell variable + `-F`.
 - Forgetting `subjectType: LINE` when you want a line comment (the default for some shapes is `FILE`).
+- Editing a pending comment's body via REST `PATCH .../pulls/comments/{id}` returns `404`. Use GraphQL `updatePullRequestReviewComment` (see above).
+- A `LINE` comment target outside the diff context returns a silent `{"thread": null}`, not an error. Check the review's comment list after adding one you're unsure about; fall back to a `FILE`-level comment.
