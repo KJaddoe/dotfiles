@@ -37,8 +37,18 @@
   ansible.builtin.command: mise use -g ruby@{{ ruby_version }}
   when: mise_ruby_current.stdout | trim != ruby_version
 
-- name: Install global Ruby gems
-  ansible.builtin.command: mise exec -- gem install {{ ruby_global_gems | join(' ') }}
+- name: Get installed Ruby gems
+  ansible.builtin.command: mise exec -- gem list
+  register: ruby_gems_installed
+  changed_when: false
+
+# gem install has no "already present" skip of its own - unlike mise/uv, it
+# reinstalls (and bumps) every listed gem on every run, so missing gems are
+# filtered here instead of relying on changed_when to notice after the fact.
+- name: Install missing global Ruby gems
+  ansible.builtin.command: mise exec -- gem install {{ item }}
+  loop: "{{ ruby_global_gems }}"
+  when: item not in ruby_gems_installed.stdout
   register: gem_install
   changed_when: "'Successfully installed' in gem_install.stdout"
 
