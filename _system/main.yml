@@ -19,6 +19,7 @@
     - { role: python, tags: python }
     - { role: ruby, tags: ruby }
     - { role: php, tags: php }
+    - { role: kotlin, tags: kotlin }
     - { role: dotnet, tags: dotnet }
 
     # tools
