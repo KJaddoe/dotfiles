@@ -613,6 +613,14 @@ require("lazy").setup({
         cmd = { "kotlin-lsp", "--stdio" },
       })
 
+      -- sourcekit-lsp. Its nvim-lspconfig default filetypes also cover c/cpp/objc/objcpp
+      -- (SourceKit-LSP genuinely can serve those too), but this repo already has clangd
+      -- doing that job - scope this server to Swift only so it doesn't double-attach.
+      vim.lsp.config("sourcekit", {
+        capabilities = capabilities,
+        filetypes = { "swift" },
+      })
+
       vim.lsp.config("roslyn_ls", {
         capabilities = capabilities,
         handlers = {
@@ -716,6 +724,7 @@ require("lazy").setup({
         "ruby_lsp",
         "intelephense",
         "kotlin_lsp",
+        "sourcekit",
         "clangd",
         "zls",
         "angularls",
@@ -1719,6 +1728,7 @@ require("lazy").setup({
         "rust",
         "scss",
         "sql",
+        "swift",
         "tsx",
         "typescript",
         "vim",
