@@ -1,0 +1,83 @@
+---
+- name: Get current global Kotlin from mise
+  ansible.builtin.command: mise current kotlin
+  register: mise_kotlin_current
+  changed_when: false
+  failed_when: false
+
+- name: Install and pin Kotlin {{ kotlin_version }} via mise
+  ansible.builtin.command: mise use -g kotlin@{{ kotlin_version }}
+  when: mise_kotlin_current.stdout | trim != kotlin_version
+
+# kotlinc writes its version banner to stderr, not stdout.
+- name: Verify Kotlin compiler installation
+  ansible.builtin.command: mise exec -- kotlinc -version
+  register: kotlinc_version_output
+  changed_when: false
+
+- name: Show Kotlin compiler version
+  ansible.builtin.debug:
+    msg: "{{ kotlinc_version_output.stderr }}"
+
+- name: Tap jetbrains/utils (macOS)
+  community.general.homebrew_tap:
+    name: jetbrains/utils
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Install kotlin-lsp (macOS)
+  community.general.homebrew:
+    name: jetbrains/utils/kotlin-lsp
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Check kotlin-lsp installation (Ubuntu)
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.local/bin/kotlin-lsp"
+  register: kotlin_lsp_installed
+  when: ansible_facts.os_family == "Debian"
+
+- name: Create kotlin-lsp versioned install directory (Ubuntu)
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.local/share/kotlin-lsp-v{{ kotlin_lsp_version }}"
+    state: directory
+    mode: "0755"
+  when:
+    - ansible_facts.os_family == "Debian"
+    - not kotlin_lsp_installed.stat.exists
+
+- name: Download kotlin-lsp archive (Ubuntu)
+  ansible.builtin.get_url:
+    url: "https://download.jetbrains.com/language-server/kotlin-server/{{ kotlin_lsp_version }}/kotlin-server-{{ kotlin_lsp_version }}{{ '-aarch64' if ansible_facts.architecture == 'aarch64' else '' }}.tar.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/kotlin-lsp-v{{ kotlin_lsp_version }}/kotlin-server.tar.gz"
+    mode: "0644"
+  when:
+    - ansible_facts.os_family == "Debian"
+    - not kotlin_lsp_installed.stat.exists
+
+- name: Extract kotlin-lsp archive (Ubuntu)
+  ansible.builtin.unarchive:
+    src: "{{ ansible_env.HOME }}/.local/share/kotlin-lsp-v{{ kotlin_lsp_version }}/kotlin-server.tar.gz"
+    dest: "{{ ansible_env.HOME }}/.local/share/kotlin-lsp-v{{ kotlin_lsp_version }}"
+    remote_src: true
+  when:
+    - ansible_facts.os_family == "Debian"
+    - not kotlin_lsp_installed.stat.exists
+
+- name: Symlink kotlin-lsp into PATH (Ubuntu)
+  ansible.builtin.file:
+    src: "{{ ansible_env.HOME }}/.local/share/kotlin-lsp-v{{ kotlin_lsp_version }}/kotlin-server-{{ kotlin_lsp_version }}/bin/intellij-server"
+    dest: "{{ ansible_env.HOME }}/.local/bin/kotlin-lsp"
+    state: link
+  when:
+    - ansible_facts.os_family == "Debian"
+    - not kotlin_lsp_installed.stat.exists
+
+- name: Verify kotlin-lsp installation
+  ansible.builtin.command: kotlin-lsp --version
+  register: kotlin_lsp_version_output
+  changed_when: false
+
+- name: Show kotlin-lsp version
+  ansible.builtin.debug:
+    msg: "{{ kotlin_lsp_version_output.stdout }}"

@@ -604,6 +604,15 @@ require("lazy").setup({
         end
       end
 
+      -- kotlin-lsp. nvim-lspconfig's shipped kotlin_lsp.lua hardcodes
+      -- cmd = {"intellij-server", "--stdio"}, but the JetBrains Homebrew formula
+      -- and the Linux tarball only expose the "kotlin-lsp" name on PATH, not
+      -- "intellij-server" directly.
+      vim.lsp.config("kotlin_lsp", {
+        capabilities = capabilities,
+        cmd = { "kotlin-lsp", "--stdio" },
+      })
+
       vim.lsp.config("roslyn_ls", {
         capabilities = capabilities,
         handlers = {
@@ -706,6 +715,7 @@ require("lazy").setup({
         "gopls",
         "ruby_lsp",
         "intelephense",
+        "kotlin_lsp",
         "clangd",
         "zls",
         "angularls",
@@ -1698,6 +1708,7 @@ require("lazy").setup({
         "jsdoc",
         "json",
         "jsonc",
+        "kotlin",
         "lua",
         "markdown",
         "markdown_inline",
