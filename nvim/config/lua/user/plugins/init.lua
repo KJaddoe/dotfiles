@@ -1684,7 +1684,9 @@ require("lazy").setup({
       ensure_installed = {
         "angular",
         "bash",
+        "c",
         "c_sharp",
+        "cpp",
         "css",
         "dockerfile",
         "go",
