@@ -40,6 +40,9 @@
     ~/.claude/skills:
       path: claude/skills
       create: true
+    ~/.claude/commands:
+      path: claude/commands
+      create: true
     ~/.claude/templates:
       path: claude/templates
       create: true
