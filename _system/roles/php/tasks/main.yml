@@ -1,0 +1,100 @@
+---
+- name: Install PHP build dependencies (Ubuntu)
+  ansible.builtin.apt:
+    name:
+      - build-essential
+      - autoconf
+      - bison
+      - re2c
+      - pkg-config
+      - libxml2-dev
+      - libssl-dev
+      - libonig-dev
+      - libcurl4-openssl-dev
+      - libsqlite3-dev
+      - libreadline-dev
+      - libzip-dev
+      - libgd-dev
+      - gettext
+      - libgmp-dev
+      - libsodium-dev
+    state: present
+    update_cache: yes
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install PHP build dependencies (macOS)
+  community.general.homebrew:
+    name:
+      - autoconf
+      - bison
+      - re2c
+      - pkg-config
+      - libxml2
+      - openssl@3
+      - oniguruma
+      - curl
+      - sqlite
+      - readline
+      - libzip
+      - gd
+      - libiconv
+      - gettext
+      - gmp
+      - libsodium
+    state: present
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Get current global PHP from mise
+  ansible.builtin.command: mise current php
+  register: mise_php_current
+  changed_when: false
+  failed_when: false
+
+- name: Get the Homebrew prefix (macOS)
+  ansible.builtin.command: brew --prefix
+  register: homebrew_prefix
+  changed_when: false
+  when: ansible_facts.os_family == "Darwin"
+
+# asdf-php's macOS auto-detection (~/.local/share/mise/plugins/php/bin/install,
+# os_based_configure_options) looks up openssl via the "openssl@1.1" Homebrew formula
+# specifically, which Homebrew has since removed - it silently builds PHP with no
+# OpenSSL/mbstring-adjacent support instead of failing loudly. Overriding
+# PHP_CONFIGURE_OPTIONS replaces that whole auto-detect step, so every other
+# --with-X=path flag it would have supplied has to be repeated here too, pointed at
+# this machine's real Homebrew formulas, or those features silently drop out instead.
+- name: Install and pin PHP {{ php_version }} via mise (macOS)
+  ansible.builtin.shell: |
+    set -e
+    opt="{{ homebrew_prefix.stdout }}/opt"
+    export PKG_CONFIG_PATH="$opt/openssl@3/lib/pkgconfig"
+    export PHP_CONFIGURE_OPTIONS="--with-openssl=$opt/openssl@3 --with-libxml-dir=$opt/libxml2 --with-libzip=$opt/libzip --with-readline=$opt/readline --with-iconv=$opt/libiconv --with-gettext=$opt/gettext --with-gmp=$opt/gmp --with-sodium=$opt/libsodium"
+    mise use -g php@{{ php_version }}
+  when: ansible_facts.os_family == "Darwin" and mise_php_current.stdout | trim != php_version
+
+- name: Install and pin PHP {{ php_version }} via mise (Ubuntu)
+  ansible.builtin.command: mise use -g php@{{ php_version }}
+  when: ansible_facts.os_family == "Debian" and mise_php_current.stdout | trim != php_version
+
+- name: Verify PHP installation
+  ansible.builtin.command: mise exec -- php --version
+  register: php_version_output
+  changed_when: false
+
+- name: Show PHP version
+  ansible.builtin.debug:
+    msg: "{{ php_version_output.stdout }}"
+
+# asdf-php bundles Composer's own installer and runs it against the pinned PHP build
+# (~/.local/share/mise/plugins/php/bin/install, install_composer) - it lands at
+# $(mise where php)/bin/composer, already resolvable via `mise exec -- composer`, so
+# no separate Homebrew/apt Composer package is needed.
+- name: Verify Composer installation
+  ansible.builtin.command: mise exec -- composer --version
+  register: composer_version_output
+  changed_when: false
+
+- name: Show Composer version
+  ansible.builtin.debug:
+    msg: "{{ composer_version_output.stdout }}"

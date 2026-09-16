@@ -20,3 +20,4 @@ npm_global_packages:
   - vim-language-server
   - sql-formatter
   - "@ansible/ansible-language-server"
+  - intelephense
