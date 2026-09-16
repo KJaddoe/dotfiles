@@ -1,0 +1,43 @@
+---
+- name: Verify Swift toolchain (macOS)
+  ansible.builtin.command: swift --version
+  register: swift_version_macos
+  changed_when: false
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Show Swift version (macOS)
+  ansible.builtin.debug:
+    msg: "{{ swift_version_macos.stdout_lines[0] }}"
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Check swiftly installation (Ubuntu)
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.local/share/swiftly/env.sh"
+  register: swiftly_installed
+  when: ansible_facts.os_family == "Debian"
+
+- name: Download and run the swiftly installer (Ubuntu)
+  ansible.builtin.shell: |
+    set -e
+    curl -O https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz
+    tar zxf swiftly-$(uname -m).tar.gz
+    ./swiftly init --quiet-shell-followup
+  args:
+    chdir: "{{ ansible_env.HOME }}"
+  when:
+    - ansible_facts.os_family == "Debian"
+    - not swiftly_installed.stat.exists
+
+- name: Verify Swift toolchain (Ubuntu)
+  ansible.builtin.shell: |
+    set -e
+    . "{{ ansible_env.HOME }}/.local/share/swiftly/env.sh"
+    swift --version
+  register: swift_version_ubuntu
+  changed_when: false
+  when: ansible_facts.os_family == "Debian"
+
+- name: Show Swift version (Ubuntu)
+  ansible.builtin.debug:
+    msg: "{{ swift_version_ubuntu.stdout_lines[0] }}"
+  when: ansible_facts.os_family == "Debian"

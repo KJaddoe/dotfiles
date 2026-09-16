@@ -20,6 +20,7 @@
     - { role: ruby, tags: ruby }
     - { role: php, tags: php }
     - { role: kotlin, tags: kotlin }
+    - { role: swift, tags: swift }
     - { role: dotnet, tags: dotnet }
 
     # tools
