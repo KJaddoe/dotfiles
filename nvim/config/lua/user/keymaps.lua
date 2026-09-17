@@ -88,6 +88,11 @@ nmap("<C-d>", "<C-d>zz", "Half page down (centred)")
 nmap("<C-o>", "<C-o>zz", "Jump back (centred)")
 nmap("<C-i>", "<C-i>zz", "Jump forward (centred)")
 
+-- bigger j/k steps for scanning a document, free in normal mode (J joins
+-- lines, K is LSP hover; neither uses Alt)
+nmap("<A-j>", "10jzz", "Scroll down fast")
+nmap("<A-k>", "10kzz", "Scroll up fast")
+
 -- move record macro to Q instead of q, which also keeps Ex mode out of reach
 nmap("Q", "q", "Record macro")
 nmap("q", "<Nop>", "Disabled (macros are on Q)")
