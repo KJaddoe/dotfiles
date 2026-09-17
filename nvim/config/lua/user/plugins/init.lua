@@ -1857,6 +1857,13 @@ require("lazy").setup({
       keymaps = {
         ["<C-c>"] = false,
         ["q"] = "actions.close",
+        -- Align split/vsplit with the Telescope pickers' <C-x>/<C-v>, and free
+        -- <C-h> from oil's default horizontal-split binding since it's
+        -- reserved globally for tmux/window navigation.
+        ["<C-h>"] = false,
+        ["<C-s>"] = false,
+        ["<C-x>"] = { "actions.select", opts = { horizontal = true } },
+        ["<C-v>"] = { "actions.select", opts = { vertical = true } },
       },
     },
   },
