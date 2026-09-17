@@ -8,7 +8,7 @@ npm_global_packages:
   - markdownlint-cli2
   - "@angular/cli"
   - "@nestjs/cli"
-  - tree-sitter-cli
+  - tree-sitter-cli@0.25.10
   - typescript-language-server
   - vscode-langservers-extracted
   - dockerfile-language-server-nodejs
