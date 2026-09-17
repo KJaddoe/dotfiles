@@ -23,7 +23,10 @@ for these rules as FYI reference only; the binding text is HERE.
   `claude/hooks/require-destructive-approval.py` enforces this; it is a denylist, so a destructive command
   it does not recognise still needs the same confirmation from you.
 - When executing an implementation plan, DEFAULT to inline execution (executing-plans skill) over
-  subagent-driven; only go subagent-driven if the user asks for it.
+  subagent-driven; only go subagent-driven if the user asks for it. This default applies to ALL work,
+  not just formal plan execution: checks, research, fixes, one-off asks stay inline. Reach for Agent
+  only once a full plan exists and you're in the executing-plans / subagent-driven-development flow,
+  or when asked for it that turn.
 - Terminal tooling: the shell stays command-driven with plain `git`/`gh`/`kubectl` etc. Don't propose or
   install standalone TUIs (lazygit, k9s, gh-dash, …); interactive/visual tooling belongs in nvim.
 - A new rule for this file may ONLY originate from: (a) you explicitly asking for one, or (b) a
