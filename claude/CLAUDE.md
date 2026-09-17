@@ -27,6 +27,12 @@ for these rules as FYI reference only; the binding text is HERE.
   not just formal plan execution: checks, research, fixes, one-off asks stay inline. Reach for Agent
   only once a full plan exists and you're in the executing-plans / subagent-driven-development flow,
   or when asked for it that turn.
+- Scope superpowers' process skills to the size of the ask, the same way the default above scopes
+  plan execution: for a small, clearly-bounded change in this repo (a hook, a skill, a config tweak,
+  a doc fix) skip `superpowers:brainstorming`'s and `superpowers:test-driven-development`'s full
+  process and make the change directly. Reserve them for genuinely open-ended or multi-step feature
+  work where the solution's shape isn't already decided. The skill still names its own default; this
+  file says when that default fires here.
 - Terminal tooling: the shell stays command-driven with plain `git`/`gh`/`kubectl` etc. Don't propose or
   install standalone TUIs (lazygit, k9s, gh-dash, …); interactive/visual tooling belongs in nvim.
 - A new rule for this file may ONLY originate from: (a) you explicitly asking for one, or (b) a
@@ -347,6 +353,17 @@ Read ~/.claude/CLAUDE.md for memory rules and topic files.
 
 (Populated as you work in this project)
 ```
+
+## Auto-Memory Staging
+
+The harness's built-in per-project memory (`~/.claude/projects/{mapped-path}/memory/`, the "Repo
+Memory Auto-Init" location above) is a staging tier, not a second canonical store: it is untracked
+by dotfiles, machine-local, and gone on a fresh install. Route what lands there the same way as any
+new memory (Rules, item 7 above): a fact specific to this one project stays put; a fact that recurs
+across 3+ projects, or duplicates ground a `~/.claude/memory/` file already owns, gets merged into
+that file (or a new one) there, and the auto-memory entry shrinks to a pointer or is removed. Do this
+promotion pass when reorganizing memory, or the moment you notice a new auto-memory entry already
+covers what `~/.claude/memory/` does.
 
 ## Domain Knowledge Lifecycle
 
