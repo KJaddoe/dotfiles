@@ -33,6 +33,14 @@ not staging toward a plugin.)
 - `otool -L` is ground truth for native link deps, not `brew deps`: brew `vim`'s formula under-reported
   that the binary hard-links `libruby` via `+ruby`. Removing classic vim was what finally freed brew
   `ruby` (now 100% on mise). neovim links luajit + vendored LuaJIT, never brew ruby/lua, so unaffected.
+- nvim-lspconfig's `angularls` builds ngserver's `--tsProbeLocations`/`--ngProbeLocations` from the
+  project's own `node_modules` first, falling back to mise's global npm root when the project has no
+  local `@angular/language-server`. That global copy tracks whatever's newest, so it can be a major
+  version ahead of an older project's Angular/TypeScript - symptom was ngserver throwing persistent
+  "Program does not contain X.ngtypecheck.ts" errors that `:LspRestart` couldn't clear (only a full
+  nvim restart did, by killing the corrupted incremental program, not the version skew). Fix: add a
+  devDependency on `@angular/language-server` matching the project's own `@angular/core` version, so
+  the local probe location wins.
 
 ## Android SDK / RN gotchas
 
