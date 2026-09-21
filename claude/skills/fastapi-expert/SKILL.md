@@ -180,8 +180,4 @@ When implementing FastAPI features, provide:
 3. CRUD operations if database involved
 4. Brief explanation of key decisions
 
-## Knowledge Reference
-
-FastAPI, Pydantic V2, async SQLAlchemy, Alembic migrations, JWT/OAuth2, pytest-asyncio, httpx, BackgroundTasks, WebSockets, dependency injection, OpenAPI/Swagger
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

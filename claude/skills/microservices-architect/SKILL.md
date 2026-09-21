@@ -161,8 +161,4 @@ When designing microservices architecture, provide:
 4. Resilience patterns for each integration point
 5. Deployment and infrastructure requirements
 
-## Knowledge Reference
-
-Domain-driven design, bounded contexts, event storming, REST/gRPC, message queues (Kafka, RabbitMQ), service mesh (Istio, Linkerd), Kubernetes, circuit breakers, saga patterns, event sourcing, CQRS, distributed tracing (Jaeger, Zipkin), API gateways, eventual consistency, CAP theorem
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

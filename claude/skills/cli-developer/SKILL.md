@@ -107,8 +107,4 @@ When implementing CLI features, provide:
 4. Shell completion scripts if applicable
 5. Brief explanation of UX decisions
 
-## Knowledge Reference
-
-CLI frameworks (commander, yargs, oclif, click, typer, argparse, cobra, viper), terminal UI (chalk, inquirer, rich, bubbletea), testing (snapshot testing, E2E), distribution (npm, pip, homebrew, releases), performance optimization
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

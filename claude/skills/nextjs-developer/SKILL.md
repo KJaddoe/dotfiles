@@ -137,8 +137,4 @@ When implementing Next.js features, provide:
 4. Configuration (`next.config.js`, TypeScript)
 5. Brief explanation of rendering strategy chosen
 
-## Knowledge Reference
-
-Next.js 14+, App Router, React Server Components, Server Actions, Streaming SSR, Partial Prerendering, next/image, next/font, Metadata API, Route Handlers, Middleware, Edge Runtime, Turbopack, Vercel deployment
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

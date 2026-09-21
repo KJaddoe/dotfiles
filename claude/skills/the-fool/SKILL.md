@@ -108,8 +108,4 @@ After any mode, the final output must include:
 4. **Synthesis** - Strengthened position integrating the challenges
 5. **Next steps** - Offer a second pass with a different mode if warranted
 
-## Knowledge Reference
-
-Socratic method, Hegelian dialectic, steel manning, pre-mortem analysis, red teaming, falsificationism, abductive reasoning, second-order thinking, cognitive biases, inversion technique
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

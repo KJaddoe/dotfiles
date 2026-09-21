@@ -197,8 +197,4 @@ When implementing a feature, deliver in this order:
 4. Test files (PHPUnit/Pest)
 5. Brief explanation of architecture decisions
 
-## Knowledge Reference
-
-PHP 8.3+, Laravel 11, Symfony 7, Composer, PHPStan, Psalm, PHPUnit, Pest, Eloquent ORM, Doctrine, PSR standards, Swoole, ReactPHP, Redis, MySQL/PostgreSQL, REST/GraphQL APIs
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

@@ -252,8 +252,4 @@ Run these at each workflow stage to confirm correctness before proceeding:
 | After implementation  | `php artisan test --coverage`        | >85% coverage, 0 failures            |
 | Before PR             | `./vendor/bin/pint --test`           | PSR-12 linting passes                |
 
-## Knowledge Reference
-
-Laravel 10+, Eloquent ORM, PHP 8.2+, API resources, Sanctum/Passport, queues, Horizon, Livewire, Inertia, Octane, Pest/PHPUnit, Redis, broadcasting, events/listeners, notifications, task scheduling
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

@@ -117,10 +117,6 @@ checklist - each item is a constraint below rephrased as "find X, confirm Y":
 - Grant the IAM user broader than `Get/Put/Delete/ListBucket` on the bucket ARN
 - Rely on per-object ACLs on buckets created after April 2023 (ACLs disabled by default)
 
-## Knowledge Reference
-
-django-storages, S3Boto3Storage, S3StaticStorage, boto3, STORAGES dict, presigned URLs, generate_presigned_post, CloudFront, IAM policy, InMemoryStorage, moto
-
 ## Related Skills
 
 - `django-expert` - core Django models, DRF, and ORM that produce the files this skill persists to S3

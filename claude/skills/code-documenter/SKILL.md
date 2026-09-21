@@ -146,8 +146,4 @@ Depending on the task, provide:
 3. **Doc Sites:** Site configuration + content structure + build instructions
 4. **Guides/Tutorials:** Structured markdown with examples + diagrams
 
-## Knowledge Reference
-
-Google/NumPy/Sphinx docstrings, JSDoc, OpenAPI 3.0/3.1, AsyncAPI, gRPC/protobuf, FastAPI, Django, NestJS, Express, GraphQL, Docusaurus, MkDocs, VitePress, Swagger UI, Redoc, Stoplight
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

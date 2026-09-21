@@ -158,8 +158,4 @@ When implementing Vue features in JavaScript:
 3. Composable with `@param` and `@returns` annotations
 4. Brief note on type coverage
 
-## Knowledge Reference
-
-Vue 3 Composition API, JSDoc, ESM modules, Pinia, Vue Router 4, Vite, VueUse, Vitest, Vue Test Utils, JavaScript ES2022+
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

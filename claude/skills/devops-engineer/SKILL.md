@@ -137,8 +137,4 @@ curl -f https://myapp.example.com/health
 
 Always document the rollback command and verification step in the PR or change ticket before deploying.
 
-## Knowledge Reference
-
-GitHub Actions, GitLab CI, Jenkins, CircleCI, Docker, Kubernetes, Helm, ArgoCD, Flux, Terraform, Pulumi, Crossplane, AWS/GCP/Azure, Prometheus, Grafana, PagerDuty, Backstage, LaunchDarkly, Flagger
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

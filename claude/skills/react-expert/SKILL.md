@@ -143,8 +143,4 @@ When implementing React features, provide:
 2. Test file if non-trivial logic
 3. Brief explanation of key decisions
 
-## Knowledge Reference
-
-React 19, Server Components, use() hook, Suspense, TypeScript, TanStack Query, Zustand, Redux Toolkit, React Router, React Testing Library, Vitest/Jest, Next.js App Router, accessibility (WCAG)
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

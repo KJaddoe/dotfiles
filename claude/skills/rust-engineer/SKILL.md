@@ -158,8 +158,4 @@ When implementing Rust features, provide:
 4. Tests (unit, integration, doctests)
 5. Brief explanation of design decisions
 
-## Knowledge Reference
-
-Rust 2021, Cargo, ownership/borrowing, lifetimes, traits, generics, async/await, tokio, Result/Option, thiserror/anyhow, serde, clippy, rustfmt, cargo-test, criterion benchmarks, MIRI, unsafe Rust
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.
