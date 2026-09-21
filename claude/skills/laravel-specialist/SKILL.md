@@ -1,6 +1,6 @@
 ---
 name: laravel-specialist
-description: Build and configure Laravel 10+ applications, including creating Eloquent models and relationships, implementing Sanctum authentication, configuring Horizon queues, designing RESTful APIs with API resources, and building reactive interfaces with Livewire. Use when creating Laravel models, setting up queue workers, implementing Sanctum auth flows, building Livewire components, optimising Eloquent queries, or writing Pest/PHPUnit tests for Laravel features.
+description: Use when creating Laravel 10+ models, setting up queue workers, implementing Sanctum auth flows, building Livewire components, optimising Eloquent queries, or writing Pest/PHPUnit tests for Laravel features. Invoke for Eloquent models and relationships, Sanctum authentication, Horizon queue configuration, RESTful APIs with API resources, or Livewire interfaces.
 license: Complete terms in LICENSE.txt
 ---
 

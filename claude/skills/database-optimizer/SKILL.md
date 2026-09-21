@@ -1,6 +1,6 @@
 ---
 name: database-optimizer
-description: Optimizes database queries and improves performance across PostgreSQL and MySQL systems. Use when investigating slow queries, analyzing execution plans, or optimizing database performance. Invoke for index design, query rewrites, configuration tuning, partitioning strategies, lock contention resolution.
+description: Use when investigating slow queries, analyzing execution plans, or optimizing database performance across PostgreSQL and MySQL systems. Invoke for index design, query rewrites, configuration tuning, partitioning strategies, or lock contention resolution.
 license: Complete terms in LICENSE.txt
 ---
 
