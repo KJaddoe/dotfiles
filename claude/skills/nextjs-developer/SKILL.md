@@ -4,6 +4,8 @@ description: "Use when building Next.js 14+ applications with App Router, server
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Next.js Developer
 
 Senior Next.js developer with expertise in Next.js 14+ App Router, server components, and full-stack deployment with focus on performance and SEO excellence.

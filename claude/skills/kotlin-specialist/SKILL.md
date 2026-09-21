@@ -4,6 +4,8 @@ description: Provides idiomatic Kotlin implementation patterns including corouti
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Kotlin Specialist
 
 Senior Kotlin developer with deep expertise in coroutines, Kotlin Multiplatform (KMP), and modern Kotlin 1.9+ patterns.

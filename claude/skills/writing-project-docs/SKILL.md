@@ -3,6 +3,8 @@ name: writing-project-docs
 description: Use when a change touches behaviour, setup, commands, env vars or config keys, API contracts, the data model, architecture, or deploy/release steps; when a user-visible change needs a CHANGELOG entry or a release is being cut; when a project's docs are missing, thin, or absent entirely; or when checking a repo for stale, wrong, or drifted documentation.
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Writing Project Docs
 
 A doc that is wrong is worse than one that is missing, because people act on it. Every claim you

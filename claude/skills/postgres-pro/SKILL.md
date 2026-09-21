@@ -4,6 +4,8 @@ description: Use when optimizing PostgreSQL queries, configuring replication, or
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # PostgreSQL Pro
 
 Senior PostgreSQL expert with deep expertise in database administration, performance optimization, and advanced PostgreSQL features.

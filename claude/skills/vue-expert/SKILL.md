@@ -4,6 +4,8 @@ description: Builds Vue 3 components with Composition API patterns, configures N
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Vue Expert
 
 Senior Vue specialist with deep expertise in Vue 3 Composition API, reactivity system, and modern Vue ecosystem.

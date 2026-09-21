@@ -10,6 +10,8 @@ allowed-tools:
   - Glob
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Pending PR Review
 
 Walk through PR findings one at a time, attaching each as an inline comment to a single *pending* review, then submit once the user approves. The naive REST path doesn't work, and this skill records the gh + GraphQL workflow that does.

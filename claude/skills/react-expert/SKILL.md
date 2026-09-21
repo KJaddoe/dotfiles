@@ -4,6 +4,8 @@ description: Use when building React 18+ applications in .jsx or .tsx files, Nex
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # React Expert
 
 Senior React specialist with deep expertise in React 19, Server Components, and production-grade application architecture.

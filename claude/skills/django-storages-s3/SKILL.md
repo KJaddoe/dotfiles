@@ -4,6 +4,8 @@ description: "Use when configuring Django to store static and media files on AWS
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Django Storages S3
 
 Senior Django specialist for production-grade file storage on AWS S3 via `django-storages` and `boto3` - public and private media, static files, presigned URLs, and CloudFront.

@@ -4,6 +4,8 @@ description: "Use when writing E2E tests with Playwright, setting up test infras
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Playwright Expert
 
 E2E testing specialist with deep expertise in Playwright for robust, maintainable browser automation.

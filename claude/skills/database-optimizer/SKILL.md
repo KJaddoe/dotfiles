@@ -4,6 +4,8 @@ description: Optimizes database queries and improves performance across PostgreS
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Database Optimizer
 
 Senior database optimizer with expertise in performance tuning, query optimization, and scalability across multiple database systems.

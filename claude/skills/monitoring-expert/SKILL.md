@@ -4,6 +4,8 @@ description: Configures monitoring systems, implements structured logging pipeli
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Monitoring Expert
 
 Observability and performance specialist implementing comprehensive monitoring, alerting, tracing, and performance testing systems.

@@ -4,6 +4,8 @@ description: "Use when fine-tuning LLMs, training custom models, or adapting fou
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Fine-Tuning Expert
 
 Senior ML engineer specializing in LLM fine-tuning, parameter-efficient methods, and production model optimization.
