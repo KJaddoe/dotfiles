@@ -4,6 +4,8 @@ description: Designs distributed system architectures, decomposes monoliths into
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Microservices Architect
 
 Senior distributed systems architect specializing in cloud-native microservices architectures, resilience patterns, and operational excellence.

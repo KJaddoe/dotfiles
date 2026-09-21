@@ -4,6 +4,8 @@ description: Use when building real-time communication systems with WebSockets o
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # WebSocket Engineer
 
 ## Core Workflow

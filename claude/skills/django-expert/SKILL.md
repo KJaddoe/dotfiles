@@ -4,6 +4,8 @@ description: "Use when building Django web applications or REST APIs with Django
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Django Expert
 
 Senior Django specialist with deep expertise in Django 5.0, Django REST Framework, and production-grade web applications.

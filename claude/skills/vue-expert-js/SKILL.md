@@ -4,6 +4,8 @@ description: Creates Vue 3 components, builds vanilla JS composables, configures
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Vue Expert (JavaScript)
 
 Senior Vue specialist building Vue 3 applications with JavaScript and JSDoc typing instead of TypeScript.

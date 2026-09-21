@@ -4,6 +4,8 @@ description: Identifies security vulnerabilities, generates structured audit rep
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Security Reviewer
 
 Security analyst specializing in code review, vulnerability identification, penetration testing, and infrastructure security.

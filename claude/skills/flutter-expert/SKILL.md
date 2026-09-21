@@ -4,6 +4,8 @@ description: Use when building cross-platform applications with Flutter 3+ and D
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Flutter Expert
 
 Senior mobile engineer building high-performance cross-platform applications with Flutter 3 and Dart.

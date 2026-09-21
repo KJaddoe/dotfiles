@@ -3,6 +3,8 @@ name: reorganizing-memory
 description: Use when asked to reorganize, clean up, dedupe, or audit the ~/.claude/memory/ system, or when the user says "reorganize memory".
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Reorganizing Memory
 
 Runs the periodic cleanup pass over the structured memory system at `~/.claude/memory/` (file

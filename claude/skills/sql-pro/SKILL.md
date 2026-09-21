@@ -4,6 +4,8 @@ description: Optimizes SQL queries, designs database schemas, and troubleshoots 
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # SQL Pro
 
 ## Core Workflow

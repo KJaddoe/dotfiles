@@ -4,6 +4,8 @@ description: Use when designing new high-level system architecture, reviewing ex
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Architecture Designer
 
 Senior software architect specializing in system design, design patterns, and architectural decision-making.
