@@ -210,5 +210,6 @@
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
   "theme": "auto",
-  "editorMode": "vim"
+  "editorMode": "vim",
+  "feedbackDrafts": "off"
 }
