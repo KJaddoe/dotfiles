@@ -1,5 +1,8 @@
 # RxJS Patterns
 
+Class names below drop the `Component`/`Service` suffix, matching the current Angular CLI
+schematic (v20+) - see `references/components.md` for why.
+
 ## Essential Operators
 
 ```typescript
@@ -13,9 +16,8 @@ import { Subject, of, EMPTY } from 'rxjs';
 
 @Component({
   selector: 'app-search',
-  standalone: true
 })
-export class SearchComponent {
+export class Search {
   private searchService = inject(SearchService);
   private destroy$ = new Subject<void>();
 
@@ -172,9 +174,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-auto-cleanup',
-  standalone: true
 })
-export class AutoCleanupComponent {
+export class AutoCleanup {
   private dataService = inject(DataService);
   private destroyRef = inject(DestroyRef);
 
@@ -195,9 +196,8 @@ export class AutoCleanupComponent {
 // Legacy approach (still valid)
 @Component({
   selector: 'app-manual-cleanup',
-  standalone: true
 })
-export class ManualCleanupComponent implements OnDestroy {
+export class ManualCleanup implements OnDestroy {
   private destroy$ = new Subject<void>();
 
   ngOnInit() {

@@ -1,27 +1,26 @@
-# Standalone Components & Signals
+# Components & Signals
 
-## Standalone Component Pattern
+File and class names below follow the current Angular CLI schematic (since Angular 20): no
+`.component` file suffix, no `Component` class suffix, `standalone: true` omitted (it's the only
+option). An older project may still use the `.component.ts`/`XxxComponent` convention throughout,
+in which case match that project's existing files over what's shown here.
+
+## Component Pattern
 
 ```typescript
-import { Component, signal, computed, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, signal, computed, effect } from '@angular/core';
 
 @Component({
   selector: 'app-user-profile',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './user-profile.component.html',
-  styleUrl: './user-profile.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  templateUrl: './user-profile.html',
+  styleUrl: './user-profile.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UserProfileComponent {
-  // Signal-based state
+export class UserProfile {
   count = signal(0);
   doubleCount = computed(() => this.count() * 2);
 
   constructor() {
-    // Side effects
     effect(() => {
       console.log(`Count is: ${this.count()}`);
     });
@@ -40,7 +39,6 @@ import { Component, input, output, model } from '@angular/core';
 
 @Component({
   selector: 'app-search-box',
-  standalone: true,
   template: `
     <input
       [value]="query()"
@@ -48,12 +46,11 @@ import { Component, input, output, model } from '@angular/core';
       [placeholder]="placeholder()" />
   `
 })
-export class SearchBoxComponent {
+export class SearchBox {
   // Signal inputs (Angular 17.1+)
   placeholder = input<string>('Search...');
   initialQuery = input<string>('');
 
-  // Signal outputs
   queryChange = output<string>();
 
   // Two-way binding with model signal
@@ -68,6 +65,7 @@ export class SearchBoxComponent {
 
 // Parent usage
 @Component({
+  imports: [SearchBox],
   template: `
     <app-search-box
       [(query)]="searchQuery"
@@ -75,7 +73,7 @@ export class SearchBoxComponent {
       (queryChange)="onSearch($event)" />
   `
 })
-export class ParentComponent {
+export class SearchBoxHost {
   searchQuery = signal('');
 
   onSearch(query: string) {
@@ -93,8 +91,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 // constructor/effect(): no unsubscribe to manage, and .value()/.isLoading()/.error() are signals
 @Component({
   selector: 'app-users-container',
-  standalone: true,
-  imports: [UserListComponent],
+  imports: [UserList],
   template: `
     <app-user-list
       [users]="usersResource.value() ?? []"
@@ -102,7 +99,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
       (userSelected)="onUserSelected($event)" />
   `
 })
-export class UsersContainerComponent {
+export class UsersContainer {
   private usersService = inject(UsersService);
 
   usersResource = rxResource({
@@ -117,8 +114,6 @@ export class UsersContainerComponent {
 // Dumb Component (Presentational)
 @Component({
   selector: 'app-user-list',
-  standalone: true,
-  imports: [CommonModule],
   template: `
     @if (loading()) {
       <div>Loading...</div>
@@ -132,7 +127,7 @@ export class UsersContainerComponent {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserListComponent {
+export class UserList {
   users = input.required<User[]>();
   loading = input<boolean>(false);
   userSelected = output<User>();
@@ -146,7 +141,6 @@ export class UserListComponent {
 // class needed; header/footer use semantic elements, styled under :host in the SCSS
 @Component({
   selector: 'app-card',
-  standalone: true,
   template: `
     <header>
       <ng-content select="[header]"></ng-content>
@@ -157,10 +151,11 @@ export class UserListComponent {
     </footer>
   `
 })
-export class CardComponent {}
+export class Card {}
 
 // Usage
 @Component({
+  imports: [Card],
   template: `
     <app-card>
       <h2 header>Card Title</h2>
@@ -169,7 +164,7 @@ export class CardComponent {}
     </app-card>
   `
 })
-export class ParentComponent {}
+export class CardHost {}
 ```
 
 ## Dependency Injection
@@ -180,9 +175,8 @@ import { UserService } from './user.service';
 
 @Component({
   selector: 'app-user-dashboard',
-  standalone: true
 })
-export class UserDashboardComponent {
+export class UserDashboard {
   // Modern inject() API
   private userService = inject(UserService);
   private router = inject(Router);
@@ -240,7 +234,7 @@ export class UserDashboardComponent {
     }
   `
 })
-export class ModernControlFlowComponent {
+export class ModernControlFlow {
   user = signal<User | null>(null);
   loading = signal(false);
   items = signal<Item[]>([]);
@@ -253,8 +247,6 @@ export class ModernControlFlowComponent {
 ```typescript
 @Component({
   selector: 'app-product-list',
-  standalone: true,
-  imports: [CommonModule],
   template: `
     @for (product of products(); track trackByProductId($index, product)) {
       <app-product-card [product]="product" />
@@ -262,7 +254,7 @@ export class ModernControlFlowComponent {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductListComponent {
+export class ProductList {
   products = input.required<Product[]>();
 
   // TrackBy for optimal rendering
@@ -274,13 +266,14 @@ export class ProductListComponent {
 
 ## Quick Reference
 
-| Pattern           | Modern Angular Approach             |
-|-------------------|-------------------------------------|
-| Component         | Standalone by default               |
-| State             | Signals (`signal()`, `computed()`)  |
-| Input             | `input()`, `input.required()`       |
-| Output            | `output<T>()`                       |
-| Two-way           | `model<T>()`                        |
-| DI                | `inject()` function                 |
-| Control Flow      | `@if`, `@for`, `@switch`            |
-| Change Detection  | `ChangeDetectionStrategy.OnPush`    |
+| Pattern           | Modern Angular Approach                        |
+|-------------------|------------------------------------------------|
+| File/class naming | `foo.ts` / `Foo` - no suffix (v20+)            |
+| Component         | Standalone (only option, no flag)              |
+| State             | Signals (`signal()`, `computed()`)             |
+| Input             | `input()`, `input.required()`                  |
+| Output            | `output<T>()`                                  |
+| Two-way           | `model<T>()`                                   |
+| DI                | `inject()` function                            |
+| Control Flow      | `@if`, `@for`, `@switch`                       |
+| Change Detection  | `ChangeDetectionStrategy.OnPush` (add by hand) |

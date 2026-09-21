@@ -11,13 +11,13 @@ project uses Vitest, use `vi.fn()`/`vi.spyOn()` in place of the Jasmine equivale
 ```typescript
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { UserListComponent } from './user-list.component';
+import { UserList } from './user-list';
 import { UsersService } from './users.service';
 import { of } from 'rxjs';
 
-describe('UserListComponent', () => {
-  let component: UserListComponent;
-  let fixture: ComponentFixture<UserListComponent>;
+describe('UserList', () => {
+  let component: UserList;
+  let fixture: ComponentFixture<UserList>;
   let usersService: jasmine.SpyObj<UsersService>;
 
   const mockUsers = [
@@ -30,14 +30,14 @@ describe('UserListComponent', () => {
     const usersServiceSpy = jasmine.createSpyObj('UsersService', ['getAll', 'delete']);
 
     await TestBed.configureTestingModule({
-      imports: [UserListComponent],  // Standalone component
+      imports: [UserList],
       providers: [
         { provide: UsersService, useValue: usersServiceSpy }
       ]
     }).compileComponents();
 
     usersService = TestBed.inject(UsersService) as jasmine.SpyObj<UsersService>;
-    fixture = TestBed.createComponent(UserListComponent);
+    fixture = TestBed.createComponent(UserList);
     component = fixture.componentInstance;
   });
 
@@ -226,12 +226,12 @@ describe('Counter Component', () => {
 ```typescript
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { UsersComponent } from './users.component';
+import { Users } from './users';
 import { selectAllUsers, selectUsersLoading } from './store/users.selectors';
 
-describe('UsersComponent with NgRx', () => {
-  let component: UsersComponent;
-  let fixture: ComponentFixture<UsersComponent>;
+describe('Users with NgRx', () => {
+  let component: Users;
+  let fixture: ComponentFixture<Users>;
   let store: MockStore;
 
   const initialState = {
@@ -247,14 +247,14 @@ describe('UsersComponent with NgRx', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UsersComponent],
+      imports: [Users],
       providers: [
         provideMockStore({ initialState })
       ]
     }).compileComponents();
 
     store = TestBed.inject(MockStore);
-    fixture = TestBed.createComponent(UsersComponent);
+    fixture = TestBed.createComponent(Users);
     component = fixture.componentInstance;
   });
 
