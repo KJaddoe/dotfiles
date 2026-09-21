@@ -139,8 +139,4 @@ When implementing Spark solutions, provide:
 4. Performance analysis (expected shuffle size, memory usage)
 5. Monitoring recommendations (key Spark UI metrics to watch)
 
-## Knowledge Reference
-
-Spark DataFrame API, Spark SQL, RDD transformations/actions, catalyst optimizer, tungsten execution engine, partitioning strategies, broadcast variables, accumulators, structured streaming, watermarks, checkpointing, Spark UI analysis, memory management, shuffle optimization
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

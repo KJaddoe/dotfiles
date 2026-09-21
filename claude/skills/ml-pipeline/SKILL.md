@@ -149,8 +149,4 @@ When implementing a pipeline, provide:
 5. Deployment configuration and rollback strategy
 6. Brief explanation of architecture decisions and reproducibility measures
 
-## Knowledge Reference
-
-MLflow, Kubeflow Pipelines, Apache Airflow, Prefect, Feast, Weights & Biases, Neptune, DVC, Great Expectations, Ray, Horovod, Kubernetes, Docker, S3/GCS/Azure Blob, model registry patterns, feature store architecture, distributed training, hyperparameter optimization
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

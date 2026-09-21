@@ -115,8 +115,4 @@ Code review report must include:
 6. **Questions for author** - Clarifications needed
 7. **Recommended verdict** - Approve / Request Changes / Comment, for a human reviewer to act on; this skill never applies it
 
-## Knowledge Reference
-
-SOLID, DRY, KISS, YAGNI, design patterns, OWASP Top 10, language idioms, testing patterns
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

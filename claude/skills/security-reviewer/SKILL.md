@@ -90,8 +90,4 @@ Remediation: Use parameterized queries or an ORM. Replace `cursor.execute(f"SELE
 References: CWE-89, OWASP A03:2021
 ```
 
-## Knowledge Reference
-
-OWASP Top 10, CWE, Semgrep, Bandit, ESLint Security, gosec, npm audit, gitleaks, trufflehog, CVSS scoring, nmap, Burp Suite, sqlmap, Trivy, Checkov, HashiCorp Vault, AWS Security Hub, CIS benchmarks, SOC2, ISO27001
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

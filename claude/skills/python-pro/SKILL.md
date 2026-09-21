@@ -146,24 +146,7 @@ def test_app_config_port_validation(port: int, valid: bool) -> None:
             AppConfig(host="localhost", port=port)
 ```
 
-### mypy strict configuration (pyproject.toml)
-
-```toml
-[tool.mypy]
-python_version = "3.11"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-```
-
-Clean `mypy --strict` output looks like:
-
-```text
-Success: no issues found in 12 source files
-```
-
-Any reported error (e.g., `error: Function is missing a return type annotation`) must be resolved before the implementation is considered complete.
+Run `mypy --strict` before considering any implementation complete (see `references/type-system.md` for the strict config); resolve every reported error, e.g. `error: Function is missing a return type annotation`.
 
 ## Output Templates
 
@@ -173,9 +156,5 @@ When implementing Python features, provide:
 2. Test file with pytest fixtures
 3. Type checking confirmation (mypy --strict passes)
 4. Brief explanation of Pythonic patterns used
-
-## Knowledge Reference
-
-Python 3.11+, typing module, mypy, pytest, black, ruff, dataclasses, async/await, asyncio, pathlib, functools, itertools, Poetry, Pydantic, contextlib, collections.abc, Protocol
 
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

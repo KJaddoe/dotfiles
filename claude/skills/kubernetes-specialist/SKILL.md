@@ -71,67 +71,6 @@ Load detailed guidance based on context:
 
 ## Common YAML Patterns
 
-### Deployment with resource limits, probes, and security context
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: my-app
-  namespace: my-namespace
-  labels:
-    app: my-app
-    version: "1.2.3"
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-        version: "1.2.3"
-    spec:
-      serviceAccountName: my-app-sa   # never use default SA
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 2000
-      containers:
-        - name: my-app
-          image: my-registry/my-app:1.2.3   # never use latest
-          ports:
-            - containerPort: 8080
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8080
-            initialDelaySeconds: 15
-            periodSeconds: 20
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop: ["ALL"]
-          envFrom:
-            - secretRef:
-                name: my-app-secret   # pull credentials from Secret, not ConfigMap
-```
-
 ### Minimal RBAC (least privilege)
 
 ```yaml
@@ -164,40 +103,6 @@ roleRef:
   kind: Role
   name: my-app-role
   apiGroup: rbac.authorization.k8s.io
-```
-
-### NetworkPolicy (default-deny + explicit allow)
-
-```yaml
-# Deny all ingress and egress by default
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-all
-  namespace: my-namespace
-spec:
-  podSelector: {}
-  policyTypes: ["Ingress", "Egress"]
----
-# Allow only specific traffic
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-my-app
-  namespace: my-namespace
-spec:
-  podSelector:
-    matchLabels:
-      app: my-app
-  policyTypes: ["Ingress"]
-  ingress:
-    - from:
-        - podSelector:
-            matchLabels:
-              app: frontend
-      ports:
-        - protocol: TCP
-          port: 8080
 ```
 
 ## Validation Commands

@@ -89,8 +89,4 @@ When implementing Vue features, provide:
 3. Pinia store if global state needed
 4. Brief explanation of reactivity decisions
 
-## Knowledge Reference
-
-Vue 3 Composition API, Pinia, Nuxt 3, Vue Router 4, Vite, VueUse, TypeScript, Vitest, Vue Test Utils, SSR/SSG, reactive programming, performance optimization
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

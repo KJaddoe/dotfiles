@@ -159,8 +159,4 @@ When implementing WebSocket features, provide:
 3. Client library (connection, events, reconnection)
 4. Brief explanation of scaling strategy
 
-## Knowledge Reference
-
-Socket.IO, ws, uWebSockets.js, Redis adapter, sticky sessions, nginx WebSocket proxy, JWT over WebSocket, rooms/namespaces, acknowledgments, binary data, compression, heartbeat, backpressure, horizontal pod autoscaling
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

@@ -182,8 +182,4 @@ When implementing security features, provide:
 3. Configuration requirements (env vars, headers)
 4. Testing recommendations
 
-## Knowledge Reference
-
-OWASP Top 10, bcrypt/argon2, JWT, OAuth 2.0, OIDC, CSP, CORS, rate limiting, input validation, output encoding, encryption (AES, RSA), TLS, security headers
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

@@ -149,8 +149,4 @@ When implementing Rails features, provide:
 5. Spec files for models and requests
 6. Brief explanation of architectural decisions
 
-## Knowledge Reference
-
-Rails 7.1+, Hotwire (Turbo Drive/Frames/Streams), Stimulus, Action Cable, Active Record, Sidekiq, RSpec, FactoryBot, Capybara, RSwag, JWT, Rack::Attack, Rack::Cors
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

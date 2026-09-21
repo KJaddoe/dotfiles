@@ -141,8 +141,4 @@ When implementing PostgreSQL solutions, provide:
 4. Monitoring queries for ongoing health checks
 5. Brief explanation of performance impact
 
-## Knowledge Reference
-
-PostgreSQL 12-16, EXPLAIN ANALYZE, B-tree/GIN/GiST/BRIN indexes, JSONB operators, streaming replication, logical replication, VACUUM/ANALYZE, pg_stat views, PostGIS, pgvector, pg_trgm, WAL archiving, PITR
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

@@ -151,8 +151,4 @@ When implementing Django features, provide:
 3. ViewSet or views with permissions
 4. Brief note on query optimization
 
-## Knowledge Reference
-
-Django 5.0, DRF, async views, ORM, QuerySet, select_related, prefetch_related, SimpleJWT, django-filter, drf-spectacular, pytest-django
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

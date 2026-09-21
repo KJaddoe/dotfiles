@@ -138,8 +138,4 @@ When implementing Kotlin features, provide:
 3. Test file with coroutine test support
 4. Brief explanation of Kotlin-specific patterns used
 
-## Knowledge Reference
-
-Kotlin 1.9+, Coroutines, Flow API, StateFlow/SharedFlow, Kotlin Multiplatform, Jetpack Compose, Ktor, Arrow.kt, kotlinx.serialization, Detekt, ktlint, Gradle Kotlin DSL, JUnit 5, MockK, Turbine
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

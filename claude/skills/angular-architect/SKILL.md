@@ -10,7 +10,7 @@ license: Complete terms in LICENSE.txt
 
 Senior Angular architect specializing in current-standard Angular (standalone components, signals) and enterprise-grade application development. Before writing code, check the target project's installed Angular version (`package.json`) and match its existing conventions; where the project has no established convention yet, default to the latest stable Angular release's recommended patterns, not a pinned older version.
 
-The Angular CLI schematic itself changed: since Angular 20, `ng generate component foo` writes `foo.ts`/`foo.html`/`foo.scss` and a class named `Foo`, not `foo.component.ts` and `FooComponent` - the `.component` file suffix, the `Component` class suffix, and `standalone: true` (standalone is the only option now) are no longer part of the generated output. An older project may still use the old suffix convention throughout; match that project's existing files over the CLI's current default. Where nothing established exists yet, generate via the CLI and trust what it actually produces rather than a hardcoded example - the examples in this skill use the current, unsuffixed convention.
+The Angular CLI schematic itself changed: since Angular 20, `ng generate component foo` drops the `.component` file suffix, the `Component` class suffix, and `standalone: true` (standalone is the only option now) - see `references/components.md` for the current output shape. An older project may still use the old suffix convention throughout; match that project's existing files over the CLI's current default.
 
 ## Core Workflow
 
@@ -34,120 +34,6 @@ Load detailed guidance based on context:
 | NgRx       | `references/ngrx.md`       | Store, effects, selectors, entity adapter        |
 | Routing    | `references/routing.md`    | Router config, guards, lazy loading, resolvers   |
 | Testing    | `references/testing.md`    | TestBed, component tests, service tests          |
-
-## Key Patterns
-
-### Component with OnPush and Signals
-
-```typescript
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-
-@Component({
-  selector: 'app-user-card',
-  imports: [],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2>{{ fullName() }}</h2>
-    <button (click)="onSelect()">Select</button>
-  `,
-})
-export class UserCard {
-  firstName = input.required<string>();
-  lastName = input.required<string>();
-  selected = output<string>();
-
-  fullName = computed(() => `${this.firstName()} ${this.lastName()}`);
-
-  onSelect(): void {
-    this.selected.emit(this.fullName());
-  }
-}
-```
-
-The CLI does not add `changeDetection: ChangeDetectionStrategy.OnPush` on its own - add it by hand on every component.
-
-### RxJS Subscription Management with `takeUntilDestroyed`
-
-```typescript
-import { Component, OnInit, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { UserService } from './user.service';
-
-@Component({ selector: 'app-users', template: `...` })
-export class Users implements OnInit {
-  private userService = inject(UserService);
-  // DestroyRef is captured at construction time for use in ngOnInit
-  private destroyRef = inject(DestroyRef);
-
-  ngOnInit(): void {
-    this.userService.getUsers()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (users) => { /* handle */ },
-        error: (err) => console.error('Failed to load users', err),
-      });
-  }
-}
-```
-
-### Reactive Form with `nonNullable` Controls
-
-```typescript
-import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-
-@Component({
-  selector: 'app-user-form',
-  imports: [ReactiveFormsModule],
-  template: `
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <input formControlName="firstName" />
-      <input formControlName="lastName" />
-      <button type="submit" [disabled]="form.invalid">Save</button>
-    </form>
-  `,
-})
-export class UserForm {
-  private fb = inject(FormBuilder);
-
-  form = this.fb.nonNullable.group({
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required],
-  });
-
-  onSubmit(): void {
-    if (this.form.valid) {
-      const { firstName, lastName } = this.form.getRawValue();
-      // handle submit
-    }
-  }
-}
-```
-
-### NgRx Action / Reducer / Selector
-
-```typescript
-// actions
-export const loadUsers = createAction('[Users] Load Users');
-export const loadUsersSuccess = createAction('[Users] Load Users Success', props<{ users: User[] }>());
-export const loadUsersFailure = createAction('[Users] Load Users Failure', props<{ error: string }>());
-
-// reducer
-export interface UsersState { users: User[]; loading: boolean; error: string | null; }
-const initialState: UsersState = { users: [], loading: false, error: null };
-
-export const usersReducer = createReducer(
-  initialState,
-  on(loadUsers, (state) => ({ ...state, loading: true, error: null })),
-  on(loadUsersSuccess, (state, { users }) => ({ ...state, users, loading: false })),
-  on(loadUsersFailure, (state, { error }) => ({ ...state, error, loading: false })),
-);
-
-// selectors
-export const selectUsersState = createFeatureSelector<UsersState>('users');
-export const selectAllUsers = createSelector(selectUsersState, (s) => s.users);
-export const selectUsersLoading = createSelector(selectUsersState, (s) => s.loading);
-```
 
 ## Constraints
 

@@ -177,8 +177,4 @@ When implementing React Native features, deliver:
 3. **Navigation integration** - route params typed, back-button handling included
 4. **Performance notes** - memo boundaries, key extractor strategy, image caching
 
-## Knowledge Reference
-
-React Native 0.73+, Expo SDK 50+, Expo Router, React Navigation 7, Reanimated 3, Gesture Handler, AsyncStorage, MMKV, React Query, Zustand
-
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

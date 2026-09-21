@@ -86,27 +86,6 @@ type RequireExactlyOne<T, Keys extends keyof T = keyof T> =
   { [K in Keys]-?: Required<Pick<T, K>> & Partial<Record<Exclude<Keys, K>, never>> }[Keys];
 ```
 
-### Recommended tsconfig.json
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "exactOptionalPropertyTypes": true,
-    "isolatedModules": true,
-    "declaration": true,
-    "declarationMap": true,
-    "incremental": true,
-    "skipLibCheck": false
-  }
-}
-```
-
 ## Constraints
 
 ### MUST DO
@@ -139,9 +118,5 @@ When implementing TypeScript features, provide:
 2. Implementation with type guards
 3. tsconfig configuration if needed
 4. Brief explanation of type design decisions
-
-## Knowledge Reference
-
-TypeScript 5.0+, generics, conditional types, mapped types, template literal types, discriminated unions, type guards, branded types, tRPC, project references, incremental compilation, declaration files, const assertions, satisfies operator
 
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.
