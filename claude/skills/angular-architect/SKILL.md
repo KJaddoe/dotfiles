@@ -1,12 +1,14 @@
 ---
 name: angular-architect
-description: Generates Angular 17+ standalone components, configures advanced routing with lazy loading and guards, implements NgRx state management, applies RxJS patterns, and optimizes bundle performance. Use when building Angular 17+ applications with standalone components or signals, setting up NgRx stores, establishing RxJS reactive patterns, performance tuning, or writing Angular tests for enterprise apps.
+description: Generates current-standard Angular standalone components, configures advanced routing with lazy loading and guards, implements NgRx state management, applies RxJS patterns, and optimizes bundle performance. Use when building Angular applications with standalone components or signals, setting up NgRx stores, establishing RxJS reactive patterns, performance tuning, or writing Angular tests for enterprise apps.
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Angular Architect
 
-Senior Angular architect specializing in Angular 17+ with standalone components, signals, and enterprise-grade application development.
+Senior Angular architect specializing in current-standard Angular (standalone components, signals) and enterprise-grade application development. Before writing code, check the target project's installed Angular version (`package.json`) and match its existing conventions; where the project has no established convention yet, default to the latest stable Angular release's recommended patterns, not a pinned older version.
 
 ## Core Workflow
 
@@ -14,8 +16,9 @@ Senior Angular architect specializing in Angular 17+ with standalone components,
 2. **Design architecture** - Plan standalone components, signal usage, state flow
 3. **Implement features** - Generate components and services via the Angular CLI, then build them with OnPush strategy and reactive patterns
 4. **Manage state** - Setup NgRx store, effects, selectors as needed; verify store hydration and action flow with Redux DevTools before proceeding
-5. **Optimize** - Apply performance best practices and bundle optimization; run `ng build --configuration production` to verify bundle size and flag regressions
-6. **Test** - Write unit and integration tests with TestBed for every component and service; verify >85% coverage threshold is met
+5. **Style** - Write SCSS that mirrors the component's DOM hierarchy (see `references/scss.md`) - never a flat class per element
+6. **Optimize** - Apply performance best practices and bundle optimization; run `ng build --configuration production` to verify bundle size and flag regressions
+7. **Test** - Write unit and integration tests for every component and service; verify >85% coverage threshold is met
 
 ## Reference Guide
 
@@ -24,6 +27,7 @@ Load detailed guidance based on context:
 | Topic      | Reference                  | Load When                                        |
 |------------|----------------------------|--------------------------------------------------|
 | Components | `references/components.md` | Standalone components, signals, input/output     |
+| SCSS       | `references/scss.md`       | Component styling, DOM-nesting, selector choice  |
 | RxJS       | `references/rxjs.md`       | Observables, operators, subjects, error handling |
 | NgRx       | `references/ngrx.md`       | Store, effects, selectors, entity adapter        |
 | Routing    | `references/routing.md`    | Router config, guards, lazy loading, resolvers   |
@@ -152,15 +156,19 @@ export const selectUsersLoading = createSelector(selectUsersState, (s) => s.load
 
 - Generate components and services via the Angular CLI (`ng generate component`, `ng generate service`), each in its own folder with separate files and a spec file - never hand-roll them
 - Use signals, `inject()`, and `input()`/`output()` for new code - never constructor injection
-- Use standalone components (Angular 17+ default)
+- Use standalone components (the default since Angular 17, still current)
 - Use OnPush change detection strategy
+- Use the `@if`/`@for`/`@switch` built-in control flow, never `*ngIf`/`*ngFor`/`*ngSwitch`
 - Use reactive forms (`FormGroup`/`FormControl` with `nonNullable`, `formGroup`/`formControlName` bindings) - never template-driven `ngModel`
+- Write SCSS nesting that mirrors the DOM hierarchy; style via semantic elements/attribute selectors under `:host`, reaching for a class only when no clean element selector fits (see `references/scss.md`)
 - Lean on Angular Material and built-in layout over custom CSS
 - Use strict TypeScript configuration
 - Implement proper error handling in RxJS streams
+- Prefer `resource()`/`rxResource()` (stable) for data fetching in new code over a manual `subscribe()` in a constructor or `effect()`
 - Use `trackBy` functions (or the `track` expression in `@for`) in list rendering
 - Give every component and service a real test, with >85% coverage
-- Follow the Angular style guide
+- Match the test runner the project already uses; a fresh Angular CLI project scaffolds Vitest by default (Karma/Jasmine is legacy, not a new-project default)
+- Follow the current Angular style guide (check `angular.dev` for the project's installed major version)
 
 ### MUST NOT DO
 
@@ -174,6 +182,7 @@ export const selectUsersLoading = createSelector(selectUsersState, (s) => s.load
 - Use `any` type without justification
 - Mutate state directly in NgRx
 - Skip unit tests for critical logic
+- Put a class on every templated element, or flatten SCSS into top-level selectors for elements that are actually nested (see `references/scss.md`)
 
 ## Output Templates
 
