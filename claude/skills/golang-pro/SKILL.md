@@ -89,7 +89,7 @@ Key properties demonstrated: bounded goroutine lifetime via `ctx`, error propaga
 - Add context.Context to all blocking operations
 - Handle all errors explicitly (no naked returns)
 - Write table-driven tests with subtests
-- Document all exported functions, types, and packages
+- Document exported functions, types, and packages where the comment earns its place (see house rules) - Go's convention treats exported identifiers as public API surface, but that doesn't excuse restating the name; write one only when it says something the signature can't
 - Use `X | Y` union constraints for generics (Go 1.18+)
 - Propagate errors with fmt.Errorf("%w", err)
 - Run race detector on tests (-race flag)

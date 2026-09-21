@@ -42,7 +42,7 @@ Load detailed guidance based on context:
 - Implement proper nullable field patterns
 - Use DataLoader for batching and caching
 - Add query complexity analysis
-- Document all types and fields
+- Document types and fields whose purpose isn't obvious from their name - schema descriptions are the published API contract, but `id: ID!` doesn't need one restating that
 - Follow GraphQL naming conventions (camelCase)
 - Use federation directives correctly
 - Provide example queries for all operations

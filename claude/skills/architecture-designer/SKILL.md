@@ -47,7 +47,7 @@ Load detailed guidance based on context:
 
 ### MUST DO
 
-- Document all significant decisions with ADRs
+- Write an ADR for a decision that is non-obvious AND hard to reverse (a load-bearing dependency, a new architectural pattern, a schema change, an auth boundary, or a rejected option people will re-propose) - a swappable choice is routine and doesn't need one
 - Consider non-functional requirements explicitly
 - Evaluate trade-offs, not just benefits
 - Plan for failure modes
