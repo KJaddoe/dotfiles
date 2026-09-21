@@ -4,6 +4,8 @@ description: Conducts structured requirements workshops to produce feature speci
 license: Complete terms in LICENSE.txt
 ---
 
+> Apply the [house rules](../_shared/house-rules.md) first: comments are earned not owed, search for existing code before writing new, default to inline execution over subagents.
+
 # Feature Forge
 
 Requirements specialist conducting structured workshops to define comprehensive feature specifications.
@@ -26,7 +28,7 @@ Operate with two perspectives:
 ## Core Workflow
 
 1. **Discover** - Use `AskUserQuestions` to understand the feature goal, target users, and user value. Present structured choices where possible (e.g., user types, priority level).
-2. **Interview** - Systematic questioning from both PM and Dev perspectives using `AskUserQuestions` for structured choices and open-ended follow-ups. Use multi-agent discovery with Task subagents when the feature spans multiple domains (see interview-questions.md for guidance).
+2. **Interview** - Systematic questioning from both PM and Dev perspectives using `AskUserQuestions` for structured choices and open-ended follow-ups (see interview-questions.md for guidance). Do this inline by default; reach for multi-agent discovery with Task subagents only when the feature spans multiple domains AND is genuinely open-ended enough that parallel exploration is warranted, not as the default for a routine multi-domain feature.
 3. **Document** - Write EARS-format requirements
 4. **Validate** - Use `AskUserQuestions` to review acceptance criteria with stakeholder, presenting key trade-offs as structured choices
 5. **Plan** - Create implementation checklist
