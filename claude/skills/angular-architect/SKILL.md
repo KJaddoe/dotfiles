@@ -10,6 +10,8 @@ license: Complete terms in LICENSE.txt
 
 Senior Angular architect specializing in current-standard Angular (standalone components, signals) and enterprise-grade application development. Before writing code, check the target project's installed Angular version (`package.json`) and match its existing conventions; where the project has no established convention yet, default to the latest stable Angular release's recommended patterns, not a pinned older version.
 
+The Angular CLI schematic itself changed: since Angular 20, `ng generate component foo` writes `foo.ts`/`foo.html`/`foo.scss` and a class named `Foo`, not `foo.component.ts` and `FooComponent` - the `.component` file suffix, the `Component` class suffix, and `standalone: true` (standalone is the only option now) are no longer part of the generated output. An older project may still use the old suffix convention throughout; match that project's existing files over the CLI's current default. Where nothing established exists yet, generate via the CLI and trust what it actually produces rather than a hardcoded example - the examples in this skill use the current, unsuffixed convention.
+
 ## Core Workflow
 
 1. **Analyze requirements** - Identify components, state needs, routing architecture
@@ -35,25 +37,21 @@ Load detailed guidance based on context:
 
 ## Key Patterns
 
-### Standalone Component with OnPush and Signals
+### Component with OnPush and Signals
 
 ```typescript
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-user-card',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="user-card">
-      <h2>{{ fullName() }}</h2>
-      <button (click)="onSelect()">Select</button>
-    </div>
+    <h2>{{ fullName() }}</h2>
+    <button (click)="onSelect()">Select</button>
   `,
 })
-export class UserCardComponent {
+export class UserCard {
   firstName = input.required<string>();
   lastName = input.required<string>();
   selected = output<string>();
@@ -66,6 +64,8 @@ export class UserCardComponent {
 }
 ```
 
+The CLI does not add `changeDetection: ChangeDetectionStrategy.OnPush` on its own - add it by hand on every component.
+
 ### RxJS Subscription Management with `takeUntilDestroyed`
 
 ```typescript
@@ -73,8 +73,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from './user.service';
 
-@Component({ selector: 'app-users', standalone: true, template: `...` })
-export class UsersComponent implements OnInit {
+@Component({ selector: 'app-users', template: `...` })
+export class Users implements OnInit {
   private userService = inject(UserService);
   // DestroyRef is captured at construction time for use in ngOnInit
   private destroyRef = inject(DestroyRef);
@@ -98,7 +98,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-user-form',
-  standalone: true,
   imports: [ReactiveFormsModule],
   template: `
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
@@ -108,7 +107,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
     </form>
   `,
 })
-export class UserFormComponent {
+export class UserForm {
   private fb = inject(FormBuilder);
 
   form = this.fb.nonNullable.group({
@@ -154,10 +153,10 @@ export const selectUsersLoading = createSelector(selectUsersState, (s) => s.load
 
 ### MUST DO
 
-- Generate components and services via the Angular CLI (`ng generate component`, `ng generate service`), each in its own folder with separate files and a spec file - never hand-roll them
+- Generate components and services via the Angular CLI (`ng generate component`, `ng generate service`), each in its own folder with separate files and a spec file - never hand-roll them; trust what the CLI actually names the files and class, not a hardcoded example
 - Use signals, `inject()`, and `input()`/`output()` for new code - never constructor injection
-- Use standalone components (the default since Angular 17, still current)
-- Use OnPush change detection strategy
+- Standalone is the only option since Angular 19; don't write `standalone: true` yourself, the CLI no longer does either
+- Use OnPush change detection strategy - add it by hand, the CLI does not set it automatically
 - Use the `@if`/`@for`/`@switch` built-in control flow, never `*ngIf`/`*ngFor`/`*ngSwitch`
 - Use reactive forms (`FormGroup`/`FormControl` with `nonNullable`, `formGroup`/`formControlName` bindings) - never template-driven `ngModel`
 - Write SCSS nesting that mirrors the DOM hierarchy; style via semantic elements/attribute selectors under `:host`, reaching for a class only when no clean element selector fits (see `references/scss.md`)
@@ -188,7 +187,7 @@ export const selectUsersLoading = createSelector(selectUsersState, (s) => s.load
 
 When implementing Angular features, provide:
 
-1. Component file with standalone configuration
+1. Component file (standalone is implied, no flag needed)
 2. Service file if business logic is involved
 3. State management files if using NgRx
 4. Test file with comprehensive test cases

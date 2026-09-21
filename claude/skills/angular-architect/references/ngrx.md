@@ -285,7 +285,7 @@ export class UsersEffects {
 ## Component Integration
 
 ```typescript
-// users-list.component.ts
+// users-list.ts
 import { Component, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { UsersActions } from './store/users.actions';
@@ -297,7 +297,6 @@ import {
 
 @Component({
   selector: 'app-users-list',
-  standalone: true,
   template: `
     @if (loading()) {
       <div>Loading...</div>
@@ -313,7 +312,7 @@ import {
     }
   `
 })
-export class UsersListComponent {
+export class UsersList {
   private store = inject(Store);
 
   // Select data as signals
@@ -369,9 +368,8 @@ export class UsersFacade {
 // Usage in component
 @Component({
   selector: 'app-users',
-  standalone: true
 })
-export class UsersComponent {
+export class Users {
   private facade = inject(UsersFacade);
 
   users = toSignal(this.facade.users$, { initialValue: [] });

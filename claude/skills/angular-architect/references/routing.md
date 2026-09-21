@@ -1,11 +1,14 @@
 # Angular Routing
 
+File paths and class names below drop the `.component` suffix and `Component` suffix, matching
+the current Angular CLI schematic (v20+) - see `references/components.md` for why.
+
 ## Routes Configuration
 
 ```typescript
 // app.routes.ts
 import { Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
+import { Home } from './home/home';
 
 export const routes: Routes = [
   {
@@ -15,17 +18,17 @@ export const routes: Routes = [
   },
   {
     path: 'home',
-    component: HomeComponent,
+    component: Home,
     title: 'Home'
   },
   {
     path: 'users',
-    loadComponent: () => import('./users/users.component').then(m => m.UsersComponent),
+    loadComponent: () => import('./users/users').then(m => m.Users),
     title: 'Users'
   },
   {
     path: 'users/:id',
-    loadComponent: () => import('./users/user-detail.component').then(m => m.UserDetailComponent),
+    loadComponent: () => import('./users/user-detail').then(m => m.UserDetail),
     canActivate: [authGuard],
     resolve: { user: userResolver }
   },
@@ -36,7 +39,7 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    loadComponent: () => import('./not-found/not-found.component').then(m => m.NotFoundComponent),
+    loadComponent: () => import('./not-found/not-found').then(m => m.NotFound),
     title: '404 Not Found'
   }
 ];
@@ -66,15 +69,15 @@ import { Routes } from '@angular/router';
 export const ADMIN_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () => import('./admin-dashboard.component').then(m => m.AdminDashboardComponent)
+    loadComponent: () => import('./admin-dashboard').then(m => m.AdminDashboard)
   },
   {
     path: 'users',
-    loadComponent: () => import('./admin-users.component').then(m => m.AdminUsersComponent)
+    loadComponent: () => import('./admin-users').then(m => m.AdminUsers)
   },
   {
     path: 'settings',
-    loadComponent: () => import('./admin-settings.component').then(m => m.AdminSettingsComponent)
+    loadComponent: () => import('./admin-settings').then(m => m.AdminSettings)
   }
 ];
 ```
@@ -114,7 +117,7 @@ export const adminGuard: CanActivateFn = () => {
 };
 
 // Can deactivate (unsaved changes)
-export const canDeactivateGuard: CanDeactivateFn<FormComponent> = (component) => {
+export const canDeactivateGuard: CanDeactivateFn<Form> = (component) => {
   if (component.hasUnsavedChanges()) {
     return confirm('You have unsaved changes. Are you sure you want to leave?');
   }
@@ -144,7 +147,6 @@ export const userResolver: ResolveFn<User | null> = (route, state) => {
 // Component receives resolved data
 @Component({
   selector: 'app-user-detail',
-  standalone: true,
   template: `
     @if (user) {
       <h1>{{ user.name }}</h1>
@@ -153,7 +155,7 @@ export const userResolver: ResolveFn<User | null> = (route, state) => {
     }
   `
 })
-export class UserDetailComponent {
+export class UserDetail {
   user = input<User | null>(null);  // Resolved data bound as input
 }
 ```
@@ -166,9 +168,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-detail',
-  standalone: true
 })
-export class ProductDetailComponent {
+export class ProductDetail {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -214,9 +215,8 @@ import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
-  standalone: true
 })
-export class AppComponent {
+export class App {
   private router = inject(Router);
   loading = signal(false);
 
@@ -253,16 +253,16 @@ export class AppComponent {
 const routes: Routes = [
   {
     path: 'dashboard',
-    component: DashboardComponent,
+    component: Dashboard,
     children: [
       {
         path: 'stats',
-        component: StatsComponent,
+        component: Stats,
         outlet: 'panel'  // Named outlet
       },
       {
         path: 'charts',
-        component: ChartsComponent,
+        component: Charts,
         outlet: 'panel'
       }
     ]
@@ -282,7 +282,7 @@ const routes: Routes = [
     </div>
   `
 })
-export class DashboardComponent {}
+export class Dashboard {}
 
 // Navigate to named outlet
 this.router.navigate(['/dashboard', { outlets: { panel: ['stats'] } }]);
