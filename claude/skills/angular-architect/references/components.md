@@ -87,35 +87,27 @@ export class ParentComponent {
 ## Smart vs Dumb Components
 
 ```typescript
-// Smart Component (Container)
+import { rxResource } from '@angular/core/rxjs-interop';
+
+// Smart Component (Container) - resource() replaces a manual subscribe() in a
+// constructor/effect(): no unsubscribe to manage, and .value()/.isLoading()/.error() are signals
 @Component({
   selector: 'app-users-container',
   standalone: true,
   imports: [UserListComponent],
   template: `
     <app-user-list
-      [users]="users()"
-      [loading]="loading()"
+      [users]="usersResource.value() ?? []"
+      [loading]="usersResource.isLoading()"
       (userSelected)="onUserSelected($event)" />
   `
 })
 export class UsersContainerComponent {
   private usersService = inject(UsersService);
 
-  users = signal<User[]>([]);
-  loading = signal(true);
-
-  constructor() {
-    effect(() => {
-      this.usersService.getUsers().subscribe({
-        next: users => {
-          this.users.set(users);
-          this.loading.set(false);
-        },
-        error: err => console.error(err)
-      });
-    });
-  }
+  usersResource = rxResource({
+    stream: () => this.usersService.getUsers(),
+  });
 
   onUserSelected(user: User) {
     // Handle business logic
@@ -150,22 +142,19 @@ export class UserListComponent {
 ## Content Projection
 
 ```typescript
-// Card component with multiple slots
+// Card component with multiple slots - :host is the card, no wrapper div or
+// class needed; header/footer use semantic elements, styled under :host in the SCSS
 @Component({
   selector: 'app-card',
   standalone: true,
   template: `
-    <div class="card">
-      <div class="card-header">
-        <ng-content select="[header]"></ng-content>
-      </div>
-      <div class="card-body">
-        <ng-content></ng-content>
-      </div>
-      <div class="card-footer">
-        <ng-content select="[footer]"></ng-content>
-      </div>
-    </div>
+    <header>
+      <ng-content select="[header]"></ng-content>
+    </header>
+    <ng-content></ng-content>
+    <footer>
+      <ng-content select="[footer]"></ng-content>
+    </footer>
   `
 })
 export class CardComponent {}
@@ -285,7 +274,7 @@ export class ProductListComponent {
 
 ## Quick Reference
 
-| Pattern           | Angular 17+ Approach                |
+| Pattern           | Modern Angular Approach             |
 |-------------------|-------------------------------------|
 | Component         | Standalone by default               |
 | State             | Signals (`signal()`, `computed()`)  |

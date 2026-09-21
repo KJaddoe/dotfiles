@@ -1,5 +1,11 @@
 # Angular Testing
 
+Match whatever test runner the target project already uses. The examples below use
+Jasmine/Karma syntax (`jasmine.createSpyObj`, `spyOn`) since that is still common in existing
+Angular codebases, but a fresh Angular CLI project now scaffolds Vitest by default - if the
+project uses Vitest, use `vi.fn()`/`vi.spyOn()` in place of the Jasmine equivalents; `TestBed`,
+`ComponentFixture`, and the rest of the Angular testing APIs below are unchanged either way.
+
 ## Component Testing
 
 ```typescript
