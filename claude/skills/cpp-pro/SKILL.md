@@ -1,6 +1,6 @@
 ---
 name: cpp-pro
-description: Writes, optimizes, and debugs C++ applications using modern C++20/23 features, template metaprogramming, and high-performance systems techniques. Use when building or refactoring C++ code requiring concepts, ranges, coroutines, SIMD optimization, or careful memory management - or when addressing performance bottlenecks, concurrency issues, and build system configuration with CMake.
+description: Use when building or refactoring C++ code requiring concepts, ranges, coroutines, SIMD optimization, or careful memory management, or when addressing performance bottlenecks, concurrency issues, or CMake build configuration. Invoke for modern C++20/23 features, template metaprogramming, and high-performance systems techniques.
 license: Complete terms in LICENSE.txt
 ---
 

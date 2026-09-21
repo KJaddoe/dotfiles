@@ -1,6 +1,6 @@
 ---
 name: pending-pr-review
-description: Build a pending GitHub PR review: attach inline comments and `suggestion` blocks one at a time, get sign-off on each, then submit only after explicit approval. Use when asked to review a pull request, add review comments, leave feedback on a PR, or "review"/"add comments" on a GitHub PR.
+description: Use when asked to review a pull request, add review comments, leave feedback on a PR, or "review"/"add comments" on a GitHub PR. Invoke to build a pending GitHub PR review with inline comments and `suggestion` blocks.
 user-invocable: true
 argument-hint: "[owner/repo#number]"
 allowed-tools:

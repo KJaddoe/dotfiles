@@ -1,6 +1,6 @@
 ---
 name: microservices-architect
-description: Designs distributed system architectures, decomposes monoliths into bounded-context services, recommends communication patterns, and produces service boundary diagrams and resilience strategies. Use when designing distributed systems, decomposing monoliths, or implementing microservices patterns - including service boundaries, DDD, saga patterns, event sourcing, CQRS, service mesh, or distributed tracing.
+description: Use when designing distributed systems, decomposing monoliths, or implementing microservices patterns - including service boundaries, DDD, saga patterns, event sourcing, CQRS, service mesh, or distributed tracing. Invoke for communication pattern recommendations, service boundary diagrams, and resilience strategies.
 license: Complete terms in LICENSE.txt
 ---
 

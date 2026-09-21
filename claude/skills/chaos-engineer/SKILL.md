@@ -1,6 +1,6 @@
 ---
 name: chaos-engineer
-description: Designs chaos experiments, creates failure injection frameworks, and facilitates game day exercises for distributed systems - producing runbooks, experiment manifests, rollback procedures, and post-mortem templates. Use when designing chaos experiments, implementing failure injection frameworks, or conducting game day exercises. Invoke for chaos experiments, resilience testing, blast radius control, game days, antifragile systems, fault injection, Chaos Monkey, Litmus Chaos.
+description: Use when designing chaos experiments, implementing failure injection frameworks, or conducting game day exercises for distributed systems. Invoke for resilience testing, blast radius control, antifragile systems, fault injection, Chaos Monkey, Litmus Chaos, runbooks, experiment manifests, rollback procedures, or post-mortem templates.
 license: Complete terms in LICENSE.txt
 ---
 

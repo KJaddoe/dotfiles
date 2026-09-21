@@ -1,6 +1,6 @@
 ---
 name: cloud-architect
-description: Designs cloud architectures, creates migration plans, generates cost optimization recommendations, and produces disaster recovery strategies across AWS, Azure, and GCP. Use when designing cloud architectures, planning migrations, or optimizing multi-cloud deployments. Invoke for Well-Architected Framework, cost optimization, disaster recovery, landing zones, security architecture, serverless design.
+description: Use when designing cloud architectures, planning migrations, or optimizing multi-cloud deployments across AWS, Azure, and GCP. Invoke for Well-Architected Framework reviews, cost optimization recommendations, disaster recovery strategies, landing zones, security architecture, or serverless design.
 license: Complete terms in LICENSE.txt
 ---
 

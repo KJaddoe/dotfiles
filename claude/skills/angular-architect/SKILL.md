@@ -1,6 +1,6 @@
 ---
 name: angular-architect
-description: Generates current-standard Angular standalone components, configures advanced routing with lazy loading and guards, implements NgRx state management, applies RxJS patterns, and optimizes bundle performance. Use when building Angular applications with standalone components or signals, setting up NgRx stores, establishing RxJS reactive patterns, performance tuning, or writing Angular tests for enterprise apps.
+description: Use when building Angular applications with standalone components or signals, setting up NgRx stores, establishing RxJS reactive patterns, performance tuning, or writing Angular tests for enterprise apps. Invoke for advanced routing with lazy loading and guards, NgRx state management, RxJS patterns, or bundle performance optimization.
 license: Complete terms in LICENSE.txt
 ---
 

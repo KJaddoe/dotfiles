@@ -1,6 +1,6 @@
 ---
 name: vue-expert
-description: Builds Vue 3 components with Composition API patterns, configures Nuxt 3 SSR/SSG projects, sets up Pinia stores, scaffolds Quasar/Capacitor mobile apps, implements PWA features, and optimises Vite builds. Use when creating Vue 3 applications with Composition API, writing reusable composables, managing state with Pinia, building hybrid mobile apps with Quasar or Capacitor, configuring service workers, or tuning Vite configuration and TypeScript integration.
+description: Use when creating Vue 3 applications with Composition API, writing reusable composables, managing state with Pinia, building hybrid mobile apps with Quasar or Capacitor, configuring service workers, or tuning Vite configuration and TypeScript integration. Invoke for Nuxt 3 SSR/SSG configuration, Pinia stores, Quasar/Capacitor scaffolding, and PWA features.
 license: Complete terms in LICENSE.txt
 ---
 
