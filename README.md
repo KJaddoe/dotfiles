@@ -100,9 +100,12 @@ links the dotfiles into `$HOME`, and runs shell commands. Its configuration live
 `bin/dot_update` (on `$PATH` as `dot_update`) pulls the latest dotfiles, syncs submodules, re-runs
 every `install.sh` via `script/install`, and updates the zsh plugins.
 
-**This also runs automatically.** `autoupdate/install.sh` registers a crontab entry that runs
-`dot_update` **every two hours**, logging to `$TMPDIR/dot_update.log`, so a machine pulls and
-re-applies dotfiles changes on its own. Remove the entry with `crontab -e` if you don't want that.
+**This can also run automatically, opt-in.** Set `DOTFILES_AUTOUPDATE=true` before bootstrapping (or
+before running `dot_update` by hand) and `autoupdate/install.sh` registers a crontab entry that runs
+`dot_update` **every two hours**, logging to `$TMPDIR/dot_update.log`, so the machine pulls and
+re-applies dotfiles changes on its own. Without it, nothing is scheduled, so trying the repo out
+never touches your crontab. Remove an existing entry with `crontab -e` if you enabled it and no
+longer want it.
 
 Because it runs unattended, the update **fast-forwards or does nothing**: it never rewrites
 history or touches work in progress. It skips the pull, and says so in the log, when:
