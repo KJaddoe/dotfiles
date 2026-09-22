@@ -183,6 +183,26 @@ SKIP_HOOKS=1 git commit -m "wip"
 **Where the value comes from:** none needed: it is a local escape hatch, not a credential. Set it
 per-invocation rather than exporting it, or the hook is permanently off in that shell.
 
+## Auto-update
+
+| Variable              | Purpose                                               | Required | Default |
+|-----------------------|-------------------------------------------------------|----------|---------|
+| `DOTFILES_AUTOUPDATE` | Whether `autoupdate/install.sh` registers the crontab | No       | `false` |
+
+`bin/dot_update`, `script/bootstrap` and `script/test` all run every topic's `install.sh`
+(`script/install`), so `autoupdate/install.sh` runs on every install and every re-run. It only
+writes the `dot_update` cron entry when `DOTFILES_AUTOUPDATE=true` is set at that time; otherwise
+it prints that it skipped and leaves crontab untouched, so trying the repo out never opts you into
+a background job.
+
+```sh
+DOTFILES_AUTOUPDATE=true script/bootstrap
+```
+
+**Where the value comes from:** none needed: it is a local preference, not a credential. To keep a
+machine auto-updating across future re-runs, export it from `~/.localrc`, which `dot_update`
+sources before it re-invokes `script/install`.
+
 ## Shell environment
 
 Exported from `zsh/zshrc`. Override any of them in `~/.localrc`, which is sourced after.
