@@ -38,16 +38,16 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   when you deliberately add or update a plugin, and see `claude/memory/` on why `Lazy! sync` is the
   wrong verb for adding one.
 - **`git/`**: `templates/` holds everything the git topic ships as a starting point:
-  `templates/hooks/` is the deployed `pre-commit` hook (dotbot-symlinked, see Git commit hook below),
-  and `templates/issues/` (`bug.md`, `feature.md`, `question.md`, `tech-debt.md`, `chore.md`) are
-  issue-body content skeletons that only Claude reads, not symlinked anywhere and not something
-  GitHub auto-loads (it only picks up templates from `.github/` or repo root, not `git/`). The two
-  coexist safely because `core.hooksPath` reads `hooks/pre-commit` as one specific file, not the
-  directory wholesale (`init.templateDir` is deliberately unset, see below), so `issues/` never ships
-  anywhere a hook would. `CLAUDE.md`'s issue-body rule points at `~/dotfiles/git/templates/issues/`
-  by absolute path, since `README.md`'s "repo must live at `~/dotfiles`" convention is what makes
-  that path resolve regardless of which project a session is working in. `PULL_REQUEST_TEMPLATE.md`
-  sits outside `templates/` at the `git/` root, unchanged by this.
+  `templates/hooks/` is the deployed `pre-commit` hook (dotbot-symlinked, see Git commit hook below);
+  `templates/issues/` (`bug.md`, `feature.md`, `question.md`, `tech-debt.md`, `chore.md`) and
+  `templates/pull-request.md` are content skeletons that only Claude reads, not symlinked anywhere and
+  not something GitHub auto-loads (it only picks up templates from `.github/` or repo root, not
+  `git/`). These coexist safely with `hooks/` because `core.hooksPath` reads `hooks/pre-commit` as one
+  specific file, not the directory wholesale (`init.templateDir` is deliberately unset, see below), so
+  neither markdown template ever ships anywhere a hook would. `CLAUDE.md` points at both by absolute
+  path (`~/dotfiles/git/templates/issues/`, `~/dotfiles/git/templates/pull-request.md`), since
+  `README.md`'s "repo must live at `~/dotfiles`" convention is what makes those paths resolve
+  regardless of which project a session is working in.
 - **`claude/`**: global Claude Code config, symlinked into `~/.claude/` (`settings.json`,
   `CLAUDE.md`, `hooks/`, `memory/`, `skills/`, `keybindings.json`, `templates/`). `templates/`
   holds starter scaffolding, currently `docs-pointer/`: a `CLAUDE.md.template`, a `docs/`
@@ -239,7 +239,7 @@ held to them. The cost is that a memory rewrite now has to pass the gate to be c
 Three rules are off because they contradict conventions here rather than
 catching defects: `MD013` (line length: the skills mix prose wrapped at ~100 with deliberately
 unwrapped lines), `MD025` (the README's `PHILOSOPHY` / `Installation` / `Personalization` headings
-are top-level by design), and `MD041` (`git/PULL_REQUEST_TEMPLATE.md` correctly opens with a form
+are top-level by design), and `MD041` (`git/templates/pull-request.md` correctly opens with a form
 field, not a heading). Everything else is on, including `MD060`, which enforces the aligned-table
 convention mechanically.
 

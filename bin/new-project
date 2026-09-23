@@ -26,7 +26,7 @@ copy() {
 copy "$DOTFILES/editorconfig/editorconfig" ".editorconfig"
 copy "$DOTFILES/prettier/prettierrc.json" ".prettierrc.json"
 copy "$DOTFILES/eslint/eslintrc.json" ".eslintrc.json"
-copy "$DOTFILES/git/PULL_REQUEST_TEMPLATE.md" ".github/PULL_REQUEST_TEMPLATE.md"
+copy "$DOTFILES/git/templates/pull-request.md" ".github/PULL_REQUEST_TEMPLATE.md"
 
 if [ ! -f .gitignore ]; then
     types="${2:-macos,linux}"
