@@ -76,6 +76,8 @@ for these rules as FYI reference only; the binding text is HERE.
 - Keep issue bodies short: pick the matching kind's template from
   `~/dotfiles/git/templates/issues/` (bug, feature, question, tech-debt, chore) and fill only its
   sections. No padding, no restating context that's already obvious from the repo or the title.
+- Drafting a PR body: fill `~/dotfiles/git/templates/pull-request.md`'s sections (Why, How, Testing,
+  Links) rather than free-writing one from scratch.
 - Reviewing a PR ("review" / "add comments" / "leave feedback"): build ONE pending GitHub review, present
   each inline comment/`suggestion` for sign-off BEFORE attaching it, and submit only on explicit
   approval. Don't edit working-tree files as the "fix" path. Use the `pending-pr-review` skill.
