@@ -37,6 +37,17 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   one runs rather than whatever each plugin's HEAD is that day. Treat it as a lockfile: commit it
   when you deliberately add or update a plugin, and see `claude/memory/` on why `Lazy! sync` is the
   wrong verb for adding one.
+- **`git/`**: `templates/` holds everything the git topic ships as a starting point:
+  `templates/hooks/` is the deployed `pre-commit` hook (dotbot-symlinked, see Git commit hook below),
+  and `templates/issues/` (`bug.md`, `feature.md`, `question.md`, `tech-debt.md`, `chore.md`) are
+  issue-body content skeletons that only Claude reads, not symlinked anywhere and not something
+  GitHub auto-loads (it only picks up templates from `.github/` or repo root, not `git/`). The two
+  coexist safely because `core.hooksPath` reads `hooks/pre-commit` as one specific file, not the
+  directory wholesale (`init.templateDir` is deliberately unset, see below), so `issues/` never ships
+  anywhere a hook would. `CLAUDE.md`'s issue-body rule points at `~/dotfiles/git/templates/issues/`
+  by absolute path, since `README.md`'s "repo must live at `~/dotfiles`" convention is what makes
+  that path resolve regardless of which project a session is working in. `PULL_REQUEST_TEMPLATE.md`
+  sits outside `templates/` at the `git/` root, unchanged by this.
 - **`claude/`**: global Claude Code config, symlinked into `~/.claude/` (`settings.json`,
   `CLAUDE.md`, `hooks/`, `memory/`, `skills/`, `keybindings.json`, `templates/`). `templates/`
   holds starter scaffolding, currently `docs-pointer/`: a `CLAUDE.md.template`, a `docs/`
@@ -77,9 +88,10 @@ bootstrap. They skip cleanly when any of that is missing. They point `XDG_CONFIG
 config rather than `~/.config/nvim`, so they cover this repo whether or not dotbot has run.
 
 `git/tests/` covers the shipped git `pre-commit` hook (see below) and `bin/git-gone`. It lives outside
-`git/template/` on purpose: git copies that directory wholesale into every new repo, so a `tests/`
-folder inside it would ship too. The suite neutralises `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_SYSTEM`
-and works in throwaway repos, so unlike `script/test` it cannot touch your real git config.
+`git/templates/` so dev-only tooling stays out of what actually gets deployed (`hooks/pre-commit`)
+and out of the unrelated `issues/` content templates it now sits beside. The suite neutralises
+`GIT_CONFIG_GLOBAL` and `GIT_CONFIG_SYSTEM` and works in throwaway repos, so unlike `script/test` it
+cannot touch your real git config.
 
 `pyproject.toml` at the repo root holds the shared `black` / `pylint` settings (line length 100)
 so formatting is reproducible across machines. The tests themselves import nothing but stdlib
@@ -96,10 +108,11 @@ resolves. The path is relative, so run the lint command from the repo root.
 
 ## Git commit hook
 
-`git/template/hooks/pre-commit` reaches every repo on this machine through `core.hooksPath`, set in
-`git/gitconfig.local` to `~/.git-template/hooks`. That path is a dotbot symlink to `git/template` in
-this repo, so git runs the working-tree file itself: editing the hook changes it everywhere at once,
-with no copy to refresh and no repo left behind on an older version.
+`git/templates/hooks/pre-commit` reaches every repo on this machine through `core.hooksPath`, set in
+`git/gitconfig.local` to `~/.git-templates/hooks`. That path is a dotbot symlink to `git/templates` in
+this repo, so `~/.git-templates/hooks` resolves to `git/templates/hooks` and git runs the working-tree
+file itself: editing the hook changes it everywhere at once, with no copy to refresh and no repo left
+behind on an older version.
 
 A repo that sets its **own** `core.hooksPath` overrides the global one and gets no hook from here.
 That is how husky projects keep their hooks, and it is the only exception.
@@ -108,10 +121,13 @@ That is how husky projects keep their hooks, and it is the only exception.
 `.git/hooks` is ignored while the global setting is in force. Copies left there by an earlier setup
 are inert, not competing.
 
-This is why `init.templateDir` is **not** set: `git/template` holds nothing but the hook, and a
-template only ever copied it into repos created after the setting existed. That left the dotfiles
-clone itself, made before dotbot links the config, permanently without a hook, and every existing
-repo pinned to whatever the hook looked like on the day it was created.
+This is why `init.templateDir` is **not** set: a template's contents only ever get copied into repos
+created after the setting existed. That would have left the dotfiles clone itself, made before dotbot
+links the config, permanently without a hook, and every existing repo pinned to whatever the hook
+looked like on the day it was created. `core.hooksPath` instead reads `hooks/pre-commit` off the
+working tree on every invocation, one specific file rather than a directory copy, which is also why
+`git/templates/issues/` (above) can sit beside `hooks/` without its content shipping into every new
+repo.
 
 It enforces the format+lint half of the definition of done on staged files: whitespace errors, then
 betterleaks, prettier/eslint, black/pylint, shellcheck, `zsh -n`, stylua/selene, csharpier, hadolint,
@@ -159,7 +175,7 @@ any filetype it has no formatter for. Indent width is **not** set there: `shfmt`
 read `.editorconfig`, so `~/.editorconfig` (from `editorconfig/editorconfig`) is what decides it.
 That file is `root = true` in `$HOME`, so it applies to every project below it that has none of its
 own. This repo adds a non-root `.editorconfig` so its own extensionless scripts in `bin/`, `script/`
-and `git/template/hooks/` get the same 4-space indent as its `*.sh` files.
+and `git/templates/hooks/` get the same 4-space indent as its `*.sh` files.
 
 Linting is LSP-first. `nvim-lint` is wired only to the filetypes no enabled language server already
 covers, because running both would double every diagnostic:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for git/template/hooks/pre-commit.
+"""Tests for git/templates/hooks/pre-commit.
 
 The hook ships via init.templateDir into every repo created on this machine, so a
 regression here is silent and repo-wide. Each test runs a real commit in a throwaway
@@ -18,7 +18,7 @@ import unittest
 from functools import cache
 from pathlib import Path
 
-HOOK = Path(__file__).resolve().parents[1] / "template" / "hooks" / "pre-commit"
+HOOK = Path(__file__).resolve().parents[1] / "templates" / "hooks" / "pre-commit"
 
 ENV = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
 ENV.pop("SKIP_HOOKS", None)

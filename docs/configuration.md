@@ -168,9 +168,9 @@ why the setting matters as well as the hook.
 
 ## Git hooks
 
-| Variable     | Purpose                                                      | Required | Default | Example |
-|--------------|--------------------------------------------------------------|----------|---------|---------|
-| `SKIP_HOOKS` | Any non-empty value bypasses `git/template/hooks/pre-commit` | No       | unset   | `1`     |
+| Variable     | Purpose                                                       | Required | Default | Example |
+|--------------|---------------------------------------------------------------|----------|---------|---------|
+| `SKIP_HOOKS` | Any non-empty value bypasses `git/templates/hooks/pre-commit` | No       | unset   | `1`     |
 
 The hook exits immediately when it is set, so **every** gate is skipped: formatting, linting and
 secret scanning alike, along with the dependency-audit notices. Prefer fixing the finding; a bypassed
