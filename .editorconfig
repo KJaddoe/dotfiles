@@ -1,2 +1,2 @@
-[{bin/*,script/*,git/template/hooks/*}]
+[{bin/*,script/*,git/templates/hooks/*}]
 indent_size = 4

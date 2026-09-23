@@ -15,7 +15,7 @@
 [core]
 	excludesfile = ~/.gitignore
 	attributesfile = ~/.gitattributes
-	hooksPath = ~/.git-template/hooks
+	hooksPath = ~/.git-templates/hooks
 	editor = nvim
 	compression = -1
 	autocrlf = input

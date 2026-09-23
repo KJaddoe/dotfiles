@@ -73,8 +73,9 @@ for these rules as FYI reference only; the binding text is HERE.
   I create or refine but do not start stays unassigned. Create the branch with
   `gh issue develop <n> … --checkout` using GitHub's default name: never `--name`, never a bare
   `git checkout -b`.
-- Keep issue bodies short: state only what's needed to act on it (what/why, acceptance criteria).
-  No padding, no restating context that's already obvious from the repo or the title.
+- Keep issue bodies short: pick the matching kind's template from
+  `~/dotfiles/git/templates/issues/` (bug, feature, question, tech-debt, chore) and fill only its
+  sections. No padding, no restating context that's already obvious from the repo or the title.
 - Reviewing a PR ("review" / "add comments" / "leave feedback"): build ONE pending GitHub review, present
   each inline comment/`suggestion` for sign-off BEFORE attaching it, and submit only on explicit
   approval. Don't edit working-tree files as the "fix" path. Use the `pending-pr-review` skill.
