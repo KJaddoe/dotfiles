@@ -100,7 +100,7 @@ class TestMeasure(unittest.TestCase):
 
 
 class TestConfiguration(unittest.TestCase):
-    """Both env vars fall back to their default rather than failing."""
+    """Every env var falls back to its default rather than failing."""
 
     def setUp(self):
         """Start each case from a clean environment."""
@@ -109,7 +109,11 @@ class TestConfiguration(unittest.TestCase):
 
     def _clear(self):
         """Remove the vars a case set."""
-        for name in ("FRESH_SESSION_HOOK_MODE", "FRESH_SESSION_HOOK_BYTES"):
+        for name in (
+            "FRESH_SESSION_HOOK_MODE",
+            "FRESH_SESSION_HOOK_BYTES",
+            "FRESH_SESSION_HOOK_TURNS",
+        ):
             os.environ.pop(name, None)
 
     def test_mode_defaults_to_on(self):
@@ -139,6 +143,25 @@ class TestConfiguration(unittest.TestCase):
         """Garbage must not crash a prompt."""
         os.environ["FRESH_SESSION_HOOK_BYTES"] = "lots"
         self.assertEqual(hook.threshold(), hook.DEFAULT_THRESHOLD_BYTES)
+
+    def test_min_turns_defaults(self):
+        """An unset turn floor uses the default."""
+        self.assertEqual(hook.min_turns(), hook.DEFAULT_MIN_TURNS)
+
+    def test_min_turns_reads_the_env_var(self):
+        """A numeric turn floor is honoured."""
+        os.environ["FRESH_SESSION_HOOK_TURNS"] = "25"
+        self.assertEqual(hook.min_turns(), 25)
+
+    def test_non_numeric_min_turns_falls_back(self):
+        """Garbage must not crash a prompt."""
+        os.environ["FRESH_SESSION_HOOK_TURNS"] = "many"
+        self.assertEqual(hook.min_turns(), hook.DEFAULT_MIN_TURNS)
+
+    def test_non_positive_min_turns_falls_back(self):
+        """Zero would disable the floor, so it is rejected like garbage."""
+        os.environ["FRESH_SESSION_HOOK_TURNS"] = "0"
+        self.assertEqual(hook.min_turns(), hook.DEFAULT_MIN_TURNS)
 
 
 class TestMarkers(unittest.TestCase):
@@ -283,7 +306,7 @@ class TestInjection(unittest.TestCase):
 
     def test_note_instructs_the_model_to_ask_not_to_clear(self):
         """The note must never tell the model to run /clear itself."""
-        write_transcript(self.transcript, user_turns=5, padding=100)
+        write_transcript(self.transcript, user_turns=10, padding=100)
         result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": "100"})
         note = json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"]
         self.assertIn("AskUserQuestion", note)
@@ -293,18 +316,43 @@ class TestInjection(unittest.TestCase):
     def test_exactly_at_threshold_injects(self):
         """The threshold is inclusive; a session ON it is heavy."""
         size = write_transcript(self.transcript, user_turns=3)
-        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": str(size)})
+        result = run_hook(
+            self._payload(),
+            env={"FRESH_SESSION_HOOK_BYTES": str(size), "FRESH_SESSION_HOOK_TURNS": "1"},
+        )
         self.assertIn("hookSpecificOutput", json.loads(result.stdout))
 
     def test_one_byte_under_threshold_stays_silent(self):
         """The boundary is exact, not approximate."""
         size = write_transcript(self.transcript, user_turns=3)
-        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": str(size + 1)})
+        result = run_hook(
+            self._payload(),
+            env={"FRESH_SESSION_HOOK_BYTES": str(size + 1), "FRESH_SESSION_HOOK_TURNS": "1"},
+        )
+        self.assertEqual(result.stdout.strip(), "")
+
+    def test_heavy_but_short_session_stays_silent(self):
+        """Bytes alone are not enough: a few tool-heavy turns are not a long conversation."""
+        write_transcript(self.transcript, user_turns=9, padding=500)
+        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": "100"})
+        self.assertEqual(result.stdout.strip(), "")
+        self.assertEqual(result.returncode, 0)
+
+    def test_exactly_at_turn_floor_injects(self):
+        """The turn floor is inclusive, like the byte threshold."""
+        write_transcript(self.transcript, user_turns=10)
+        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": "100"})
+        self.assertIn("10 user turns", result.stdout)
+
+    def test_turns_without_bytes_stay_silent(self):
+        """Many cheap turns under the byte threshold are not heavy either."""
+        write_transcript(self.transcript, user_turns=50)
+        result = run_hook(self._payload(), env={"FRESH_SESSION_HOOK_BYTES": "1000000"})
         self.assertEqual(result.stdout.strip(), "")
 
     def test_dry_run_logs_and_emits_nothing(self):
         """dry-run is for tuning the threshold without the hook talking."""
-        write_transcript(self.transcript, user_turns=4, padding=50)
+        write_transcript(self.transcript, user_turns=10, padding=50)
         log = self.tmp / "dry.log"
         result = run_hook(
             self._payload(),

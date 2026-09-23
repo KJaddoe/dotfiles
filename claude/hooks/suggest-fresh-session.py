@@ -33,6 +33,8 @@ DEFAULT_STATE_DIR = Path.home() / ".claude" / "state" / "fresh-session"
 
 DEFAULT_THRESHOLD_BYTES = 600_000
 
+DEFAULT_MIN_TURNS = 10
+
 # Claude Code's own `cleanupPeriodDays` sweep does not cover ~/.claude/state, so markers are
 # swept here. A marker is disposable: absent means "measure from zero", the safe default.
 MARKER_MAX_AGE_SECONDS = 14 * 24 * 60 * 60
@@ -52,19 +54,37 @@ def mode():
     return value if value in VALID_MODES else "on"
 
 
-def threshold():
-    """Read the byte threshold, defaulting rather than failing on a non-numeric value.
+def positive_int_env(name, default):
+    """Read a positive integer env var, defaulting rather than failing on anything else.
 
-    :return: the byte count at or above which the note is injected
+    :param name: the env var to read
+    :param default: value used when it is unset, non-numeric or not positive
+    :return: the parsed value or the default
     """
-    raw = os.environ.get("FRESH_SESSION_HOOK_BYTES")
+    raw = os.environ.get(name)
     if not raw:
-        return DEFAULT_THRESHOLD_BYTES
+        return default
     try:
         value = int(raw.strip())
     except (TypeError, ValueError):
-        return DEFAULT_THRESHOLD_BYTES
-    return value if value > 0 else DEFAULT_THRESHOLD_BYTES
+        return default
+    return value if value > 0 else default
+
+
+def threshold():
+    """Read the byte threshold.
+
+    :return: the byte count at or above which the note is injected
+    """
+    return positive_int_env("FRESH_SESSION_HOOK_BYTES", DEFAULT_THRESHOLD_BYTES)
+
+
+def min_turns():
+    """Read the turn floor that must be met alongside the byte threshold.
+
+    :return: the user-turn count at or above which the note is injected
+    """
+    return positive_int_env("FRESH_SESSION_HOOK_TURNS", DEFAULT_MIN_TURNS)
 
 
 def state_dir():
@@ -295,7 +315,7 @@ def run_nudge(data):
         return
 
     size, turns = measure(transcript, read_marker(data.get("session_id") or ""))
-    if size < threshold():
+    if size < threshold() or turns < min_turns():
         return
 
     note = build_note(turns, size)

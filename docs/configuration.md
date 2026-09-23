@@ -19,6 +19,7 @@ never the value itself.
 | `CLAUDE_PROJECT_DIR`       | Project root the memory hook maps to a session dir                   | No       | current dir                             | -            |
 | `FRESH_SESSION_HOOK_MODE`  | Behaviour of the `suggest-fresh-session` UserPromptSubmit hook       | No       | `on`                                    | `off`        |
 | `FRESH_SESSION_HOOK_BYTES` | Transcript bytes at which that hook starts injecting                 | No       | `600000`                                | `900000`     |
+| `FRESH_SESSION_HOOK_TURNS` | User turns that must also be reached before that hook injects        | No       | `10`                                    | `20`         |
 | `FRESH_SESSION_STATE_DIR`  | Marker directory for that hook; a test seam, not for hand-setting    | No       | `~/.claude/state/fresh-session`         | `/tmp/m`     |
 | `FRESH_SESSION_LOG_PATH`   | Dry-run log for that hook; a test seam, not for hand-setting         | No       | `~/.claude/logs/fresh-session-hook.log` | `/tmp/d.log` |
 
@@ -106,18 +107,18 @@ a different name in a different folder. A token-level clone detector is the tool
 
 | Value     | Behaviour                                                                             |
 |-----------|---------------------------------------------------------------------------------------|
-| `on`      | Default. Injects the nudge once the session is at or over `FRESH_SESSION_HOOK_BYTES`  |
+| `on`      | Default. Injects once the session meets both `_BYTES` and `_TURNS`                    |
 | `dry-run` | Appends what it would inject to `~/.claude/logs/fresh-session-hook.log`; injects none |
 | `off`     | Silent. The hook still runs and still exits 0, but emits and logs nothing             |
 
 An unrecognised value falls back to `on`, not to `off`: a typo silently disabling the nudge would
-be indistinguishable from the nudge working and finding nothing. `FRESH_SESSION_HOOK_BYTES` falls
-back the same way on a non-numeric or non-positive value.
+be indistinguishable from the nudge working and finding nothing. `FRESH_SESSION_HOOK_BYTES` and
+`FRESH_SESSION_HOOK_TURNS` fall back the same way on a non-numeric or non-positive value.
 
 Unlike the three Stop hooks above, this one never blocks and never exits non-zero, so it has no
 `enforce` value. Its whole output is context for the model.
 
-**Where the value comes from:** none needed; both are local behaviour switches with safe defaults.
+**Where the value comes from:** none needed; all three are local behaviour switches with safe defaults.
 
 `settings.json` sets `FRESH_SESSION_HOOK_MODE` to `dry-run`, so the nudge currently logs and never
 injects. `FRESH_SESSION_HOOK_BYTES` is still the shipped 600000, a starting guess rather than a
