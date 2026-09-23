@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from _harness import HOOKS_DIR, RepoFixture, load_hook, run_standalone
 
@@ -163,6 +164,21 @@ class NearTier(SymbolFixture):
         self.write("src/dto/paged-query.dto.ts", "export class PagedQueryDto {}\n")
         names = {hit[1] for hit in self.analyse()["near"]}
         self.assertIn("PageQueryDto", names)
+
+    def test_result_does_not_depend_on_filesystem_order(self):
+        """Regression: ext4 lists a directory in hash order, APFS in name order."""
+        self.write("src/dto/page-query.dto.ts", "export class PageQueryDto {}\n")
+        self.write("src/dto/paged-query.dto.ts", "export class PagedQueryDto {}\n")
+        expected = self.analyse()["near"]
+        real_walk = os.walk
+
+        def reversed_walk(top):
+            for dirpath, dirnames, filenames in real_walk(top):
+                dirnames.reverse()
+                yield dirpath, dirnames, filenames[::-1]
+
+        with mock.patch.object(hook.os, "walk", reversed_walk):
+            self.assertEqual(self.analyse()["near"], expected)
 
     def test_similar_names_in_different_directories_are_ignored(self):
         """Layered architectures repeat names across folders by construction."""
