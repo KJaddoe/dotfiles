@@ -120,12 +120,11 @@ Unlike the three Stop hooks above, this one never blocks and never exits non-zer
 
 **Where the value comes from:** none needed; all three are local behaviour switches with safe defaults.
 
-`settings.json` sets `FRESH_SESSION_HOOK_MODE` to `dry-run`, so the nudge currently logs and never
-injects. `FRESH_SESSION_HOOK_BYTES` is still the shipped 600000, a starting guess rather than a
-tuned number: transcript bytes track tool output far more than conversation length, so the two come
-apart. Read `~/.claude/logs/fresh-session-hook.log` over several working days before setting a
-threshold and switching to `on`. If the log shows it firing on sessions that have barely been
-talked to, the answer is a turn count alongside the byte count, not a bigger byte count.
+`settings.json` leaves `FRESH_SESSION_HOOK_MODE` unset, so the nudge runs `on`. Bytes alone are the
+wrong signal: transcript bytes track tool output far more than conversation length, so a session a
+few turns old can already be over the byte threshold. The turn floor keeps the nudge to
+conversations that have actually run long; if it still fires too early, raise
+`FRESH_SESSION_HOOK_TURNS` rather than `FRESH_SESSION_HOOK_BYTES`.
 
 ## Permission mode
 
