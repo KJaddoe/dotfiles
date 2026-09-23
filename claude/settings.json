@@ -1,7 +1,4 @@
 {
-  "env": {
-    "FRESH_SESSION_HOOK_MODE": "dry-run"
-  },
   "model": "opus",
   "attribution": {
     "commit": "",
