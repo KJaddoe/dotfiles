@@ -149,8 +149,8 @@ def index_symbols(repo):
     records = []
     seen_files = 0
     for dirpath, dirnames, filenames in os.walk(repo):
-        dirnames[:] = [d for d in dirnames if d not in SKIPPED_DIRS]
-        for filename in filenames:
+        dirnames[:] = sorted(d for d in dirnames if d not in SKIPPED_DIRS)
+        for filename in sorted(filenames):
             pattern = DECLARATION_PATTERNS.get(Path(filename).suffix)
             if pattern is None:
                 continue
