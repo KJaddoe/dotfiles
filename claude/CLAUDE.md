@@ -95,26 +95,28 @@ for these rules as FYI reference only; the binding text is HERE.
 
 ### Code & artifacts
 
-- A doc-comment is EARNED, not owed. Write one only where it says something the declaration does
-  not already say: units, ranges, what null means, a load-bearing ordering, a failure mode, or what
-  the thing is FOR when the name says only what it is. A class, function or method whose name and
-  signature already tell the whole story gets NO block; a line restating it is worse than silence,
-  and "but the rule says document everything" is not a reason to write one. That covers
-  constructors and framework lifecycle hooks (`ngOnInit`, `OnDestroy`, `Dispose`) by default: their
-  names say WHEN they run, not what they do, so a block there needs something the body does not
-  already show. Test a draft block by deleting it and re-reading the declaration: if nothing is
-  lost, it stays deleted. Where a block IS earned it ALWAYS lists a `@param` for each parameter, a
-  `@returns` where something is returned, and a `@throws` for each failure it raises, and those
-  tags NEVER stand alone: the block also carries a description above them, because the signature
-  already gives the reader the parameter list and only a person can say what the callable is FOR.
-  That prose is ONE line, THREE AT THE ABSOLUTE MOST; past that it is rationale, and rationale
-  belongs in `docs/architecture.md` or an ADR, never above a declaration. The tag lines themselves
-  don't count towards that ceiling. Types, interface properties and constants follow the same test
-  and get one line at most. The one exemption is a layer whose doc-comments are PUBLISHED as
-  generated API text (e.g. the `@nestjs/swagger` plugin), and that project's `CLAUDE.md` must name
-  the layer it covers. Use the language's convention (JSDoc/TSDoc, C# XML `///`, Python
-  docstrings) and match the project's doc style. Where that convention is a block comment, lay it
-  out EXPANDED: the opening delimiter alone on its first line, a star prefix on every continuation,
+- Doc-comments follow each language's official standard, in its syntax and tag style: what the
+  standard REQUIRES gets written even when the name looks self-explanatory. The per-language
+  coverage, syntax and tags live in `~/.claude/skills/_shared/house-rules.md`; read it before
+  writing doc-comments in a language, and add a language there, checked against its official
+  source, before writing its first one.
+- Everything a standard leaves to judgment, and every language without one, is EARNED, not
+  owed. Write one only where it says something the declaration does not already say: units,
+  ranges, what null means, a load-bearing ordering, a failure mode, or what the thing is FOR when
+  the name says only what it is. There, constructors and framework lifecycle hooks (`ngOnInit`,
+  `OnDestroy`) get none by default: their names say WHEN they run, not what they do. Test a draft
+  block by deleting it and re-reading the declaration: if nothing is lost, it stays deleted. A
+  REQUIRED block still never merely restates the name: say what it is for in one line.
+- Every block, required or earned: tags NEVER stand alone, a description sits above them. That
+  prose is ONE line, THREE AT THE ABSOLUTE MOST; past that it is rationale, and rationale belongs
+  in `docs/architecture.md` or an ADR, never above a declaration. Tag lines and the structured
+  sections a standard requires (Rust `# Errors`, Swift `- Parameter:`) don't count towards that
+  ceiling; where a standard puts parameters in the prose instead of tags (Go, Kotlin, Dart), that
+  mention is part of the one to three lines. Types, interface properties and constants get one line at most. The
+  one exemption from the ceiling is a layer whose doc-comments are PUBLISHED as generated API text
+  (e.g. the `@nestjs/swagger` plugin), and that project's `CLAUDE.md` must name the layer it
+  covers. Match the project's doc style. Where the convention is a block comment, lay it out
+  EXPANDED: the opening delimiter alone on its first line, a star prefix on every continuation,
   the closing delimiter alone on its last, and a bare star line between the prose and the tags.
   Never compact a block onto its delimiters to save lines. Config files stay comment-free (only
   what's functionally required, e.g. shebangs); commit messages stay terse.

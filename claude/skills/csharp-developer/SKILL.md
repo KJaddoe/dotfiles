@@ -56,7 +56,8 @@ Load detailed guidance based on context:
   ```
 
 - Use dependency injection for all services
-- Run an earned-or-not gate before writing any XML doc comment: draft the block, delete it, and re-read the declaration alone. Write it only if the draft carried something the name and signature cannot show on their own (units, ranges, what null means, a load-bearing ordering, a failure mode)
+- Give every publicly visible type and member an XML doc comment with at least a `<summary>`, using `<inheritdoc/>` on overrides and interface implementations; once any `<param>` is written, cover every parameter (the compiler warns otherwise)
+- For non-public members, run an earned-or-not gate before writing an XML doc comment: draft the block, delete it, and re-read the declaration alone. Write it only if the draft carried something the name and signature cannot show on their own (units, ranges, what null means, a load-bearing ordering, a failure mode)
 - Implement proper error handling with Result pattern:
 
   ```csharp

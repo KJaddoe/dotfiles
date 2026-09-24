@@ -133,7 +133,7 @@ class UnsafeImageCache {
 - Use `async/await` for asynchronous operations (see pattern above)
 - Ensure `Sendable` compliance for concurrency
 - Use value types (`struct`/`enum`) by default
-- Write markup comments (`/// …`) only where they say something the declaration doesn't already show (a documented `!` force-unwrap justification, an actor isolation guarantee, a `Sendable` contract beyond what the type already encodes) - not on every public type/function whose protocol conformance and signature already tell the whole story
+- Write a markup comment (`/// …`) on every declaration, as the Swift API Design Guidelines require: a one-line summary fragment saying what it is for, never merely restating the name, plus `- Parameter`, `- Returns:` and `- Throws:` for what the summary does not cover (a documented `!` force-unwrap justification, an actor isolation guarantee, a `Sendable` contract beyond what the type already encodes)
 - Use property wrappers for cross-cutting concerns
 - Profile with Instruments before optimizing
 
