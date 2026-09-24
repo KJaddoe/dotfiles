@@ -1,7 +1,7 @@
-# Doc-comment style: current rule and why it changed six times
+# Doc-comment style: current rule and why it changed seven times
 
 FYI/rationale file. Binding rule lives in `~/.claude/CLAUDE.md` -> Code & artifacts. This file exists
-because the rule went through six corrections between 2026-07-13 and 2026-09-24 and the reasoning
+because the rule went through seven corrections between 2026-07-13 and 2026-09-24 and the reasoning
 for each is worth keeping, even though only the final state governs behaviour.
 
 ## Current rule (2026-09-24)
@@ -17,15 +17,16 @@ for each is worth keeping, even though only the final state governs behaviour.
 - Tags follow the standard (e.g. Kotlin, Dart and Go put parameters in the prose, C# lists every
   parameter once any is listed). The prose above the tags is capped (one line, three at the most);
   tag lines and a standard's required sections never count towards that cap.
-- Block layout stays EXPANDED: opening delimiter alone on its line, star-prefixed continuations,
-  closing delimiter alone, a bare star line between the prose and the tags. Never compact onto the
-  delimiters.
+- A tag-free summary that fits on one line may stay on one line (`/** Reads one contact. */`).
+  Anything longer, or carrying a tag, is EXPANDED: opening delimiter alone on its line,
+  star-prefixed continuations, closing delimiter alone, a bare star line between the prose and
+  the tags.
 - Inline `//` comments: never narrate a line, and never justify an obvious branch, guard, early
   return, or fallback either, since the code already says it. Test: delete and re-read; keep one
   only where a competent reader would otherwise make a WRONG change (a non-obvious ordering, an
   upstream workaround, a check that looks redundant beside another).
 
-## Why it took five passes
+## Why it took seven passes
 
 - 2026-06-01: the ancestor rule - no explanatory comments in code or config, matching each file's
   existing near-zero density. Still governs inline narration and config files.
@@ -56,6 +57,10 @@ for each is worth keeping, even though only the final state governs behaviour.
   standards and best practices": required coverage per language now comes first, and the
   always-list-tags rule of 2026-09-03 is superseded for TypeScript, where Google makes redundant
   tags optional. This knowingly brings back one-line blocks on self-explanatory Angular exports.
+- 2026-09-24: the user allowed single-line blocks per the standards (Google TypeScript and Java,
+  Kotlin): a tag-free one-line summary may stay on one line. The 2026-09-03 expanded-layout
+  correction still governs every block that is longer or carries a tag, which is what was
+  rejected then (text beside the delimiters of a multi-line block).
 
 ## Enforcement
 
