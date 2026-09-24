@@ -125,8 +125,8 @@ Code quality.
 
 ## Code & Writing Style
 
-Doc-comment evolution (five revisions, 2026-07-13 to 2026-09-03) moved to
-`domain/doc-comment-style.md` (2026-09-14). Binding copy in CLAUDE.md → Code & artifacts. What stays
+Doc-comment evolution (six revisions, 2026-07-13 to 2026-09-24; the last makes each language's
+official standard the baseline) lives in `domain/doc-comment-style.md`. Binding copy in CLAUDE.md → Code & artifacts. What stays
 here: 2026-06-01, don't add explanatory/descriptive comments to code or config files; keep only
 what's functionally required (e.g. shebangs) and match the surrounding file's existing near-zero
 comment density. Why: the user explicitly rejected added comments in a zsh dotfile and expects this
