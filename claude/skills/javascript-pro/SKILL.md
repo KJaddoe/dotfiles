@@ -47,7 +47,8 @@ Load detailed guidance based on context:
 - Use async/await for all asynchronous operations
 - Use ESM (`import`/`export`) for new projects
 - Implement proper error handling with try/catch
-- Run an earned-or-not gate before writing any JSDoc block: draft it, delete it, and re-read the declaration alone. Write it only if the draft carried something the name and signature cannot show on their own (param types/ranges, what null/undefined means, a load-bearing ordering, a failure mode)
+- Give every top-level export a JSDoc block, except symbols exported only for tooling (Google TypeScript style guide)
+- For non-exported declarations, run an earned-or-not gate before writing a JSDoc block: draft it, delete it, and re-read the declaration alone. Write it only if the draft carried something the name and signature cannot show on their own (param types/ranges, what null/undefined means, a load-bearing ordering, a failure mode)
 - Follow functional programming principles
 
 ### MUST NOT DO
@@ -60,7 +61,7 @@ Load detailed guidance based on context:
 - Use synchronous I/O in Node.js
 - Mutate function parameters
 - Create blocking operations in the browser
-- Write a JSDoc block for a declaration the gate did not clear, including an obvious getter or a function whose name and signature already say everything
+- Write a JSDoc block for a non-exported declaration the gate did not clear, including an obvious getter or a function whose name and signature already say everything
 
 ## Key Patterns with Examples
 
@@ -129,7 +130,7 @@ When implementing JavaScript features, provide:
 
 1. Module file with clean exports
 2. Test file with comprehensive coverage
-3. JSDoc only where it clears the earned-or-not gate above
+3. JSDoc on every top-level export, and elsewhere only where it clears the earned-or-not gate above
 4. Brief explanation of patterns used
 
 Adapted from [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills). License terms in `LICENSE.txt`.

@@ -48,7 +48,7 @@ Load detailed guidance based on context:
 
 - Type hints for all function signatures and class attributes
 - PEP 8 compliance with black formatting
-- A docstring only where it is earned: draft it, then delete the draft and re-read the declaration alone. If nothing is lost, meaning the name, signature, and body already say what the draft said, skip it. Write one only when it carries something the declaration cannot show on its own: units, ranges, what `None` means, a load-bearing ordering, or a failure mode (Google style, when written)
+- A docstring on every module, exported function and class, and public method including `__init__` (PEP 257). Anywhere else, a docstring only where it is earned: draft it, then delete the draft and re-read the declaration alone. If nothing is lost, meaning the name, signature, and body already say what the draft said, skip it. Write one only when it carries something the declaration cannot show on its own: units, ranges, what `None` means, a load-bearing ordering, or a failure mode (Google style, when written)
 - Test coverage exceeding 90% with pytest
 - Use `X | None` instead of `Optional[X]` (Python 3.10+)
 - Async/await for I/O-bound operations

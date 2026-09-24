@@ -19,7 +19,7 @@ Applies to any task involving code documentation, API specs, or developer-facing
 1. **Discover** - Ask for format preference and exclusions
 2. **Detect** - Identify language and framework
 3. **Analyze** - Find candidate declarations (functions, classes, methods, types) that have no doc-comment, or one that looks stale
-4. **Gate** - For each candidate, draft the doc-comment, then delete the draft and re-read the declaration alone. If nothing is lost, meaning the name, signature, and body already say what the draft said, skip it: a doc-comment is earned, not owed. Write the block only when the draft carried something the declaration cannot show on its own: units, ranges, what null means, a load-bearing ordering, a failure mode, or what the thing is for when the name says only what it is. A class, function, or method whose name and signature already tell the whole story gets no block
+4. **Gate** - A candidate the language's official standard requires documented (TypeScript/JavaScript top-level exports, C# public types and members, Python modules, exported functions and classes and public methods, shell file overviews and non-trivial functions) always passes; see the house rules. For every other candidate, draft the doc-comment, then delete the draft and re-read the declaration alone. If nothing is lost, meaning the name, signature, and body already say what the draft said, skip it: a doc-comment is earned, not owed. Write the block only when the draft carried something the declaration cannot show on its own: units, ranges, what null means, a load-bearing ordering, a failure mode, or what the thing is for when the name says only what it is. A class, function, or method whose name and signature already tell the whole story gets no block
 5. **Document** - Apply a consistent format, but only to candidates the gate cleared
 6. **Validate** - Test all code examples compile/run:
    - Python: `python -m doctest file.py` for doctest blocks; `pytest --doctest-modules` for module-wide checks
@@ -121,8 +121,8 @@ Load detailed guidance based on context:
 - Ask for format preference before starting
 - Detect framework for correct API doc strategy
 - Run the earned-or-not gate on every candidate before writing a block
-- Document only declarations the gate cleared: where units, ranges, null handling, a load-bearing ordering, a failure mode, or purpose beyond the name would otherwise be lost
-- Include parameter types and descriptions in every block that is written
+- Document only declarations the gate cleared: those the standard requires, and others where units, ranges, null handling, a load-bearing ordering, a failure mode, or purpose beyond the name would otherwise be lost
+- Include parameter descriptions per the language standard: every parameter in C# and Python, and in TypeScript only where they add to the name and type; parameter types only where the language has no type syntax (plain JavaScript)
 - Document exceptions/errors in every block that is written
 - Test code examples in documentation
 - Generate a coverage report that states gate skips alongside written docs
@@ -133,7 +133,7 @@ Load detailed guidance based on context:
 - Apply wrong API doc strategy for framework
 - Write inaccurate or untested documentation
 - Skip error documentation in a block that is written
-- Write a block for a declaration the gate did not clear, including obvious getters/setters
+- Write a block for a declaration the gate did not clear, including obvious non-public getters/setters
 - Restate the name or signature in prose instead of adding what it cannot show
 - Create documentation that's hard to maintain
 

@@ -31,7 +31,7 @@ Deep expertise in async Python, Pydantic V2, and production-grade API developmen
 
 ## Docstrings
 
-A docstring is earned, not owed. Before writing one on a schema, endpoint, or CRUD function, draft it, then delete the draft and re-read the declaration alone: if the name, type hints, and body already say what the draft said, skip it. Write one only when it carries something the declaration cannot show on its own: a non-obvious validation rule, a side effect (a write, a token issued), or a failure mode not visible from the signature. FastAPI's OpenAPI generation comes from type hints, `Field` descriptions, and route decorators, not from docstrings, so "document endpoints" below means exposing the API surface through those, not prose blocks on every handler.
+PEP 257 requires a docstring on every module and on every exported function and class, schemas, endpoints and CRUD functions included; say what each is for, never merely its name. For private helpers a docstring is earned, not owed: draft it, then delete the draft and re-read the declaration alone: if the name, type hints, and body already say what the draft said, skip it. Write one only when it carries something the declaration cannot show on its own: a non-obvious validation rule, a side effect (a write, a token issued), or a failure mode not visible from the signature. FastAPI's OpenAPI generation comes from type hints, `Field` descriptions, and route decorators, not from docstrings, so "document endpoints" below means exposing the API surface through those, not prose blocks on every handler.
 
 ## Minimal Complete Example
 
