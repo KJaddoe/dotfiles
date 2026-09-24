@@ -207,6 +207,12 @@ class TestBash(GateFixture):
             with self.subTest(command=command):
                 self.assertEqual(self.bash(command), ALLOW)
 
+    def test_redirect_after_cd_into_repo_blocks(self):
+        """A relative redirect resolves where the command cd's to, not the session directory."""
+        command = f"cd {self.repo} && printf x > b.txt"
+        run = self.run_tool("Bash", {"command": command}, self.outside)
+        self.assertEqual(run.returncode, BLOCK)
+
     def test_approval_unblocks_writes(self):
         """With both documents approved, shell writes go through."""
         self.approve_both()
