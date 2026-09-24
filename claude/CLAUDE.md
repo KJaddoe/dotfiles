@@ -27,12 +27,11 @@ for these rules as FYI reference only; the binding text is HERE.
   not just formal plan execution: checks, research, fixes, one-off asks stay inline. Reach for Agent
   only once a full plan exists and you're in the executing-plans / subagent-driven-development flow,
   or when asked for it that turn.
-- Scope superpowers' process skills to the size of the ask, the same way the default above scopes
-  plan execution: for a small, clearly-bounded change in this repo (a hook, a skill, a config tweak,
-  a doc fix) skip `superpowers:brainstorming`'s and `superpowers:test-driven-development`'s full
-  process and make the change directly. Reserve them for genuinely open-ended or multi-step feature
-  work where the solution's shape isn't already decided. The skill still names its own default; this
-  file says when that default fires here.
+- Issue work runs spec, my review, plan, my review, then code. Both documents go in the session
+  `specs/` folder with `issue:`, `kind:` (spec or plan) and `status: draft` front matter; only I
+  set them approved. `claude/hooks/require-approved-spec.py` enforces this on issue branches.
+  Outside issue work (a small, clearly-bounded dotfiles change on `main`) skip
+  `superpowers:brainstorming`'s and `superpowers:test-driven-development`'s full process.
 - Terminal tooling: the shell stays command-driven with plain `git`/`gh`/`kubectl` etc. Don't propose or
   install standalone TUIs (lazygit, k9s, gh-dash, …); interactive/visual tooling belongs in nvim.
 - A new rule for this file may ONLY originate from: (a) you explicitly asking for one, or (b) a
