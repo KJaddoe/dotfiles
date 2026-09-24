@@ -811,6 +811,52 @@ def repo_root(cwd):
     return Path(top) if top else None
 
 
+def nearest_existing_dir(path):
+    """Walk up from `path` to the closest directory that exists.
+
+    A write into a directory the command would create resolves against the tree it would be
+    created in.
+
+    :param path: file or directory path, which need not exist
+    :return: the nearest existing ancestor, or the filesystem root
+    """
+    current = Path(path).expanduser()
+    while not current.is_dir() and current != current.parent:
+        current = current.parent
+    return current
+
+
+def session_project_dir(project_dir):
+    """Map a project directory to its session folder under `~/.claude/projects/`.
+
+    Mirrors Claude Code's own mapping, so memory and specs land where the harness looks.
+
+    :param project_dir: absolute project path
+    :return: the session folder, which may not exist yet
+    """
+    mapped = str(project_dir).replace("/", "-").replace(".", "-")
+    return Path.home() / ".claude" / "projects" / mapped
+
+
+def redirect_targets(command):
+    """Return the paths a shell command redirects into.
+
+    Quotes are stripped, so a target carrying a space survives as the path it names rather than
+    as a token that no suffix and no repository test would recognise.
+
+    Heredoc bodies are removed before the scan, because they are content rather than shell: a
+    markdown blockquote or a shell example inside one is not a redirect, and reading it as one
+    invents a target the command never writes to.
+
+    :param command: the shell command
+    :return: list of redirect target paths, empty when the command redirects nowhere
+    """
+    shell = command
+    for body in heredoc_bodies(command):
+        shell = shell.replace(body, "")
+    return [target.strip("'\"") for target in re.findall(r">>?\s*([^\s;&|]+)", shell) if target]
+
+
 def command_directory(cmd, cwd):
     """Resolve the directory a command's git or gh invocation would act on.
 

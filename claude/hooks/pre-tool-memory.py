@@ -13,6 +13,8 @@ import os
 import sys
 from pathlib import Path
 
+from _hookutil import session_project_dir
+
 
 def load_context():
     """Assemble the FYI context block from project and global memory files.
@@ -23,11 +25,8 @@ def load_context():
     :return: the assembled context string, always including the FYI-not-rules preamble
     """
     project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
-    # /Users/you/Projects/foo -> -Users-you-Projects-foo
-    mapped = project_dir.replace("/", "-").replace(".", "-")
-
     home = Path.home()
-    memory_file = home / ".claude" / "projects" / mapped / "memory" / "MEMORY.md"
+    memory_file = session_project_dir(project_dir) / "memory" / "MEMORY.md"
     global_idx = home / ".claude" / "memory" / "memory.md"
     global_general = home / ".claude" / "memory" / "general.md"
 

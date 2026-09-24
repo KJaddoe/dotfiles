@@ -57,7 +57,13 @@ import re
 import sys
 from pathlib import Path
 
-from _hookutil import heredoc_bodies, read_payload, repo_root
+from _hookutil import (
+    heredoc_bodies,
+    nearest_existing_dir,
+    read_payload,
+    redirect_targets,
+    repo_root,
+)
 
 HASH = "#"
 
@@ -225,25 +231,6 @@ def existing_text(path):
         return ""
 
 
-def redirect_targets(command):
-    """Return the paths a shell command redirects into.
-
-    Quotes are stripped, so a target carrying a space survives as the path it names rather than
-    as a token that no suffix and no repository test would recognise.
-
-    Heredoc bodies are removed before the scan, because they are content rather than shell: a
-    markdown blockquote or a shell example inside one is not a redirect, and reading it as one
-    invents a target the command never writes to.
-
-    :param command: the shell command
-    :return: list of redirect target paths, empty when the command redirects nowhere
-    """
-    shell = command
-    for body in heredoc_bodies(command):
-        shell = shell.replace(body, "")
-    return [target.strip("'\"") for target in re.findall(r">>?\s*([^\s;&|]+)", shell) if target]
-
-
 def heredoc_targets_prose(command):
     """Report whether a shell command redirects into a prose document.
 
@@ -277,10 +264,7 @@ def directory_in_repository(directory):
     if not directory:
         return False
 
-    current = Path(directory).expanduser()
-    while not current.is_dir() and current != current.parent:
-        current = current.parent
-
+    current = nearest_existing_dir(directory)
     return current.is_dir() and repo_root(current) is not None
 
 
