@@ -50,7 +50,8 @@ look right for your projects.
 `~/.claude/logs/doc-comment-shape.log` under `dry-run` and exiting 2 under `enforce`.
 
 It checks only what is mechanically checkable about a doc-comment's SHAPE: tags with no prose
-above them, more than three prose lines before the first tag, a block compacted onto one line, and
+above them, more than three prose lines before the first tag, a block tag squeezed onto a one-line
+block (a tag-free one-line summary is allowed), and
 a continuation line missing its `*` or the bare `*` between prose and tags. It deliberately does
 not judge whether the prose merely restates the declaration, which is the question the rule
 actually turns on and the one that needs a reader. Scope is files holding uncommitted work, and

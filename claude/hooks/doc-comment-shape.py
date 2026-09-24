@@ -12,8 +12,9 @@ mechanically checkable, and every one of them was got wrong by hand before this 
   prose-ceiling   more than three prose lines before the first tag. Past that it is rationale,
                   and rationale belongs in docs/architecture.md or an ADR, never above a
                   declaration.
-  compacted       the whole block on one line (`/** text */`). The rule wants it expanded: the
-                  opening delimiter alone, a star on every continuation, the closing alone.
+  compacted       a block tag squeezed onto one line (`/** @deprecated text */`). A one-line
+                  block is fine for a tag-free summary, as the Google TypeScript and Java guides
+                  and the Kotlin conventions allow; once a block carries a tag it is expanded.
   layout          a continuation line with no `*` prefix, or no bare `*` line separating the
                   prose from the tags.
 
@@ -85,6 +86,8 @@ SKIP_DIRECTORIES = {
 ONE_LINE_BLOCK = re.compile(r"^\s*/\*\*.*\*/\s*$")
 STAR_PREFIX = re.compile(r"^\s*\*")
 TAG_LINE = re.compile(r"^\s*\*\s*@\w+")
+# `{@link X}` is an inline tag and allowed in a one-line summary; a bare `@word` is a block tag.
+BLOCK_TAG = re.compile(r"(?<!\{)@\w+")
 CONTENT_AFTER_STAR = re.compile(r"^\s*\*\s?(.*)$")
 
 
@@ -126,7 +129,7 @@ def classify(lines, start, end):
     problems = []
 
     if start == end:
-        return ["compacted"]
+        return ["compacted"] if BLOCK_TAG.search(lines[start]) else []
 
     if lines[start].strip() != "/**":
         problems.append("layout: text beside the opening delimiter")

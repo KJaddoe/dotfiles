@@ -115,11 +115,13 @@ for these rules as FYI reference only; the binding text is HERE.
   mention is part of the one to three lines. Types, interface properties and constants get one line at most. The
   one exemption from the ceiling is a layer whose doc-comments are PUBLISHED as generated API text
   (e.g. the `@nestjs/swagger` plugin), and that project's `CLAUDE.md` must name the layer it
-  covers. Match the project's doc style. Where the convention is a block comment, lay it out
-  EXPANDED: the opening delimiter alone on its first line, a star prefix on every continuation,
-  the closing delimiter alone on its last, and a bare star line between the prose and the tags.
-  Never compact a block onto its delimiters to save lines. Config files stay comment-free (only
-  what's functionally required, e.g. shebangs); commit messages stay terse.
+  covers. Match the project's doc style. Where the convention is a block comment, a tag-free
+  summary that fits on one line may stay on one line (`/** Reads one contact. */`), as the Google
+  TypeScript and Java guides and the Kotlin conventions allow. Anything longer, or carrying a tag,
+  is laid out EXPANDED: the opening delimiter alone on its first line, a star prefix on every
+  continuation, the closing delimiter alone on its last, and a bare star line between the prose
+  and the tags. Config files stay comment-free (only what's functionally required, e.g.
+  shebangs); commit messages stay terse.
 - Inline `//` comments are the exception, not the habit. Never narrate what a line does, and never
   justify WHY an obvious branch, guard, early return or fallback exists: the code already says it,
   and "but it explains the reasoning" is not a licence. One earns its place ONLY where a competent

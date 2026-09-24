@@ -104,8 +104,20 @@ class ClassifyTests(unittest.TestCase):
         self.assertEqual(len(found), 1)
         self.assertIn("no-description", found[0][1][0])
 
-    def test_compacted_block_is_reported(self):
+    def test_single_line_block_without_tags_is_accepted(self):
         found = self.findings("/** Reads one contact. */\nfunction get() {}\n")
+        self.assertEqual(found, [])
+
+    def test_single_line_block_with_an_inline_link_is_accepted(self):
+        found = self.findings("/** Reads one {@link Contact}. */\nfunction get() {}\n")
+        self.assertEqual(found, [])
+
+    def test_single_line_block_with_a_tag_is_reported(self):
+        found = self.findings("/** @deprecated Use getAll. */\nfunction get() {}\n")
+        self.assertEqual(found, [(1, ["compacted"])])
+
+    def test_single_line_block_with_a_tag_after_prose_is_reported(self):
+        found = self.findings("/** Reads one contact. @param id The code. */\nfunction get() {}\n")
         self.assertEqual(found, [(1, ["compacted"])])
 
     def test_prose_over_the_ceiling_is_reported(self):
@@ -144,24 +156,26 @@ class ScopeTests(unittest.TestCase):
     """Only uncommitted work in a understood language is measured."""
 
     def test_committed_work_is_not_reported(self):
-        handle, repo = make_repo({"a.ts": "/** Compacted. */\nclass A {}\n"})
+        handle, repo = make_repo({"a.ts": "/** @deprecated Compacted. */\nclass A {}\n"})
         with handle:
             git(repo, "add", "-A")
             git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "x")
             self.assertEqual(hook.analyse(repo, hook.changed_files(repo)), [])
 
     def test_uncommitted_work_is_reported(self):
-        handle, repo = make_repo({"a.ts": "/** Compacted. */\nclass A {}\n"})
+        handle, repo = make_repo({"a.ts": "/** @deprecated Compacted. */\nclass A {}\n"})
         with handle:
             self.assertEqual(slugs(hook.analyse(repo, hook.changed_files(repo))), {"compacted"})
 
     def test_a_language_without_block_docs_is_skipped(self):
-        handle, repo = make_repo({"a.py": '"""Doc."""\n', "b.cs": "/** Compacted. */\n"})
+        handle, repo = make_repo(
+            {"a.py": '"""Doc."""\n', "b.cs": "/** @deprecated Compacted. */\n"}
+        )
         with handle:
             self.assertEqual(hook.analyse(repo, hook.changed_files(repo)), [])
 
     def test_all_mode_measures_committed_work(self):
-        handle, repo = make_repo({"a.ts": "/** Compacted. */\nclass A {}\n"})
+        handle, repo = make_repo({"a.ts": "/** @deprecated Compacted. */\nclass A {}\n"})
         with handle:
             git(repo, "add", "-A")
             git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "x")
@@ -170,7 +184,9 @@ class ScopeTests(unittest.TestCase):
             self.assertEqual(slugs(hook.analyse(repo, hook.tracked_files(repo))), {"compacted"})
 
     def test_vendored_directories_are_skipped(self):
-        handle, repo = make_repo({"node_modules/p/a.ts": "/** Compacted. */\nclass A {}\n"})
+        handle, repo = make_repo(
+            {"node_modules/p/a.ts": "/** @deprecated Compacted. */\nclass A {}\n"}
+        )
         with handle:
             self.assertEqual(hook.analyse(repo, hook.changed_files(repo)), [])
 
@@ -197,21 +213,21 @@ class HookModeTests(unittest.TestCase):
         )
 
     def test_dry_run_reports_without_blocking(self):
-        handle, repo = make_repo({"a.ts": "/** Compacted. */\nclass A {}\n"})
+        handle, repo = make_repo({"a.ts": "/** @deprecated Compacted. */\nclass A {}\n"})
         with handle:
             result = self.run_hook(repo, "dry-run")
             self.assertEqual(result.returncode, 0)
             self.assertIn("compacted", result.stderr)
 
     def test_enforce_blocks(self):
-        handle, repo = make_repo({"a.ts": "/** Compacted. */\nclass A {}\n"})
+        handle, repo = make_repo({"a.ts": "/** @deprecated Compacted. */\nclass A {}\n"})
         with handle:
             result = self.run_hook(repo, "enforce")
             self.assertEqual(result.returncode, 2)
             self.assertIn("BLOCKED", result.stderr)
 
     def test_off_does_nothing(self):
-        handle, repo = make_repo({"a.ts": "/** Compacted. */\nclass A {}\n"})
+        handle, repo = make_repo({"a.ts": "/** @deprecated Compacted. */\nclass A {}\n"})
         with handle:
             result = self.run_hook(repo, "off")
             self.assertEqual(result.returncode, 0)
