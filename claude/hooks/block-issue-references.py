@@ -61,6 +61,7 @@ from _hookutil import (
     heredoc_bodies,
     nearest_existing_dir,
     read_payload,
+    read_text_or_empty,
     redirect_targets,
     repo_root,
 )
@@ -217,20 +218,6 @@ def references(text, prose_file):
     return found
 
 
-def existing_text(path):
-    """Read a file's current content, treating anything unreadable as empty.
-
-    A path that does not exist yet is a new file, where every reference in the content is added.
-
-    :param path: file path
-    :return: current content, empty when the file cannot be read
-    """
-    try:
-        return Path(path).read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError, ValueError):
-        return ""
-
-
 def heredoc_targets_prose(command):
     """Report whether a shell command redirects into a prose document.
 
@@ -329,7 +316,7 @@ def added(tool, tool_input):
 
     if tool == "Write":
         content = tool_input.get("content") or ""
-        return surplus(references(content, prose), references(existing_text(path), prose))
+        return surplus(references(content, prose), references(read_text_or_empty(path), prose))
 
     if tool == "Edit":
         new = references(tool_input.get("new_string") or "", prose)

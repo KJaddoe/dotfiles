@@ -826,6 +826,20 @@ def nearest_existing_dir(path):
     return current
 
 
+def read_text_or_empty(path):
+    """Read a file's current content, treating anything unreadable as empty.
+
+    A path that does not exist yet reads as empty, which is what a new file holds.
+
+    :param path: file path
+    :return: current content, empty when the file cannot be read
+    """
+    try:
+        return Path(path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError, ValueError):
+        return ""
+
+
 def session_project_dir(project_dir):
     """Map a project directory to its session folder under `~/.claude/projects/`.
 
