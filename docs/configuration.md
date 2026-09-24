@@ -341,6 +341,17 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   resolve, a path behind an unexpanded shell variable most of all, so that case fails closed
   inside a repository. The repository test runs only once a reference has been found, so an
   ordinary edit never pays for it
+- `claude/hooks/require-approved-spec.py` - PreToolUse gate on `Write`/`Edit`/`NotebookEdit` and
+  on `Bash`, no configuration and no bypass. On a branch named `<number>-<slug>` (the
+  `gh issue develop` default) it refuses edits inside the repository until the project's session
+  folder `~/.claude/projects/<mapped>/specs/` holds a Markdown spec AND plan for that issue, each
+  with front matter `issue: <number>`, `kind: spec` or `kind: plan`, and `status: approved`. Any
+  other branch, and any path outside a repository, passes. It also refuses a Claude write that
+  would leave a session spec or plan reading `status: approved`, so only the user approves and an
+  approved document is frozen until the user sets it back to draft. Under `Bash` it recognises
+  redirects into the repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an
+  interpreter; it is a guard against drift, not a sandbox, and a script written elsewhere and run
+  is not caught
 - `claude/hooks/block-artifact-publish.py` - PreToolUse guard on `Artifact`, no configuration.
   Refuses any action that would send local content to claude.ai as a hosted page: `publish`
   (which is also what an OMITTED `action` means, the shape most publish calls take) and
