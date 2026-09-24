@@ -173,21 +173,23 @@ def writes_opaquely(invoked):
 def shell_write_dirs(command, cwd):
     """List the directories a shell command would write into.
 
-    A redirect names its own target. An in-place editor, tee or an interpreter writes wherever
-    its arguments or script say, so the directory the command runs in answers for it.
+    A redirect names its own target, relative to where the command runs after any `cd`. An
+    in-place editor, tee or an interpreter writes wherever its arguments or script say, so the
+    directory the command runs in answers for it.
 
     :param command: the shell command
     :param cwd: the session's working directory
     :return: existing directories the command writes into
     """
+    invoked = strip_printed_text(strip_heredocs(command))
+    runs_in = str(command_directory(invoked, cwd))
     dirs = [
-        nearest_existing_dir(resolve(target, cwd).parent)
+        nearest_existing_dir(resolve(target, runs_in).parent)
         for target in redirect_targets(command)
         if target not in DISCARD_TARGETS
     ]
-    invoked = strip_printed_text(strip_heredocs(command))
     if writes_opaquely(invoked):
-        dirs.append(command_directory(invoked, cwd))
+        dirs.append(Path(runs_in))
     return dirs
 
 
