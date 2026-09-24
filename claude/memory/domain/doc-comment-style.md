@@ -1,19 +1,22 @@
-# Doc-comment style: current rule and why it changed five times
+# Doc-comment style: current rule and why it changed six times
 
 FYI/rationale file. Binding rule lives in `~/.claude/CLAUDE.md` -> Code & artifacts. This file exists
-because the rule went through five corrections between 2026-07-13 and 2026-09-03 and the reasoning
+because the rule went through six corrections between 2026-07-13 and 2026-09-24 and the reasoning
 for each is worth keeping, even though only the final state governs behaviour.
 
-## Current rule (2026-09-03)
+## Current rule (2026-09-24)
 
-- A doc-comment is EARNED, not owed: write one only where it says what the declaration cannot
+- What each language's official standard REQUIRES is written, in its syntax and tag style; the
+  per-language list lives in `claude/skills/_shared/house-rules.md` and is not repeated here. A
+  required block still says what the thing is FOR, never merely its name.
+- Everything else is EARNED, not owed: write one only where it says what the declaration cannot
   (units, ranges, what null means, a load-bearing failure mode or ordering, or what a thing is FOR
-  when its name only says what it is). Classes, constructors, and framework lifecycle hooks
-  (`ngOnInit`, `Dispose`) get none by default: their names say WHEN they run, not WHAT they do.
-  Test: delete a draft block and re-read the declaration; if nothing is lost, leave it deleted.
-- Where a block IS written, `@param`/`@returns`/`@throws` are ALWAYS listed, independent of the
-  earned-test above; only the prose above them is capped (one line, three at the most). The tag
-  lines never count towards that cap.
+  when its name only says what it is). There, constructors and framework lifecycle hooks get none
+  by default. Test: delete a draft block and re-read the declaration; if nothing is lost, leave it
+  deleted.
+- Tags follow the standard (e.g. Kotlin, Dart and Go put parameters in the prose, C# lists every
+  parameter once any is listed). The prose above the tags is capped (one line, three at the most);
+  tag lines and a standard's required sections never count towards that cap.
 - Block layout stays EXPANDED: opening delimiter alone on its line, star-prefixed continuations,
   closing delimiter alone, a bare star line between the prose and the tags. Never compact onto the
   delimiters.
@@ -46,6 +49,13 @@ for each is worth keeping, even though only the final state governs behaviour.
   of 3.0 lines and read fine. `@param`/`@returns` restatement was real but small (11-20% of comment
   lines), which is why the cap targets block length: a file of many small, individually-earned
   one-liners scores high on a ratio metric legitimately.
+- 2026-09-24: checked against the official standards for every language with a skill (PEP 257,
+  Google TypeScript, Shell, Java and C++ guides, Microsoft XML doc tags, Go Doc Comments, Rust API
+  Guidelines, Kotlin conventions, Swift API Design Guidelines, Effective Dart, phpDocumentor, the
+  Ruby style guide, LuaLS, TypeScript handbook, TSDoc). The user chose "we will follow the
+  standards and best practices": required coverage per language now comes first, and the
+  always-list-tags rule of 2026-09-03 is superseded for TypeScript, where Google makes redundant
+  tags optional. This knowingly brings back one-line blocks on self-explanatory Angular exports.
 
 ## Enforcement
 
