@@ -47,7 +47,7 @@ gh api -X POST repos/{OWNER}/{REPO}/pulls/{N}/reviews --input review-init.json
 ```json
 {
   "commit_id": "<HEAD SHA of the PR>",
-  "body": "<placeholder or initial summary>",
+  "body": "<non-empty placeholder or initial summary>",
   "comments": [ /* optional first comment(s) */ ]
 }
 ```
@@ -179,3 +179,4 @@ no `suggestion` block, so there's no "Apply suggestion" button; say so when pres
 - Forgetting `subjectType: LINE` when you want a line comment (the default for some shapes is `FILE`).
 - Editing a pending comment's body via REST `PATCH .../pulls/comments/{id}` returns `404`. Use GraphQL `updatePullRequestReviewComment` (see above).
 - A `LINE` comment target outside the diff context returns a silent `{"thread": null}`, not an error. Check the review's comment list after adding one you're unsure about; fall back to a `FILE`-level comment.
+- Creating the pending review with an empty `body` locks it: both REST `PUT .../reviews/{id}` and GraphQL `updatePullRequestReview` then fail with `Could not edit a review with a missing body.` Start with a non-empty placeholder, or pass the summary as `body` on the `…/events` submit call, which still accepts it.
