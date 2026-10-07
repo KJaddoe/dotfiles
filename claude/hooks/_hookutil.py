@@ -226,7 +226,7 @@ def clip_summary(text):
     return "\n".join(lines[:SUMMARY_LINE_LIMIT] + [f"... {hidden} more lines"])
 
 
-def approval_decision(mode, action, summary):
+def approval_decision(mode, action, summary, rule=RULE_REFERENCE):
     """Build the PreToolUse decision that puts an action to the user for approval.
 
     A hook's "ask" renders a dialog in every mode but `dontAsk`, which is unmeasured, and
@@ -236,17 +236,18 @@ def approval_decision(mode, action, summary):
     :param mode: the session's reported permission mode
     :param action: what is being gated, named for the user ("commit", "push")
     :param summary: summary of what the action would do
+    :param rule: where the rule being enforced is written down
     :return: (permissionDecision, permissionDecisionReason) pair
     """
     if mode in PROMPTING_MODES:
         return "ask", (
-            f"This {action} needs your explicit approval ({RULE_REFERENCE}).\n\n{summary}\n\n"
+            f"This {action} needs your explicit approval ({rule}).\n\n{summary}\n\n"
             "Approve only if this is what you reviewed."
         )
 
     return "deny", (
         f"BLOCKED: permission mode is '{mode}', where this gate cannot raise an approval "
-        f"prompt, so this {action} cannot be put to the user ({RULE_REFERENCE}).\n\n"
+        f"prompt, so this {action} cannot be put to the user ({rule}).\n\n"
         f"{summary}\n\n"
         f"Show this to the user, get explicit approval in the conversation, and re-run the "
         f"{action} from a mode that prompts, such as 'default'."

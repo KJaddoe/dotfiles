@@ -273,6 +273,16 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   failing closed. Redirect targets come from the lexer rather than a regex, so a `>` inside a quoted
   argument is not read as one, and the overwrite check runs BEFORE printed text is stripped, since
   dropping an `echo` segment would drop its redirect with it. Also unconfigurable
+- `claude/hooks/require-db-copy-approval.py`: the same gate for `BACKUP DATABASE`/`LOG` and
+  `RESTORE DATABASE`/`LOG`. Local databases are tested in place: no backup before testing, and no
+  per-PR copy restored under a new name, since each copy of a multi-GB database fills the disk and
+  Docker keeps deleted copies' space held until it restarts. A test that breaks the database is
+  acceptable. Unlike the other gates it does NOT strip heredoc bodies or printed text, because
+  `sqlcmd <<SQL` and `echo … | sqlcmd` are how the statement runs; the cost is that a search or a
+  banner naming the statement also prompts. `RESTORE FILELISTONLY`/`HEADERONLY`/`VERIFYONLY` only
+  read a backup file and pass. A script run with `sqlcmd -i` is out of reach, since the statement
+  never appears in the command. Its prompt cites this rule rather than `~/.claude/CLAUDE.md`. Also
+  unconfigurable
 - `claude/hooks/require-outgoing-approval.py`: the same gate for everything else that leaves the
   machine, which no other gate saw because they all assume outgoing means git or `gh`: file
   transfer (`scp`, `sftp`, `rsync`, `rclone`), HTTP writes (`curl`/`wget` with a non-GET method or

@@ -67,6 +67,11 @@
           },
           {
             "type": "command",
+            "command": "python3 ~/.claude/hooks/require-db-copy-approval.py",
+            "timeout": 5
+          },
+          {
+            "type": "command",
             "command": "python3 ~/.claude/hooks/block-typographic-dashes.py",
             "timeout": 5
           },
