@@ -36,6 +36,15 @@ def document(kind, status, issue="7"):
     return f"---\nissue: {issue}\nkind: {kind}\nstatus: {status}\n---\n\n# Title\n"
 
 
+def reopen(target):
+    """Build the Edit that sets an approved document back to draft.
+
+    :param target: the document's path
+    :return: the Edit tool input
+    """
+    return {"file_path": target, "old_string": "status: approved", "new_string": "status: draft"}
+
+
 class GateFixture(RepoFixture):
     """A repo on issue branch 7, a private HOME, and a directory outside every repo."""
 
@@ -257,15 +266,12 @@ class TestSelfApproval(GateFixture):
         edit = {"file_path": target, "old_string": "draft", "new_string": "approved"}
         self.assertEqual(self.run_tool("Edit", edit, self.outside).returncode, BLOCK)
 
-    def test_edit_reopening_approved_document_passes(self):
-        """Setting an approved document back to draft, and nothing else, is allowed."""
+    def test_edit_reopening_from_outside_its_repository_blocks(self):
+        """Away from the repository the documents belong to, started work cannot be ruled out."""
         target = str(self.session_doc(document("spec", "approved")))
-        edit = {
-            "file_path": target,
-            "old_string": "status: approved",
-            "new_string": "status: draft",
-        }
-        self.assertEqual(self.run_tool("Edit", edit, self.outside).returncode, ALLOW)
+        run = self.run_tool("Edit", reopen(target), self.outside)
+        self.assertEqual(run.returncode, BLOCK)
+        self.assertIn("cannot be ruled out", run.stderr)
 
     def test_edit_inside_approved_document_blocks(self):
         """An approved document is frozen, whatever the edit touches."""
@@ -296,6 +302,52 @@ class TestSelfApproval(GateFixture):
             "Write", {"file_path": target, "content": document("spec", "approved")}, self.outside
         )
         self.assertEqual(run.returncode, ALLOW)
+
+
+class TestReopen(GateFixture):
+    """An approved document goes back to draft only before work on its issue has started."""
+
+    def setUp(self):
+        """Give issue 7 an approved spec and plan in the repository's own specs folder."""
+        super().setUp()
+        self.approve_both()
+        self.target = str(self.specs / "spec.md")
+
+    def test_untouched_branch_passes(self):
+        """A fresh issue branch with a clean tree means no work has started."""
+        self.assertEqual(self.run_tool("Edit", reopen(self.target)).returncode, ALLOW)
+
+    def test_commit_on_issue_branch_blocks(self):
+        """A commit beyond the default branch is started work."""
+        self.write("src/a.ts", "x\n")
+        self.commit()
+        run = self.run_tool("Edit", reopen(self.target))
+        self.assertEqual(run.returncode, BLOCK)
+        self.assertIn("1 commit(s)", run.stderr)
+        self.assertIn("new plan", run.stderr)
+
+    def test_uncommitted_change_on_issue_branch_blocks(self):
+        """An uncommitted edit on the checked-out issue branch is started work."""
+        self.write("src/a.ts", "x\n")
+        run = self.run_tool("Edit", reopen(self.target))
+        self.assertEqual(run.returncode, BLOCK)
+        self.assertIn("uncommitted", run.stderr)
+
+    def test_overwriting_with_a_draft_blocks_once_started(self):
+        """A Write that replaces the approved document is a reopen too."""
+        self.write("src/a.ts", "x\n")
+        self.commit()
+        content = document("spec", "draft") + "Rewritten.\n"
+        run = self.run_tool("Write", {"file_path": self.target, "content": content})
+        self.assertEqual(run.returncode, BLOCK)
+
+    def test_other_issue_work_does_not_count(self):
+        """Commits on another issue's branch leave this issue unstarted."""
+        git(self.repo, "checkout", "-qb", "70-other-thing")
+        self.write("src/b.ts", "y\n")
+        self.commit()
+        git(self.repo, "checkout", "-q", "7-fix-the-thing")
+        self.assertEqual(self.run_tool("Edit", reopen(self.target)).returncode, ALLOW)
 
 
 class TestPayload(unittest.TestCase):

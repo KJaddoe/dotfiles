@@ -359,7 +359,11 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   with front matter `issue: <number>`, `kind: spec` or `kind: plan`, and `status: approved`. Any
   other branch, and any path outside a repository, passes. It also refuses a Claude write that
   would leave a session spec or plan reading `status: approved`, so only the user approves and an
-  approved document is frozen until the user sets it back to draft. Under `Bash` it recognises
+  approved document is frozen. An edit that only sets one back to draft passes, unless work on
+  its issue has started: a local `<number>-*` branch has commits beyond the default branch
+  (`origin/HEAD`, else `main`/`master`), or is checked out with uncommitted changes. That check
+  needs the session to run inside the repository the documents belong to, and fails closed
+  otherwise. Under `Bash` it recognises
   redirects into the repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an
   interpreter; it is a guard against drift, not a sandbox, and a script written elsewhere and run
   is not caught

@@ -15,7 +15,9 @@ inside the repository is refused until the project's session folder
 Only the user approves. A Write or Edit that would leave a document in a session `specs/` folder
 reading `status: approved` is refused, so an approved document is frozen to Claude. When the user
 asks to change one, Claude first sets it back to draft with an edit that touches only the status,
-says so, and then revises it; approving it again stays the user's.
+says so, and then revises it; approving it again stays the user's. That reopening is refused once
+work on the issue has started: a branch for it has commits beyond the default branch, or is checked
+out with uncommitted changes. Changing course then takes a new plan or undoing the work.
 
 Under Bash the gate is a heuristic against drift, not a sandbox. It refuses redirects into the
 repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an interpreter; a script written
@@ -66,11 +68,19 @@ APPROVED_WORD = re.compile(r"\bapproved\b", re.IGNORECASE)
 
 SESSION_SPECS = re.compile(r"\.claude/projects/\S*specs")
 
+DEFAULT_BRANCHES = ("origin/HEAD", "origin/main", "origin/master", "main", "master")
+
 APPROVAL_REASON = (
     "BLOCKED by user policy: only the user marks a spec or plan approved. Leave it as "
     "`status: draft`, show it to the user and wait for them to change it. An approved document "
-    "is frozen: when the user asks to change one, first Edit its status line alone to "
-    f"`status: draft`, tell the user, then revise it. See {RULE_REFERENCE}."
+    "is frozen: when the user asks to change one before work on it has started, first Edit its "
+    f"status line alone to `status: draft`, tell the user, then revise it. See {RULE_REFERENCE}."
+)
+
+REOPEN_REASON = (
+    "BLOCKED by user policy: an approved spec or plan stays approved once work on its issue has "
+    "started, and for issue {issue} {evidence}. Tell the user the change needs a new plan, or "
+    f"the work undone first. See {RULE_REFERENCE}."
 )
 
 
@@ -299,6 +309,59 @@ def self_approves(tool, tool_input, cwd):
     return bool(APPROVED_LINE.search(result))
 
 
+def reopened_document(tool, tool_input, cwd):
+    """Find the approved session spec or plan a tool call would set back to draft.
+
+    Runs after `self_approves`, so any Write or Edit still touching an approved document leaves
+    it a draft.
+
+    :param tool: tool name
+    :param tool_input: the tool's input payload
+    :param cwd: the session's working directory
+    :return: (path, issue number) or None when the call reopens nothing tied to an issue
+    """
+    if tool not in ("Write", "Edit"):
+        return None
+    path = resolve(tool_input.get("file_path") or "", cwd)
+    if not in_session_specs(str(path)):
+        return None
+    existing = read_text_or_empty(path)
+    if not APPROVED_LINE.search(existing):
+        return None
+    fields, _ = front_matter(existing)
+    issue = (fields or {}).get("issue")
+    return (path, issue) if issue else None
+
+
+def work_started(path, issue, cwd):
+    """Name the work already done on an issue, which keeps its approved documents frozen.
+
+    :param path: the document being reopened
+    :param issue: its issue number
+    :param cwd: the session's working directory
+    :return: what shows the work has started, or "" when nothing has
+    """
+    root = repo_root(nearest_existing_dir(Path(cwd or ".").expanduser()))
+    if root is None or not path.is_relative_to(session_project_dir(root) / "specs"):
+        return "this session runs outside the document's repository, so that cannot be ruled out"
+
+    base = next(
+        (ref for ref in DEFAULT_BRANCHES if run_git(root, "rev-parse", "--verify", "--quiet", ref)),
+        "",
+    )
+    current = run_git(root, "branch", "--show-current").strip()
+    pattern = f"refs/heads/{issue}-*"
+    for branch in run_git(root, "for-each-ref", "--format=%(refname:short)", pattern).split():
+        if not base:
+            return f"branch {branch} exists and there is no default branch to compare it with"
+        ahead = run_git(root, "rev-list", "--count", f"{base}..{branch}").strip()
+        if ahead not in ("", "0"):
+            return f"branch {branch} has {ahead} commit(s) beyond {base}"
+        if branch == current and run_git(root, "status", "--porcelain").strip():
+            return f"branch {branch} has uncommitted changes"
+    return ""
+
+
 def shell_writes(command):
     """Report whether a shell command writes a file by any form the gate recognises.
 
@@ -323,6 +386,12 @@ def main():
     cwd = data.get("cwd") or ""
     if self_approves(tool, tool_input, cwd):
         block(APPROVAL_REASON)
+
+    reopened = reopened_document(tool, tool_input, cwd)
+    if reopened:
+        evidence = work_started(*reopened, cwd)
+        if evidence:
+            block(REOPEN_REASON.format(issue=reopened[1], evidence=evidence))
 
     for directory in target_dirs(tool, tool_input, cwd):
         gated = gated_issue(directory)
