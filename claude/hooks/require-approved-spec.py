@@ -16,8 +16,10 @@ Only the user approves. A Write or Edit that would leave a document in a session
 reading `status: approved` is refused, so an approved document is frozen to Claude. When the user
 asks to change one, Claude first sets it back to draft with an edit that touches only the status,
 says so, and then revises it; approving it again stays the user's. That reopening is refused once
-work on the issue has started: a branch for it has commits beyond the default branch, or is checked
-out with uncommitted changes. Changing course then takes a new plan or undoing the work.
+work on the issue has started: a local or remote branch for it has commits beyond the default
+branch, or is checked out with uncommitted changes. Changing course then takes a new plan or
+undoing the work. A shell command that overwrites, moves or deletes an approved document is
+refused outright, so the reopening always goes through the Edit this gate can check.
 
 Under Bash the gate is a heuristic against drift, not a sandbox. It refuses redirects into the
 repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an interpreter; a script written
@@ -70,6 +72,14 @@ SESSION_SPECS = re.compile(r"\.claude/projects/\S*specs")
 
 DEFAULT_BRANCHES = ("origin/HEAD", "origin/main", "origin/master", "main", "master")
 
+SHELL_REMOVERS = {"rm", "unlink", "truncate", "shred", "mv"}
+
+SHELL_COPIERS = {"cp", "mv", "install", "rsync", "ln"}
+
+DIRECTORY_REMOVERS = {"rm", "mv"}
+
+GLOB_CHARS = re.compile(r"[*?\[]")
+
 APPROVAL_REASON = (
     "BLOCKED by user policy: only the user marks a spec or plan approved. Leave it as "
     "`status: draft`, show it to the user and wait for them to change it. An approved document "
@@ -81,6 +91,12 @@ REOPEN_REASON = (
     "BLOCKED by user policy: an approved spec or plan stays approved once work on its issue has "
     "started, and for issue {issue} {evidence}. Tell the user the change needs a new plan, or "
     f"the work undone first. See {RULE_REFERENCE}."
+)
+
+SHELL_REPLACE_REASON = (
+    "BLOCKED by user policy: a shell command may not overwrite, move or delete an approved spec "
+    "or plan. To reopen one, Edit its status line alone to `status: draft`, which is allowed only "
+    f"before work on its issue has started. See {RULE_REFERENCE}."
 )
 
 
@@ -271,8 +287,8 @@ def in_session_specs(path):
     :param path: absolute file path
     :return: True for a session spec or plan
     """
-    projects = Path.home() / ".claude" / "projects"
-    candidate = Path(path).expanduser()
+    projects = (Path.home() / ".claude" / "projects").resolve()
+    candidate = Path(path).expanduser().resolve()
     return candidate.is_relative_to(projects) and "specs" in candidate.parts
 
 
@@ -342,7 +358,8 @@ def work_started(path, issue, cwd):
     :return: what shows the work has started, or "" when nothing has
     """
     root = repo_root(nearest_existing_dir(Path(cwd or ".").expanduser()))
-    if root is None or not path.is_relative_to(session_project_dir(root) / "specs"):
+    specs_dir = (session_project_dir(root) / "specs").resolve() if root else None
+    if specs_dir is None or not path.resolve().is_relative_to(specs_dir):
         return "this session runs outside the document's repository, so that cannot be ruled out"
 
     base = next(
@@ -350,16 +367,79 @@ def work_started(path, issue, cwd):
         "",
     )
     current = run_git(root, "branch", "--show-current").strip()
-    pattern = f"refs/heads/{issue}-*"
-    for branch in run_git(root, "for-each-ref", "--format=%(refname:short)", pattern).split():
+    patterns = (f"refs/heads/{issue}-*", f"refs/remotes/*/{issue}-*")
+    for branch in run_git(root, "for-each-ref", "--format=%(refname:short)", *patterns).split():
         if not base:
             return f"branch {branch} exists and there is no default branch to compare it with"
         ahead = run_git(root, "rev-list", "--count", f"{base}..{branch}").strip()
-        if ahead not in ("", "0"):
+        if not ahead:
+            return f"git could not compare branch {branch} with {base}"
+        if ahead != "0":
             return f"branch {branch} has {ahead} commit(s) beyond {base}"
         if branch == current and run_git(root, "status", "--porcelain").strip():
             return f"branch {branch} has uncommitted changes"
     return ""
+
+
+def shell_targets(command, cwd):
+    """List the paths a shell command would overwrite, move away or delete.
+
+    :param command: the shell command
+    :param cwd: the session's working directory
+    :return: (absolute Path, whether a directory there is removed whole) pairs, globs expanded
+    """
+    invoked = strip_printed_text(strip_heredocs(command))
+    runs_in = str(command_directory(invoked, cwd))
+    named = [
+        (target, False) for target in redirect_targets(command) if target not in DISCARD_TARGETS
+    ]
+    for tokens in command_segments(invoked):
+        name = Path(tokens[0]).name if tokens else ""
+        args = [token for token in tokens[1:] if token and not token.startswith("-")]
+        if name in SHELL_REMOVERS or name == "tee" or name in IN_PLACE_EDITORS:
+            named.extend((arg, name in DIRECTORY_REMOVERS) for arg in args)
+        if name in SHELL_COPIERS and len(args) >= 2:
+            named.append((args[-1], False))
+            named.extend((str(Path(args[-1]) / Path(src).name), False) for src in args[:-1])
+
+    paths = []
+    for target, whole in named:
+        path = resolve(target, runs_in)
+        matches = path.parent.glob(path.name) if GLOB_CHARS.search(path.name) else [path]
+        paths.extend((match, whole) for match in matches)
+    return paths
+
+
+def documents_under(path):
+    """List the session documents a directory removal would take with it.
+
+    :param path: a directory
+    :return: Markdown files in session specs folders at or below it
+    """
+    projects = (Path.home() / ".claude" / "projects").resolve()
+    directory = path.resolve()
+    if projects.is_relative_to(directory):
+        directory = projects
+    elif not directory.is_relative_to(projects):
+        return []
+    return [document for document in directory.rglob("*.md") if in_session_specs(str(document))]
+
+
+def shell_replaces_approved(command, cwd):
+    """Report whether a shell command would overwrite, move or delete an approved document.
+
+    :param command: the shell command
+    :param cwd: the session's working directory
+    :return: True when the call must be refused
+    """
+    for path, whole in shell_targets(command, cwd):
+        if path.is_dir():
+            documents = documents_under(path) if whole else []
+        else:
+            documents = [path] if in_session_specs(str(path)) else []
+        if any(APPROVED_LINE.search(read_text_or_empty(document)) for document in documents):
+            return True
+    return False
 
 
 def shell_writes(command):
@@ -386,6 +466,9 @@ def main():
     cwd = data.get("cwd") or ""
     if self_approves(tool, tool_input, cwd):
         block(APPROVAL_REASON)
+
+    if tool == "Bash" and shell_replaces_approved(tool_input.get("command") or "", cwd):
+        block(SHELL_REPLACE_REASON)
 
     reopened = reopened_document(tool, tool_input, cwd)
     if reopened:
