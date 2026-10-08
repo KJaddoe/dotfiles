@@ -257,6 +257,16 @@ class TestSelfApproval(GateFixture):
         edit = {"file_path": target, "old_string": "draft", "new_string": "approved"}
         self.assertEqual(self.run_tool("Edit", edit, self.outside).returncode, BLOCK)
 
+    def test_edit_reopening_approved_document_passes(self):
+        """Setting an approved document back to draft, and nothing else, is allowed."""
+        target = str(self.session_doc(document("spec", "approved")))
+        edit = {
+            "file_path": target,
+            "old_string": "status: approved",
+            "new_string": "status: draft",
+        }
+        self.assertEqual(self.run_tool("Edit", edit, self.outside).returncode, ALLOW)
+
     def test_edit_inside_approved_document_blocks(self):
         """An approved document is frozen, whatever the edit touches."""
         target = str(self.session_doc(document("spec", "approved")))
