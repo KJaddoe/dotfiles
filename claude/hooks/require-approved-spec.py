@@ -13,8 +13,9 @@ inside the repository is refused until the project's session folder
 `issue: <number>`, `kind: spec`, `status: approved`, and another with `kind: plan`.
 
 Only the user approves. A Write or Edit that would leave a document in a session `specs/` folder
-reading `status: approved` is refused, so an approved document is frozen to Claude: revising it
-means the user sets it back to draft first.
+reading `status: approved` is refused, so an approved document is frozen to Claude. When the user
+asks to change one, Claude first sets it back to draft with an edit that touches only the status,
+says so, and then revises it; approving it again stays the user's.
 
 Under Bash the gate is a heuristic against drift, not a sandbox. It refuses redirects into the
 repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an interpreter; a script written
@@ -68,7 +69,8 @@ SESSION_SPECS = re.compile(r"\.claude/projects/\S*specs")
 APPROVAL_REASON = (
     "BLOCKED by user policy: only the user marks a spec or plan approved. Leave it as "
     "`status: draft`, show it to the user and wait for them to change it. An approved document "
-    f"is frozen: to revise one, ask the user to set it back to draft first. See {RULE_REFERENCE}."
+    "is frozen: when the user asks to change one, first Edit its status line alone to "
+    f"`status: draft`, tell the user, then revise it. See {RULE_REFERENCE}."
 )
 
 
