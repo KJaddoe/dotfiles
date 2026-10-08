@@ -26,7 +26,7 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
 
 ## Commits & PRs
 
-- 2026-05-21: Don't pass `--gpg-sign` to `git commit` / `git commit --amend` when committing on the user's behalf. Why: the GPG passphrase prompt hangs the Claude Code UI. The user signs their own commits manually via the `gcs` alias when they need to.
+- 2026-05-21: Don't pass `--gpg-sign` to `git commit` / `git commit --amend` when committing on the user's behalf. Why: the GPG passphrase prompt hangs the Claude Code UI. The user signs their own commits manually via the `gcs` alias when they need to. Commits Claude makes stay unsigned and are pushed as-is; don't wait for or suggest a `gcs` signature.
 - 2026-05-21: Drop "Generated with Claude Code" / "🤖 Generated with [Claude Code]" / "Co-Authored-By: Claude …" trailers from every commit, PR body, issue, and generated artifact. Why: the user explicitly asked me to stop after seeing the trailer on a PR.
 
 ## Branches
