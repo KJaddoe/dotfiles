@@ -29,8 +29,11 @@ for these rules as FYI reference only; the binding text is HERE.
   or when asked for it that turn.
 - Issue work runs spec, my review, plan, my review, then code. Both documents go in the session
   `specs/` folder with `issue:`, `kind:` (spec or plan) and `status: draft` front matter; only I
-  set them approved. When I ask to change an approved one, set it back to `draft` yourself, say so,
-  and revise it. `claude/hooks/require-approved-spec.py` enforces this on issue branches.
+  set them approved. Whenever you write or revise one, give me its absolute path so I can `vim` it.
+  When I ask to change an approved one before work on it has started, set it back to `draft`
+  yourself, say so, and revise it; once work has started it stays approved, and the change needs a
+  new plan or the work undone. `claude/hooks/require-approved-spec.py` enforces this on issue
+  branches.
   Outside issue work (a small, clearly-bounded dotfiles change on `main`) skip
   `superpowers:brainstorming`'s and `superpowers:test-driven-development`'s full process.
 - Terminal tooling: the shell stays command-driven with plain `git`/`gh`/`kubectl` etc. Don't propose or
