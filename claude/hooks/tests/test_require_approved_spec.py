@@ -295,6 +295,46 @@ class TestSelfApproval(GateFixture):
             self.run_tool("Bash", {"command": command}, self.outside).returncode, ALLOW
         )
 
+    def test_dotted_path_into_session_specs_blocks(self):
+        """A `..` detour still lands in the session specs folder and is refused."""
+        target = self.home / "elsewhere" / ".." / ".claude" / "projects" / "-p" / "specs" / "s.md"
+        run = self.run_tool(
+            "Write", {"file_path": str(target), "content": document("spec", "approved")}
+        )
+        self.assertEqual(run.returncode, BLOCK)
+
+    def test_shell_replacing_approved_document_blocks(self):
+        """Overwriting, moving or deleting an approved document from the shell is refused."""
+        target = self.session_doc(document("spec", "approved"))
+        for command in (
+            f"cp /tmp/draft.md {target}",
+            f"cp /tmp/{target.name} {target.parent}",
+            f"mv {target} /tmp/old.md",
+            f"mv /tmp/draft.md {target}",
+            f"rm {target}",
+            f"rm {target.parent}/*.md",
+            f"rm -rf {target.parent}",
+            f"cat /tmp/draft.md > {target}",
+        ):
+            with self.subTest(command=command):
+                run = self.run_tool("Bash", {"command": command}, self.outside)
+                self.assertEqual(run.returncode, BLOCK)
+                self.assertIn("Edit its status line", run.stderr)
+
+    def test_shell_copying_approved_document_out_passes(self):
+        """Copying an approved document elsewhere leaves it untouched."""
+        target = self.session_doc(document("spec", "approved"))
+        command = f"cp {target} {self.outside}/copy.md"
+        self.assertEqual(
+            self.run_tool("Bash", {"command": command}, self.outside).returncode, ALLOW
+        )
+
+    def test_shell_in_place_edit_elsewhere_passes(self):
+        """An in-place edit of an unrelated file is not mistaken for a removal."""
+        self.session_doc(document("spec", "approved"))
+        command = f"sed -i '' 's/a/b/' {self.outside}/notes.txt"
+        self.assertEqual(self.run_tool("Bash", {"command": command}, self.home).returncode, ALLOW)
+
     def test_specs_folder_elsewhere_passes(self):
         """Only session specs folders are protected, not any folder named specs."""
         target = str(self.outside / "specs" / "x.md")
@@ -340,6 +380,18 @@ class TestReopen(GateFixture):
         content = document("spec", "draft") + "Rewritten.\n"
         run = self.run_tool("Write", {"file_path": self.target, "content": content})
         self.assertEqual(run.returncode, BLOCK)
+
+    def test_commit_on_remote_issue_branch_blocks(self):
+        """Work pushed from elsewhere counts even without a local branch for it."""
+        git(self.repo, "checkout", "-qb", "scratch")
+        self.write("src/a.ts", "x\n")
+        self.commit()
+        git(self.repo, "update-ref", "refs/remotes/origin/7-from-elsewhere", "HEAD")
+        git(self.repo, "checkout", "-q", "7-fix-the-thing")
+        git(self.repo, "branch", "-qD", "scratch")
+        run = self.run_tool("Edit", reopen(self.target))
+        self.assertEqual(run.returncode, BLOCK)
+        self.assertIn("origin/7-from-elsewhere", run.stderr)
 
     def test_other_issue_work_does_not_count(self):
         """Commits on another issue's branch leave this issue unstarted."""
