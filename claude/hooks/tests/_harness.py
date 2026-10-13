@@ -174,6 +174,8 @@ def template_repo(baseline):
         git(path, "init", "-q")
         git(path, "config", "user.email", "test@example.com")
         git(path, "config", "user.name", "test")
+        # Detached auto-maintenance after commit races copytree over objects/maintenance.lock.
+        git(path, "config", "maintenance.auto", "false")
         (path / baseline[0]).write_text(baseline[1])
         git(path, "add", "-A")
         git(path, "commit", "-qm", "init")
