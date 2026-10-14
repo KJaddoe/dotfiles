@@ -1,5 +1,4 @@
 #Requires -Version 5.1
-#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
 Installs OBS, Camo and the background removal plugin on Windows, then writes the dotfiles OBS config.
@@ -8,9 +7,9 @@ Installs OBS, Camo and the background removal plugin on Windows, then writes the
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$PluginName = 'obs-backgroundremoval'
 $PluginVersion = '1.4.1'
 $PluginSha256 = '7f9c0118c348111bf384c71e23fd056fd26e999bce90132d91db3017c6fa1b94'
-$PluginsDir = Join-Path $env:ProgramData 'obs-studio\plugins'
 
 
 function Install-WingetPackage {
@@ -25,61 +24,100 @@ function Install-WingetPackage {
 
 <#
 .SYNOPSIS
-Makes Administrators the owner of a directory and replaces its ACL, since ProgramData lets any user add files.
+Maps a plugin archive entry onto OBS's own plugin layout, or returns $null for an entry it does not install.
 
-.PARAMETER Path
-An existing directory.
+.PARAMETER EntryName
+The entry's path inside the archive, with forward slashes.
 
-.PARAMETER UsersCanRead
-Also lets the Users group read and execute, which OBS needs to load plugins as a normal user.
+.PARAMETER ObsDir
+The OBS install directory. An entry that would resolve outside it throws.
 #>
-function Protect-Directory {
-    param([string]$Path, [switch]$UsersCanRead)
+function Get-PluginTargetPath {
+    param([string]$EntryName, [string]$ObsDir)
 
-    $grants = @('*S-1-5-32-544:(OI)(CI)F', '*S-1-5-18:(OI)(CI)F')
-    if ($UsersCanRead) { $grants += '*S-1-5-32-545:(OI)(CI)RX' }
-    icacls $Path /setowner '*S-1-5-32-544' /T /Q | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "icacls could not take ownership of $Path (exit code $LASTEXITCODE)" }
-    icacls $Path /inheritance:r /grant:r @grants /T /Q | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "icacls could not restrict $Path (exit code $LASTEXITCODE)" }
+    if ($EntryName.EndsWith('/')) { return $null }
+    $layout = [ordered]@{
+        "$PluginName/bin/64bit/" = Join-Path $ObsDir 'obs-plugins/64bit'
+        "$PluginName/data/" = Join-Path $ObsDir "data/obs-plugins/$PluginName"
+    }
+    foreach ($prefix in $layout.Keys) {
+        if ($EntryName.StartsWith($prefix, [StringComparison]::Ordinal)) {
+            $target = [IO.Path]::GetFullPath((Join-Path $layout[$prefix] $EntryName.Substring($prefix.Length)))
+            $root = [IO.Path]::GetFullPath($ObsDir).TrimEnd([IO.Path]::DirectorySeparatorChar) +
+                [IO.Path]::DirectorySeparatorChar
+            if (-not $target.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Plugin archive entry $EntryName resolves outside $ObsDir"
+            }
+            return $target
+        }
+    }
+    $null
 }
 
+<#
+.SYNOPSIS
+Installs the plugin into OBS's install directory, which only administrators can write.
+
+.PARAMETER ObsDir
+The OBS install directory.
+#>
 function Install-BackgroundRemovalPlugin {
-    $marker = Join-Path $PluginsDir 'obs-backgroundremoval\.dotfiles-version'
+    param([string]$ObsDir)
+
+    $dataDir = Join-Path $ObsDir "data/obs-plugins/$PluginName"
+    $marker = Join-Path $dataDir '.dotfiles-version'
     if ((Test-Path $marker) -and (Get-Content $marker -Raw).Trim() -eq $PluginVersion) {
-        return "ok: obs-backgroundremoval $PluginVersion"
+        return "ok: $PluginName $PluginVersion"
     }
 
-    $staging = Join-Path $env:ProgramData "dotfiles-obs-$([guid]::NewGuid())"
-    New-Item -ItemType Directory $staging | Out-Null
-    Protect-Directory -Path $staging
-    $zip = Join-Path $staging "obs-backgroundremoval-$PluginVersion-windows-x64.zip"
-    $url = "https://github.com/royshil/obs-backgroundremoval/releases/download/$PluginVersion/" +
-        "obs-backgroundremoval-$PluginVersion-windows-x64.zip"
-    Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
-    $actual = (Get-FileHash $zip -Algorithm SHA256).Hash
+    # Verified and extracted in memory: a file on disk could be swapped between the check and the copy.
+    $url = "https://github.com/royshil/$PluginName/releases/download/$PluginVersion/" +
+        "$PluginName-$PluginVersion-windows-x64.zip"
+    $bytes = (New-Object System.Net.WebClient).DownloadData($url)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $actual = [BitConverter]::ToString($sha256.ComputeHash($bytes)).Replace('-', '')
     if ($actual -ne $PluginSha256) {
-        Remove-Item $staging -Recurse -Force
-        throw "obs-backgroundremoval download has SHA256 $actual, expected $PluginSha256"
+        throw "$PluginName download has SHA256 $actual, expected $PluginSha256"
     }
 
-    $extracted = Join-Path $staging 'extracted'
-    Expand-Archive $zip -DestinationPath $extracted
-    New-Item -ItemType Directory -Force $PluginsDir | Out-Null
-    Protect-Directory -Path $PluginsDir -UsersCanRead
-    Remove-Item (Join-Path $PluginsDir 'obs-backgroundremoval') -Recurse -Force -ErrorAction SilentlyContinue
-    Copy-Item (Join-Path $extracted 'obs-backgroundremoval') $PluginsDir -Recurse
+    Add-Type -AssemblyName System.IO.Compression
+    $archive = New-Object System.IO.Compression.ZipArchive (New-Object System.IO.MemoryStream (, $bytes))
+    try {
+        Remove-Item (Join-Path $ObsDir "obs-plugins/64bit/$PluginName.dll") -Force -ErrorAction SilentlyContinue
+        Remove-Item $dataDir -Recurse -Force -ErrorAction SilentlyContinue
+        foreach ($entry in $archive.Entries) {
+            $target = Get-PluginTargetPath -EntryName $entry.FullName -ObsDir $ObsDir
+            if (-not $target) { continue }
+            New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
+            $source = $entry.Open()
+            $destination = [IO.File]::Create($target)
+            try { $source.CopyTo($destination) } finally { $destination.Dispose(); $source.Dispose() }
+        }
+    } finally {
+        $archive.Dispose()
+    }
     Set-Content $marker $PluginVersion
-    Remove-Item $staging -Recurse -Force
-    "changed: obs-backgroundremoval $PluginVersion"
+    "changed: $PluginName $PluginVersion"
 }
 
 
-Install-WingetPackage -Id 'OBSProject.OBSStudio'
-Install-WingetPackage -Id 'ReincubateLtd.CamoStudio'
-Install-WingetPackage -Id 'Microsoft.PowerShell'
-Install-BackgroundRemovalPlugin
+if ($MyInvocation.InvocationName -ne '.') {
+    $principal = New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())
+    if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        throw 'Run this from an elevated PowerShell: it installs into Program Files.'
+    }
 
-# winget does not refresh PATH in this session, so a freshly installed pwsh is not found by name.
-& (Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe') -NoProfile -File (Join-Path $PSScriptRoot 'configure.ps1')
-if ($LASTEXITCODE -ne 0) { throw "configure.ps1 failed (exit code $LASTEXITCODE)" }
+    Install-WingetPackage -Id 'OBSProject.OBSStudio'
+    Install-WingetPackage -Id 'ReincubateLtd.CamoStudio'
+    Install-WingetPackage -Id 'Microsoft.PowerShell'
+
+    $obsDir = Join-Path $env:ProgramFiles 'obs-studio'
+    if (-not (Test-Path (Join-Path $obsDir 'bin/64bit/obs64.exe'))) {
+        throw "OBS is not in $obsDir, where winget installs it by default"
+    }
+    Install-BackgroundRemovalPlugin -ObsDir $obsDir
+
+    # winget does not refresh PATH in this session, so a freshly installed pwsh is not found by name.
+    & (Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe') -NoProfile -File (Join-Path $PSScriptRoot 'configure.ps1')
+    if ($LASTEXITCODE -ne 0) { throw "configure.ps1 failed (exit code $LASTEXITCODE)" }
+}
