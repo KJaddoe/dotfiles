@@ -15,7 +15,8 @@ $PluginSha256 = '7f9c0118c348111bf384c71e23fd056fd26e999bce90132d91db3017c6fa1b9
 function Install-WingetPackage {
     param([string]$Id)
 
-    winget list --exact --id $Id | Out-Null
+    Write-Progress -Activity 'Installing OBS' -Status "Checking $Id"
+    winget list --exact --id $Id --accept-source-agreements | Out-Null
     if ($LASTEXITCODE -eq 0) { return "ok: $Id" }
     winget install --exact --id $Id --accept-package-agreements --accept-source-agreements
     if ($LASTEXITCODE -ne 0) { throw "winget could not install $Id (exit code $LASTEXITCODE)" }
@@ -71,6 +72,7 @@ function Install-BackgroundRemovalPlugin {
     }
 
     # Verified and extracted in memory: a file on disk could be swapped between the check and the copy.
+    Write-Progress -Activity 'Installing OBS' -Status "Downloading $PluginName $PluginVersion (about 50 MB)"
     $url = "https://github.com/royshil/$PluginName/releases/download/$PluginVersion/" +
         "$PluginName-$PluginVersion-windows-x64.zip"
     $bytes = (New-Object System.Net.WebClient).DownloadData($url)
@@ -117,6 +119,7 @@ if ($MyInvocation.InvocationName -ne '.') {
     }
     Install-BackgroundRemovalPlugin -ObsDir $obsDir
 
+    Write-Progress -Activity 'Installing OBS' -Status 'Writing the OBS config'
     # winget does not refresh PATH in this session, so a freshly installed pwsh is not found by name.
     & (Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe') -NoProfile -File (Join-Path $PSScriptRoot 'configure.ps1')
     if ($LASTEXITCODE -ne 0) { throw "configure.ps1 failed (exit code $LASTEXITCODE)" }
