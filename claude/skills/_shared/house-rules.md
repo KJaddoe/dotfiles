@@ -49,6 +49,10 @@ first doc-comment is written):
   applies. YARD syntax for what is written.
 - **Lua** (no official standard; LuaLS annotations): the earned test applies. A written block
   gets a `---@param` per parameter and a `---@return` per return value.
+- **PowerShell** (about_Comment_Based_Help; PSScriptAnalyzer `ProvideCommentHelp`, which checks
+  exported functions by default): every script and every exported function, as a `<# #>` block
+  before the declaration with a `.SYNOPSIS` and a `.PARAMETER` for each parameter. Functions a
+  script keeps to itself fall under the earned test; a block written there follows the same form.
 
 For everything else, before writing a doc-comment or inline comment, draft it, then delete the
 draft and re-read the declaration or line alone. If nothing is lost, meaning the name, signature,
