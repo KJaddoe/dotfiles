@@ -62,10 +62,12 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   read; the leading underscore marks it as internal to the directory, and `settings.json` never
   invokes it. The repo-root `CLAUDE.md`
   (this trial) is separate: it is repo-level project instructions, not the global config.
-- **`obs/`**: holds no linked config, only `README.md`. OBS rewrites its own config files and
-  their capture sources are OS-specific, so scenes travel as an exported collection that is
-  imported by hand rather than symlinked. The `obs` role installs on macOS and Ubuntu; Windows,
-  the main OBS machine, is installed manually from the README.
+- **`obs/`**: OBS config is generated, not linked. OBS saves by renaming a temp file over the
+  target, which replaces a symlink on the first save, and its device IDs and source types differ
+  per OS and machine. `configure.ps1` (PowerShell 7, so one generator serves macOS, Ubuntu and
+  Windows) writes a `dotfiles` profile and scene collection with the devices it finds at run time,
+  rewriting a file only when a field it owns differs. The `obs` role runs it after installing;
+  `install.ps1` does the same on Windows.
 
 ## Python tooling (hooks)
 

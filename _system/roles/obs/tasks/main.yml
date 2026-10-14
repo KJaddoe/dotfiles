@@ -92,3 +92,8 @@
     state: present
     update_cache: true
   when: ansible_facts.os_family == "Debian"
+
+- name: Write the OBS profile and scene collection
+  ansible.builtin.command: pwsh -NoProfile -File {{ playbook_dir }}/../obs/configure.ps1
+  register: obs_configure
+  changed_when: "'changed:' in obs_configure.stdout"
