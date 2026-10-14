@@ -64,8 +64,9 @@ monitoring device yet.
 
 ## Tests
 
-`configure.Tests.ps1` covers the generator with Pester, which the `powershell` role installs:
+`configure.Tests.ps1` covers the generator with Pester, which the `powershell` role installs.
+`script/test-powershell.ps1` runs it together with PSScriptAnalyzer, as CI does:
 
 ```sh
-pwsh -NoProfile -Command 'Invoke-Pester -Path obs/configure.Tests.ps1'
+./script/test-powershell.ps1
 ```
