@@ -64,3 +64,13 @@
 - name: Install PSScriptAnalyzer
   ansible.builtin.command: pwsh -NoProfile -Command "Install-Module PSScriptAnalyzer -Scope CurrentUser -Force -Repository PSGallery"
   when: psscriptanalyzer_check.rc != 0
+
+- name: Check for Pester
+  ansible.builtin.command: pwsh -NoProfile -Command "if (Get-Module -ListAvailable Pester) { exit 0 } else { exit 1 }"
+  register: pester_check
+  changed_when: false
+  failed_when: false
+
+- name: Install Pester
+  ansible.builtin.command: pwsh -NoProfile -Command "Install-Module Pester -Scope CurrentUser -Force -Repository PSGallery"
+  when: pester_check.rc != 0
