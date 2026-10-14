@@ -14,7 +14,9 @@ device) hands the result to the call app.
 
 Run only the role with `ansible-playbook _system/main.yml -K --tags obs`. On Windows, install
 VB-CABLE first: it is not in winget, so download it from <https://vb-audio.com/Cable/>, run its
-installer as administrator and reboot. Then run `obs\install.ps1` as administrator.
+installer as administrator and reboot. Then run `obs\install.ps1` as administrator. It makes
+Administrators the owner of `C:\ProgramData\obs-studio\plugins` and leaves other users read
+access only, because by default any user can add a plugin there that OBS would load.
 
 Every step is safe to re-run; one that has nothing to do prints `ok`.
 

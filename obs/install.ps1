@@ -23,30 +23,54 @@ function Install-WingetPackage {
     "changed: $Id"
 }
 
+<#
+.SYNOPSIS
+Makes Administrators the owner of a directory and replaces its ACL, since ProgramData lets any user add files.
+
+.PARAMETER Path
+An existing directory.
+
+.PARAMETER UsersCanRead
+Also lets the Users group read and execute, which OBS needs to load plugins as a normal user.
+#>
+function Protect-Directory {
+    param([string]$Path, [switch]$UsersCanRead)
+
+    $grants = @('*S-1-5-32-544:(OI)(CI)F', '*S-1-5-18:(OI)(CI)F')
+    if ($UsersCanRead) { $grants += '*S-1-5-32-545:(OI)(CI)RX' }
+    icacls $Path /setowner '*S-1-5-32-544' /T /Q | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "icacls could not take ownership of $Path (exit code $LASTEXITCODE)" }
+    icacls $Path /inheritance:r /grant:r @grants /T /Q | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "icacls could not restrict $Path (exit code $LASTEXITCODE)" }
+}
+
 function Install-BackgroundRemovalPlugin {
     $marker = Join-Path $PluginsDir 'obs-backgroundremoval\.dotfiles-version'
     if ((Test-Path $marker) -and (Get-Content $marker -Raw).Trim() -eq $PluginVersion) {
         return "ok: obs-backgroundremoval $PluginVersion"
     }
 
-    $zip = Join-Path $env:TEMP "obs-backgroundremoval-$PluginVersion-windows-x64.zip"
+    $staging = Join-Path $env:ProgramData "dotfiles-obs-$([guid]::NewGuid())"
+    New-Item -ItemType Directory $staging | Out-Null
+    Protect-Directory -Path $staging
+    $zip = Join-Path $staging "obs-backgroundremoval-$PluginVersion-windows-x64.zip"
     $url = "https://github.com/royshil/obs-backgroundremoval/releases/download/$PluginVersion/" +
         "obs-backgroundremoval-$PluginVersion-windows-x64.zip"
     Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
     $actual = (Get-FileHash $zip -Algorithm SHA256).Hash
     if ($actual -ne $PluginSha256) {
-        Remove-Item $zip
+        Remove-Item $staging -Recurse -Force
         throw "obs-backgroundremoval download has SHA256 $actual, expected $PluginSha256"
     }
 
-    $staging = Join-Path $env:TEMP "obs-backgroundremoval-$PluginVersion"
-    Remove-Item $staging -Recurse -Force -ErrorAction SilentlyContinue
-    Expand-Archive $zip -DestinationPath $staging
+    $extracted = Join-Path $staging 'extracted'
+    Expand-Archive $zip -DestinationPath $extracted
     New-Item -ItemType Directory -Force $PluginsDir | Out-Null
+    Protect-Directory -Path $PluginsDir -UsersCanRead
     Remove-Item (Join-Path $PluginsDir 'obs-backgroundremoval') -Recurse -Force -ErrorAction SilentlyContinue
-    Copy-Item (Join-Path $staging 'obs-backgroundremoval') $PluginsDir -Recurse
+    Copy-Item (Join-Path $extracted 'obs-backgroundremoval') $PluginsDir -Recurse
     Set-Content $marker $PluginVersion
-    Remove-Item $zip, $staging -Recurse -Force
+    Remove-Item $staging -Recurse -Force
     "changed: obs-backgroundremoval $PluginVersion"
 }
 
