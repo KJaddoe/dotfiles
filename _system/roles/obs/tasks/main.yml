@@ -18,7 +18,18 @@
     - ansible_facts.os_family == "Darwin"
     - "('version: ' ~ obs_blackhole_version) not in obs_blackhole_receipt.stdout"
   block:
+    - name: Create root-only BlackHole download directory (macOS)
+      become: true
+      ansible.builtin.file:
+        path: "{{ obs_blackhole_pkg | dirname }}"
+        state: directory
+        owner: root
+        group: wheel
+        mode: "0700"
+
+    # Root downloads it into a root-only directory, so the checksummed file is the one installed.
     - name: Download BlackHole package (macOS)
+      become: true
       ansible.builtin.get_url:
         url: "https://existential.audio/downloads/BlackHole2ch-{{ obs_blackhole_version }}.pkg"
         dest: "{{ obs_blackhole_pkg }}"
