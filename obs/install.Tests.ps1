@@ -48,3 +48,33 @@ Describe 'Get-PluginTargetPath' {
             Should -BeNullOrEmpty
     }
 }
+
+Describe 'Test-InstalledApp' {
+    It 'finds an app installed outside winget by publisher and name' {
+        $entries = @(
+            [pscustomobject]@{ DisplayName = 'Something else'; Publisher = 'Other' }
+            [pscustomobject]@{ DisplayName = 'Camo Studio'; Publisher = 'Reincubate Ltd' }
+        )
+
+        Test-InstalledApp -Entries $entries -Publisher 'Reincubate*' -DisplayName 'Camo*' | Should -BeTrue
+    }
+
+    It 'does not match on the name alone when the publisher differs' {
+        $entries = @([pscustomobject]@{ DisplayName = 'Camo Studio'; Publisher = 'Someone Else' })
+
+        Test-InstalledApp -Entries $entries -Publisher 'Reincubate*' -DisplayName 'Camo*' | Should -BeFalse
+    }
+
+    It 'skips entries Windows recorded without a name or publisher' {
+        $entries = @(
+            [pscustomobject]@{ DisplayName = 'Camo Studio' }
+            [pscustomobject]@{ Publisher = 'Reincubate Ltd' }
+        )
+
+        Test-InstalledApp -Entries $entries -Publisher 'Reincubate*' -DisplayName 'Camo*' | Should -BeFalse
+    }
+
+    It 'returns false for an empty app list' {
+        Test-InstalledApp -Entries @() -Publisher 'Reincubate*' -DisplayName 'Camo*' | Should -BeFalse
+    }
+}

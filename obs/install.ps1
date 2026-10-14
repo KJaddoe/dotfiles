@@ -12,12 +12,61 @@ $PluginVersion = '1.4.1'
 $PluginSha256 = '7f9c0118c348111bf384c71e23fd056fd26e999bce90132d91db3017c6fa1b94'
 
 
+<#
+.SYNOPSIS
+Tells whether an installed-apps entry from the Windows uninstall registry matches a publisher and name.
+
+.PARAMETER Entries
+Uninstall registry entries, each with DisplayName and Publisher properties when Windows recorded them.
+
+.PARAMETER Publisher
+A -like pattern for the publisher.
+
+.PARAMETER DisplayName
+A -like pattern for the app name.
+#>
+function Test-InstalledApp {
+    param([object[]]$Entries, [string]$Publisher, [string]$DisplayName)
+
+    foreach ($entry in $Entries) {
+        $names = $entry.PSObject.Properties.Name
+        if ($names -contains 'DisplayName' -and $names -contains 'Publisher' -and
+            $entry.DisplayName -like $DisplayName -and $entry.Publisher -like $Publisher) {
+            return $true
+        }
+    }
+    $false
+}
+
+function Get-InstalledAppEntry {
+    $keys = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    Get-ItemProperty $keys -ErrorAction SilentlyContinue
+}
+
+<#
+.SYNOPSIS
+Installs a winget package unless it is already installed, by winget's record or by Windows' own app list.
+
+.PARAMETER Id
+The winget package ID.
+
+.PARAMETER Publisher
+A -like pattern for the publisher in Windows' app list, for a copy winget cannot match to its package.
+
+.PARAMETER DisplayName
+A -like pattern for the app name in Windows' app list.
+#>
 function Install-WingetPackage {
-    param([string]$Id)
+    param([string]$Id, [string]$Publisher, [string]$DisplayName)
 
     Write-Progress -Activity 'Installing OBS' -Status "Checking $Id"
     winget list --exact --id $Id --accept-source-agreements | Out-Null
     if ($LASTEXITCODE -eq 0) { return "ok: $Id" }
+    if (Test-InstalledApp -Entries @(Get-InstalledAppEntry) -Publisher $Publisher -DisplayName $DisplayName) {
+        return "ok: $Id (installed outside winget)"
+    }
     winget install --exact --id $Id --accept-package-agreements --accept-source-agreements
     if ($LASTEXITCODE -ne 0) { throw "winget could not install $Id (exit code $LASTEXITCODE)" }
     "changed: $Id"
@@ -109,9 +158,9 @@ if ($MyInvocation.InvocationName -ne '.') {
         throw 'Run this from an elevated PowerShell: it installs into Program Files.'
     }
 
-    Install-WingetPackage -Id 'OBSProject.OBSStudio'
-    Install-WingetPackage -Id 'ReincubateLtd.CamoStudio'
-    Install-WingetPackage -Id 'Microsoft.PowerShell'
+    Install-WingetPackage -Id 'OBSProject.OBSStudio' -Publisher 'OBS Project*' -DisplayName 'OBS Studio*'
+    Install-WingetPackage -Id 'ReincubateLtd.CamoStudio' -Publisher 'Reincubate*' -DisplayName 'Camo*'
+    Install-WingetPackage -Id 'Microsoft.PowerShell' -Publisher 'Microsoft Corporation' -DisplayName 'PowerShell 7*'
 
     $obsDir = Join-Path $env:ProgramFiles 'obs-studio'
     if (-not (Test-Path (Join-Path $obsDir 'bin/64bit/obs64.exe'))) {
