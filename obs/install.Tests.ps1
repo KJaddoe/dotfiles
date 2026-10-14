@@ -114,3 +114,24 @@ Describe 'Install-WingetPackage' {
         Should -Invoke Get-AppxPackage -Times 0
     }
 }
+
+Describe 'Get-PwshPath' {
+    It 'returns the first candidate that exists, skipping empty and missing ones' {
+        $alias = Join-Path $TestDrive 'WindowsApps/pwsh.exe'
+        New-Item -ItemType File -Force $alias | Out-Null
+
+        Get-PwshPath -Candidates @($null, (Join-Path $TestDrive 'Program Files/pwsh.exe'), $alias) | Should -Be $alias
+    }
+
+    It 'does not accept a directory named pwsh.exe' {
+        $dir = Join-Path $TestDrive 'dir/pwsh.exe'
+        New-Item -ItemType Directory -Force $dir | Out-Null
+
+        { Get-PwshPath -Candidates @($dir) } | Should -Throw '*PowerShell 7 is not in*'
+    }
+
+    It 'names every place it looked when PowerShell 7 is missing' {
+        { Get-PwshPath -Candidates @('/nope/a/pwsh.exe', '/nope/b/pwsh.exe') } |
+            Should -Throw '*/nope/a/pwsh.exe, /nope/b/pwsh.exe*'
+    }
+}

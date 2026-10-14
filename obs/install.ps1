@@ -81,6 +81,22 @@ function Install-WingetPackage {
 
 <#
 .SYNOPSIS
+Returns the first pwsh.exe that exists, or throws when PowerShell 7 is in none of the places it installs to.
+
+.PARAMETER Candidates
+Paths to try in order.
+#>
+function Get-PwshPath {
+    param([string[]]$Candidates)
+
+    foreach ($candidate in $Candidates) {
+        if ($candidate -and (Test-Path $candidate -PathType Leaf)) { return $candidate }
+    }
+    throw "PowerShell 7 is not in any of: $($Candidates -join ', ')"
+}
+
+<#
+.SYNOPSIS
 Maps a plugin archive entry onto OBS's own plugin layout, or returns $null for an entry it does not install.
 
 .PARAMETER EntryName
@@ -177,7 +193,13 @@ if ($MyInvocation.InvocationName -ne '.') {
     Install-BackgroundRemovalPlugin -ObsDir $obsDir
 
     Write-Progress -Activity 'Installing OBS' -Status 'Writing the OBS config'
-    # winget does not refresh PATH in this session, so a freshly installed pwsh is not found by name.
-    & (Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe') -NoProfile -File (Join-Path $PSScriptRoot 'configure.ps1')
+    # winget does not refresh PATH in this session; its PowerShell package installs as an MSIX app,
+    # reached through the per-user alias, while the MSI installs to Program Files.
+    $pwsh = Get-PwshPath -Candidates @(
+        (Get-Command pwsh -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Source)
+        (Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe')
+        (Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\pwsh.exe')
+    )
+    & $pwsh -NoProfile -File (Join-Path $PSScriptRoot 'configure.ps1')
     if ($LASTEXITCODE -ne 0) { throw "configure.ps1 failed (exit code $LASTEXITCODE)" }
 }
