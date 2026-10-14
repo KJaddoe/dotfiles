@@ -14,9 +14,9 @@ device) hands the result to the call app.
 
 Run only the role with `ansible-playbook _system/main.yml -K --tags obs`. On Windows, install
 VB-CABLE first: it is not in winget, so download it from <https://vb-audio.com/Cable/>, run its
-installer as administrator and reboot. Then run `obs\install.ps1` as administrator. It makes
-Administrators the owner of `C:\ProgramData\obs-studio\plugins` and leaves other users read
-access only, because by default any user can add a plugin there that OBS would load.
+installer as administrator and reboot. Then run `obs\install.ps1` as administrator. It puts the
+background removal plugin in OBS's own install folder, `C:\Program Files\obs-studio`, rather than
+`C:\ProgramData\obs-studio\plugins`, where any user can add a plugin that OBS would load.
 
 Every step is safe to re-run; one that has nothing to do prints `ok`.
 
@@ -64,8 +64,8 @@ monitoring device yet.
 
 ## Tests
 
-`configure.Tests.ps1` covers the generator with Pester, which the `powershell` role installs.
-`script/test-powershell.ps1` runs it together with PSScriptAnalyzer, as CI does:
+`configure.Tests.ps1` and `install.Tests.ps1` are Pester suites, which the `powershell` role
+installs. `script/test-powershell.ps1` runs them together with PSScriptAnalyzer, as CI does:
 
 ```sh
 ./script/test-powershell.ps1
