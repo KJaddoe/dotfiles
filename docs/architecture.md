@@ -67,7 +67,10 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   per OS and machine. `configure.ps1` (PowerShell 7, so one generator serves macOS, Ubuntu and
   Windows) writes a `dotfiles` profile and scene collection with the devices it finds at run time,
   rewriting a file only when a field it owns differs. The `obs` role runs it after installing;
-  `install.ps1` does the same on Windows.
+  `install.ps1` does the same on Windows. `script/test-powershell.ps1` lints every `.ps1` in
+  `obs/` and `script/` with PSScriptAnalyzer and runs the Pester suites;
+  `.github/workflows/powershell.yml` calls it on every push and pull request, on Ubuntu, macOS
+  and Windows.
 
 ## Python tooling (hooks)
 
