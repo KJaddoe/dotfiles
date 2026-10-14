@@ -6,68 +6,64 @@ device) hands the result to the call app.
 
 ## Install
 
-| OS      | How                                  | Installs                                                               |
-|---------|--------------------------------------|------------------------------------------------------------------------|
-| macOS   | `_system/roles/obs` (Ansible)        | OBS, BlackHole 2ch, background removal plugin                          |
-| Ubuntu  | `_system/roles/obs` (Ansible)        | OBS from `ppa:obsproject/obs-studio`, `v4l2loopback-dkms`              |
-| Windows | Manual, see [Windows](#windows)      | OBS, Camo Studio, VB-CABLE, background removal plugin                  |
+| OS      | How                                            | Installs                                                          |
+|---------|------------------------------------------------|-------------------------------------------------------------------|
+| macOS   | `_system/roles/obs` (Ansible)                  | OBS, BlackHole 2ch, background removal plugin, config             |
+| Ubuntu  | `_system/roles/obs` (Ansible)                  | OBS from `ppa:obsproject/obs-studio`, `v4l2loopback-dkms`, config |
+| Windows | `obs/install.ps1`, from an elevated PowerShell | OBS, Camo Studio, PowerShell 7, background removal plugin, config |
 
-Run only this role with `ansible-playbook _system/main.yml -K --tags obs`.
+Run only the role with `ansible-playbook _system/main.yml -K --tags obs`. On Windows, install
+VB-CABLE first: it is not in winget, so download it from <https://vb-audio.com/Cable/>, run its
+installer as administrator and reboot. Then run `obs\install.ps1` as administrator.
 
-Not covered:
+Every step is safe to re-run; one that has nothing to do prints `ok`.
 
-- **Camo** is not installed on macOS and has no Linux client. On macOS, Continuity Camera can use
-  the iPhone instead where the iPhone and macOS versions support it.
-- **Background removal on Ubuntu**: the plugin's Linux package targets Debian, not Ubuntu; the
-  alternatives are a source build or the Flatpak, which only works with Flatpak OBS.
-- **Virtual audio on Ubuntu**: no device is set up; a PipeWire virtual sink is the equivalent.
+## Generated config
 
-### Windows
+`configure.ps1` writes OBS's config; the role and `install.ps1` run it. It refuses to run while OBS
+is open, because OBS writes its config when it exits and would undo the change.
 
-```powershell
-winget install -e --id OBSProject.OBSStudio
-winget install -e --id ReincubateLtd.CamoStudio
+The repo owns this config: a setting changed only in the OBS UI is put back on the next run.
+Change it in `configure.ps1` instead, and experiment in a separate profile or scene collection,
+which the script never touches. It also never touches `service.json`, which holds the stream key.
+
+What it writes, in OBS's config directory:
+
+| File                                | Contents                                                 |
+|-------------------------------------|----------------------------------------------------------|
+| `basic/profiles/dotfiles/basic.ini` | 1920x1080 canvas and the monitoring device               |
+| `basic/scenes/dotfiles.json`        | Sources, scenes and the mic                              |
+| `user.ini`                          | Only the `[Basic]` keys that make OBS open the two above |
+
+Scenes: `Camera`, `Screen + cam` (camera bottom right), `Screen` and `Away` (a dark background).
+The mic is the system default input, set to Monitor and Output, with Noise Suppression (RNNoise),
+Noise Gate, Compressor and Limiter in that order.
+
+Devices are looked up on each machine at run time:
+
+| OS      | Camera                                                | Screen                  | Monitoring device |
+|---------|-------------------------------------------------------|-------------------------|-------------------|
+| macOS   | The built-in camera                                   | The main display        | BlackHole 2ch     |
+| Windows | The camera already chosen in any OBS scene collection | Same rule as the camera | CABLE Input       |
+| Ubuntu  | The first `/dev/video*`                               | None                    | None              |
+
+On a Windows machine where OBS has never had the camera or screen chosen, pick them once in the
+`Webcam` and `Display` sources, then re-run `configure.ps1`: it keeps what you picked. Ubuntu has
+no screen scenes, because PipeWire screen capture asks for permission on every start, and no
+monitoring device yet.
+
+## Using it in a call
+
+1. Start the virtual camera in OBS (**Start Virtual Camera**). On macOS, the first start asks you
+   to allow OBS's camera extension in System Settings.
+2. In the call app, pick `OBS Virtual Camera` as the camera and `BlackHole 2ch` (macOS) or
+   `CABLE Output` (Windows) as the microphone. The virtual camera carries video only; the
+   filtered mic reaches the call through that virtual audio device.
+
+## Tests
+
+`configure.Tests.ps1` covers the generator with Pester, which the `powershell` role installs:
+
+```sh
+pwsh -NoProfile -Command 'Invoke-Pester -Path obs/configure.Tests.ps1'
 ```
-
-1. **VB-CABLE** is not in winget: download it from <https://vb-audio.com/Cable/>, run the
-   installer as administrator, and reboot.
-2. **Background removal plugin**: download `obs-backgroundremoval-<version>-windows-x64.zip` from
-   the plugin's GitHub releases and copy its `obs-backgroundremoval` folder into
-   `C:\ProgramData\obs-studio\plugins\`, creating that folder if it is missing.
-
-## Scenes
-
-Build the scenes once on Windows, export them with **Scene Collection > Export** to
-`obs/scenes.json`, and load that file on another machine with **Scene Collection > Import**.
-
-Capture sources are OS-specific source types (a Windows video capture device is not a macOS
-one), so on another OS they import broken and must be re-added, not re-pointed. Keep them in a
-single `Devices` scene that the other scenes include as a nested scene, so each machine only
-fixes that one scene:
-
-| Scene           | Contents                                                       |
-|-----------------|----------------------------------------------------------------|
-| `Devices`       | Camera, mic and display capture; never shown on its own        |
-| `Camera`        | Camera, cropped and colour-corrected                           |
-| `Screen + cam`  | Display capture with the camera in a corner                    |
-| `Screen`        | Display capture only                                           |
-| `Away`          | A still image, with the mic muted                              |
-
-Give each scene a hotkey under **Settings > Hotkeys**.
-
-Export only the scene collection, never a profile: a profile's `service.json` holds the stream
-key, and this repository is public.
-
-## Mic filters
-
-On the mic source, in this order: Noise Suppression (RNNoise), Noise Gate, Compressor, Limiter.
-
-## Sending the result to the call app
-
-The virtual camera carries video only. For the call app to receive the filtered mic:
-
-1. **Settings > Audio > Advanced > Monitoring Device**: `CABLE Input` (Windows) or
-   `BlackHole 2ch` (macOS).
-2. Mic source, **Advanced Audio Properties**: Audio Monitoring to **Monitor and Output**.
-3. In the call app, pick `OBS Virtual Camera` as the camera and `CABLE Output` or
-   `BlackHole 2ch` as the microphone.
