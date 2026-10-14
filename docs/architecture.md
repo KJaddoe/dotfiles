@@ -62,6 +62,10 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   read; the leading underscore marks it as internal to the directory, and `settings.json` never
   invokes it. The repo-root `CLAUDE.md`
   (this trial) is separate: it is repo-level project instructions, not the global config.
+- **`obs/`**: holds no linked config, only `README.md`. OBS rewrites its own config files and
+  their capture sources are OS-specific, so scenes travel as an exported collection that is
+  imported by hand rather than symlinked. The `obs` role installs on macOS and Ubuntu; Windows,
+  the main OBS machine, is installed manually from the README.
 
 ## Python tooling (hooks)
 
