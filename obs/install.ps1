@@ -47,7 +47,7 @@ function Get-InstalledAppEntry {
 
 <#
 .SYNOPSIS
-Installs a winget package unless it is already installed, by winget's record or by Windows' own app list.
+Installs a winget package unless winget, Windows' app list or the Microsoft Store already has it.
 
 .PARAMETER Id
 The winget package ID.
@@ -57,15 +57,22 @@ A -like pattern for the publisher in Windows' app list, for a copy winget cannot
 
 .PARAMETER DisplayName
 A -like pattern for the app name in Windows' app list.
+
+.PARAMETER AppxName
+A wildcard for the app package name, for a copy installed from the Microsoft Store, which neither
+winget nor Windows' app list sees.
 #>
 function Install-WingetPackage {
-    param([string]$Id, [string]$Publisher, [string]$DisplayName)
+    param([string]$Id, [string]$Publisher, [string]$DisplayName, [string]$AppxName)
 
     Write-Progress -Activity 'Installing OBS' -Status "Checking $Id"
     winget list --exact --id $Id --accept-source-agreements | Out-Null
     if ($LASTEXITCODE -eq 0) { return "ok: $Id" }
     if (Test-InstalledApp -Entries @(Get-InstalledAppEntry) -Publisher $Publisher -DisplayName $DisplayName) {
         return "ok: $Id (installed outside winget)"
+    }
+    if ($AppxName -and (Get-AppxPackage -Name $AppxName)) {
+        return "ok: $Id (installed from the Microsoft Store)"
     }
     winget install --exact --id $Id --accept-package-agreements --accept-source-agreements
     if ($LASTEXITCODE -ne 0) { throw "winget could not install $Id (exit code $LASTEXITCODE)" }
@@ -159,7 +166,8 @@ if ($MyInvocation.InvocationName -ne '.') {
     }
 
     Install-WingetPackage -Id 'OBSProject.OBSStudio' -Publisher 'OBS Project*' -DisplayName 'OBS Studio*'
-    Install-WingetPackage -Id 'ReincubateLtd.CamoStudio' -Publisher 'Reincubate*' -DisplayName 'Camo*'
+    Install-WingetPackage -Id 'ReincubateLtd.CamoStudio' -Publisher 'Reincubate*' -DisplayName 'Camo*' `
+        -AppxName '*Camo*'
     Install-WingetPackage -Id 'Microsoft.PowerShell' -Publisher 'Microsoft Corporation' -DisplayName 'PowerShell 7*'
 
     $obsDir = Join-Path $env:ProgramFiles 'obs-studio'

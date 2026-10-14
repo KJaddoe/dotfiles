@@ -78,3 +78,39 @@ Describe 'Test-InstalledApp' {
         Test-InstalledApp -Entries @() -Publisher 'Reincubate*' -DisplayName 'Camo*' | Should -BeFalse
     }
 }
+
+Describe 'Install-WingetPackage' {
+    BeforeAll {
+        function winget { $global:LASTEXITCODE = 1; $script:WingetCalls += , $args }
+        function Get-AppxPackage { param($Name) throw "Get-AppxPackage $Name is not mocked" }
+    }
+
+    BeforeEach {
+        $script:WingetCalls = @()
+        Mock Get-InstalledAppEntry { @() }
+    }
+
+    It 'skips a copy installed from the Microsoft Store' {
+        Mock Get-AppxPackage { [pscustomobject]@{ Name = 'ReincubateLtd.CamoStudio' } }
+
+        Install-WingetPackage -Id 'ReincubateLtd.CamoStudio' -Publisher 'Reincubate*' -DisplayName 'Camo*' -AppxName '*Camo*' |
+            Should -Be 'ok: ReincubateLtd.CamoStudio (installed from the Microsoft Store)'
+        $script:WingetCalls | Where-Object { $_[0] -eq 'install' } | Should -BeNullOrEmpty
+    }
+
+    It 'installs with winget when no copy is found anywhere' {
+        Mock Get-AppxPackage { }
+
+        { Install-WingetPackage -Id 'ReincubateLtd.CamoStudio' -Publisher 'Reincubate*' -DisplayName 'Camo*' -AppxName '*Camo*' } |
+            Should -Throw '*winget could not install*'
+        @($script:WingetCalls | Where-Object { $_[0] -eq 'install' }).Count | Should -Be 1
+    }
+
+    It 'does not ask the Store when no package name is given' {
+        Mock Get-AppxPackage { [pscustomobject]@{ Name = 'Anything' } }
+
+        { Install-WingetPackage -Id 'OBSProject.OBSStudio' -Publisher 'OBS Project*' -DisplayName 'OBS Studio*' } |
+            Should -Throw '*winget could not install*'
+        Should -Invoke Get-AppxPackage -Times 0
+    }
+}
