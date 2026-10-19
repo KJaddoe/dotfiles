@@ -137,7 +137,7 @@ Copy mode (`prefix + [`) uses vim keys: `v` starts a selection, `V` selects line
 
 ## Shell
 
-The zsh prompt runs in vi mode. The cursor is a beam in insert mode and a block in normal mode. `ctrl + a`/`e`/`k`/`u`/`w` keep their emacs meaning in insert mode, and `v` in normal mode opens the current command in nvim.
+The zsh prompt runs in vi mode. The cursor is a beam in insert mode and a block in normal mode. `ctrl + a`/`e`/`k`/`u`/`w` keep their emacs meaning in insert mode, and `v` in normal mode opens the current command in nvim. `man` pages open in nvim (`MANPAGER='nvim +Man!'`).
 
 ## Claude Code
 

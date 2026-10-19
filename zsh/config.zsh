@@ -3,9 +3,8 @@ export LSCOLORS='exfxcxdxbxegedabagacad'
 export CLICOLOR=true
 export GPG_TTY=$TTY
 
-if command -v bat >/dev/null 2>&1; then
-	export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-	export MANROFFOPT="-c"
+if command -v nvim >/dev/null 2>&1; then
+	export MANPAGER='nvim +Man!'
 fi
 
 fpath=($DOTFILES/functions $fpath)
