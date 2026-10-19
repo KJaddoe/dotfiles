@@ -58,12 +58,14 @@ import sys
 from pathlib import Path
 
 from _hookutil import (
+    command_directory,
     heredoc_bodies,
     nearest_existing_dir,
     read_payload,
     read_text_or_empty,
     redirect_targets,
     repo_root,
+    strip_heredocs,
 )
 
 HASH = "#"
@@ -286,9 +288,10 @@ def writes_into_repository(tool, tool_input, cwd):
 
     A Bash command is judged by where it redirects. When it redirects nowhere the content is
     reaching a file some other way (a script on stdin, a program writing its own output), so the
-    session's own directory answers for it. A target the hook cannot resolve, a path behind an
-    unexpanded shell variable most of all, resolves against that directory too and so fails
-    closed inside a repository, which is the safe direction to be wrong in.
+    directory the command runs in answers for it: the session's, or the one a leading `cd` moves
+    to. A target the hook cannot resolve, a path behind an unexpanded shell variable most of all,
+    resolves against that directory too and so fails closed inside a repository, which is the
+    safe direction to be wrong in.
 
     :param tool: tool name
     :param tool_input: the tool's input payload
@@ -296,10 +299,12 @@ def writes_into_repository(tool, tool_input, cwd):
     :return: True when the write lands in a repository
     """
     if tool == "Bash":
-        targets = redirect_targets(tool_input.get("command") or "")
+        command = tool_input.get("command") or ""
+        runs_in = str(command_directory(strip_heredocs(command), cwd))
+        targets = redirect_targets(command)
         if targets:
-            return any(in_repository(target, cwd) for target in targets)
-        return directory_in_repository(cwd)
+            return any(in_repository(target, runs_in) for target in targets)
+        return directory_in_repository(runs_in)
 
     return in_repository(target_path(tool_input), cwd)
 

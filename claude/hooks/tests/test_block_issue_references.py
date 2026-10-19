@@ -292,6 +292,19 @@ class TestRepositoryScope(HookFixture):
         self.assertEqual(run_hook("Bash", {"command": command}, cwd=self.outside), ALLOW)
         self.assertEqual(run_hook("Bash", {"command": command}, cwd=self.repo), BLOCK)
 
+    def test_heredoc_without_a_redirect_follows_a_leading_cd(self):
+        """A command that changes directory first writes where it went, not where the session is."""
+        script = f"python3 - <<'PY'\nprint('Fixes {ref(12)}')\nPY\n"
+        leaves = f"cd {self.outside} && {script}"
+        enters = f"cd {self.repo} && {script}"
+        self.assertEqual(run_hook("Bash", {"command": leaves}, cwd=self.repo), ALLOW)
+        self.assertEqual(run_hook("Bash", {"command": enters}, cwd=self.outside), BLOCK)
+
+    def test_relative_redirect_resolves_against_a_leading_cd(self):
+        """A relative target names a file in the directory the command changed into."""
+        command = f"cd {self.outside} && cat > plan.md <<'EOF'\nFixes {ref(12)}\nEOF\n"
+        self.assertEqual(run_hook("Bash", {"command": command}, cwd=self.repo), ALLOW)
+
     def test_target_behind_a_shell_variable_fails_closed(self):
         """An unexpanded variable is not a path the hook can resolve, so the session answers."""
         command = f"cat >> $OUT/plan.md <<'EOF'\nFixes {ref(12)}\nEOF\n"
