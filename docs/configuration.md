@@ -339,8 +339,9 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   (`rule`, `line`, `step`) and hex colours are allowed, as are standards and toolchain
   identifiers that share the key shape (`UTF-8`, `RFC-7231`, `CVE-2024-1234`, `JDK-17`); that
   last list is a running one, and a new collision joins it. Nothing exempts test files. A number
-  is still correct in a commit message, a PR body and a branch name, all of which are outside a
-  hook's reach as file content. Under `Bash` it reads heredoc BODIES like the dash guard, and
+  is still correct in a commit message, a PR body and a branch name, so a `git commit`, a
+  `gh issue`/`gh pr` command and a `gh api` call to an issue or pull endpoint pass through when
+  they redirect into no file. Under `Bash` it reads heredoc BODIES like the dash guard, and
   there is no delta there, only content: a script whose heredoc REMOVES a reference is refused
   alongside one that adds it, so a cleanup pass driven from the shell has to assemble the string
   it is deleting from parts, the way the hook's own tests do. It applies only INSIDE a git

@@ -234,6 +234,60 @@ class TestBash(HookFixture):
         self.assertEqual(run_hook("Bash", {"command": f"grep -rn '{ref(12)}' ."}), ALLOW)
 
 
+class TestOutsideTheTree(HookFixture):
+    """A commit message and a body handed to the tracker may cite a number."""
+
+    def bash(self, command):
+        """Run the hook over a Bash command issued from inside the repository.
+
+        :param command: the shell command
+        :return: hook exit code
+        """
+        return run_hook("Bash", {"command": command}, cwd=self.repo)
+
+    def test_commit_message_on_stdin_is_allowed(self):
+        """`git commit -F -` reads its message from the heredoc."""
+        self.assertEqual(self.bash(f"git commit -F - <<'EOF'\nCloses {ref(12)}\nEOF\n"), ALLOW)
+
+    def test_commit_message_through_a_subshell_is_allowed(self):
+        """`git commit -m "$(cat <<EOF ...)"` is the same message by another route."""
+        command = f"git commit -m \"$(cat <<'EOF'\nCloses {ref(12)}\nEOF\n)\"\n"
+        self.assertEqual(self.bash(command), ALLOW)
+
+    def test_commit_in_another_tree_is_allowed(self):
+        """`git -C` names the tree without changing what the content is."""
+        command = f"git -C {self.repo} commit -F - <<'EOF'\nRefs {ref(12)}\nEOF\n"
+        self.assertEqual(self.bash(command), ALLOW)
+
+    def test_pr_body_is_allowed(self):
+        """A PR body lives and dies with the tracker."""
+        command = f"gh pr create --title x --body-file - <<'EOF'\nCloses {ref(12)}\nEOF\n"
+        self.assertEqual(self.bash(command), ALLOW)
+
+    def test_review_through_gh_api_is_allowed(self):
+        """A pending review posted to the pulls endpoint is tracker content too."""
+        command = (
+            "gh api repos/o/r/pulls/3/reviews --input - <<'EOF'\n"
+            f'{{"body": "see {ref(12)}"}}\nEOF\n'
+        )
+        self.assertEqual(self.bash(command), ALLOW)
+
+    def test_gh_api_outside_issues_and_pulls_is_blocked(self):
+        """Only the issue and pull endpoints are the tracker."""
+        command = f"gh api repos/o/r/contents/x --input - <<'EOF'\nCloses {ref(12)}\nEOF\n"
+        self.assertEqual(self.bash(command), BLOCK)
+
+    def test_commit_that_also_writes_a_file_is_blocked(self):
+        """A redirect into the tree is a file write, whatever else the command does."""
+        command = f"cat > notes.md <<'EOF'\nCloses {ref(12)}\nEOF\ngit commit -am x\n"
+        self.assertEqual(self.bash(command), BLOCK)
+
+    def test_command_named_only_inside_the_body_is_blocked(self):
+        """A file whose content mentions `git commit` is still a file."""
+        command = f"tee notes.md <<'EOF'\nrun git commit\nCloses {ref(12)}\nEOF\n"
+        self.assertEqual(self.bash(command), BLOCK)
+
+
 class TestNotebook(HookFixture):
     """A notebook cell is file content like any other."""
 

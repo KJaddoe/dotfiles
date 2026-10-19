@@ -41,13 +41,12 @@ Scope is file content, whichever tool carries it. Under `Bash` only heredoc BODI
 those are the content; other shell write forms (`echo >> f`, `sed -i`) are still uncovered, and a
 `grep` for a reference is deliberately left alone.
 
-Nothing in the harness lets a hook see the assistant's chat prose, and a commit message and a
-branch name are both outside a hook's reach as file content. That is correct: the rule permits a
-number in exactly those places, because their lifetime matches the tracker's. A body handed to the
-tracker itself is the same case and IS within reach, since it travels as a heredoc, so a `gh issue`
-or `gh pr` command that redirects into no file is passed through: its content lives in the tracker,
-dies with the tracker, and is where the repository's own issues carry their parent and depends-on
-links.
+Nothing in the harness lets a hook see the assistant's chat prose, and a branch name is outside a
+hook's reach as file content. A commit message and a body handed to the tracker ARE within reach,
+since both travel as heredocs, and the rule permits a number in exactly those places, because their
+lifetime matches the tracker's. So a `git commit`, a `gh issue` or `gh pr`, and a `gh api` call to
+an issue or pull endpoint that redirects into no file are passed through. The command is read with
+heredoc bodies stripped, so a file whose content merely mentions one of them is still a file.
 
 Every pattern below is assembled from a HASH constant rather than written literally, so this file
 never contains a reference it would itself refuse.
@@ -64,6 +63,7 @@ from _hookutil import (
     read_text_or_empty,
     redirect_targets,
     repo_root,
+    strip_heredocs,
 )
 
 HASH = "#"
@@ -107,7 +107,11 @@ BARE_NUMBER = re.compile(rf"{HASH}(\d{{1,6}})\b")
 
 WORD_BEFORE = re.compile(r"([A-Za-z]+)[\s:,]*$")
 
-TRACKER_COMMAND = re.compile(r"\bgh\s+(?:issue|pr)\s+[a-z-]+")
+OUTSIDE_TREE_COMMAND = re.compile(
+    r"\bgh\s+(?:issue|pr)\s+[a-z-]+"
+    r"|\bgh\s+api\s+\S*/(?:issues|pulls)\b"
+    r"|\bgit\s+(?:-C\s+\S+\s+)?commit\b"
+)
 
 LEADING_CD = re.compile(r"\s*cd\s+(?!-)([^\s;&|<>]+)\s*&&")
 
@@ -229,16 +233,17 @@ def heredoc_targets_prose(command):
     return any(is_prose_suffix(target) for target in redirect_targets(command))
 
 
-def posts_to_tracker(command):
-    """Report whether a shell command hands its content to the tracker rather than to a file.
+def lands_outside_tree(command):
+    """Report whether a shell command hands its content to a commit or the tracker, not a file.
 
     A command that also redirects is judged as a file write, since that is the half the rule is
     about.
 
     :param command: the shell command
-    :return: True when the content reaches the tracker and no file
+    :return: True when the content reaches a commit or the tracker and no file
     """
-    return bool(TRACKER_COMMAND.search(command)) and not redirect_targets(command)
+    invoked = strip_heredocs(command)
+    return bool(OUTSIDE_TREE_COMMAND.search(invoked)) and not redirect_targets(command)
 
 
 def directory_in_repository(directory):
@@ -350,7 +355,7 @@ def added(tool, tool_input):
 
     if tool == "Bash":
         command = tool_input.get("command") or ""
-        if posts_to_tracker(command):
+        if lands_outside_tree(command):
             return []
         bodies = "\n".join(heredoc_bodies(command))
         return references(bodies, heredoc_targets_prose(command))
