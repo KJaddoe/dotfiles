@@ -402,6 +402,49 @@ class TestReopen(GateFixture):
         self.assertEqual(self.run_tool("Edit", reopen(self.target)).returncode, ALLOW)
 
 
+class TestWorktree(GateFixture):
+    """A linked worktree answers to the main checkout's specs folder, never its own."""
+
+    def setUp(self):
+        """Add a worktree on a second branch for issue 7 beside the fixture repo."""
+        super().setUp()
+        self.worktree = self.repo.parent / "repo-worktree"
+        git(self.repo, "worktree", "add", "-q", "-b", "7-in-a-worktree", str(self.worktree))
+
+    def write_in_worktree(self):
+        """Attempt a Write of a new source file inside the worktree, from a session there.
+
+        :return: the HookRun
+        """
+        target = str(self.worktree / "src" / "a.ts")
+        return self.run_tool("Write", {"file_path": target, "content": "x\n"}, self.worktree)
+
+    def test_main_checkout_approval_passes(self):
+        """Documents approved in the main checkout's folder unblock the worktree."""
+        self.approve_both()
+        self.assertEqual(self.write_in_worktree().returncode, ALLOW)
+
+    def test_missing_approval_names_the_main_checkout_folder(self):
+        """The refusal points at the folder the user actually reviews in."""
+        run = self.write_in_worktree()
+        self.assertEqual(run.returncode, BLOCK)
+        self.assertIn(str(self.specs), run.stderr)
+
+    def test_worktree_own_folder_does_not_count(self):
+        """Documents under the worktree's own mapped folder are not a second source of approval."""
+        own = session_project_dir(repo_root(self.worktree)) / "specs"
+        own.mkdir(parents=True)
+        (own / "spec.md").write_text(document("spec", "approved"))
+        (own / "plan.md").write_text(document("plan", "approved"))
+        self.assertEqual(self.write_in_worktree().returncode, BLOCK)
+
+    def test_reopen_from_a_worktree_session_passes_when_untouched(self):
+        """A session in the worktree may reopen a document while no work has started."""
+        self.approve_both()
+        target = str(self.specs / "spec.md")
+        self.assertEqual(self.run_tool("Edit", reopen(target), self.worktree).returncode, ALLOW)
+
+
 class TestPayload(unittest.TestCase):
     """A hook that cannot read its payload must never wedge the session."""
 

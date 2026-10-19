@@ -10,7 +10,8 @@ The gate applies on a branch named the way `gh issue develop` names one (`<numbe
 Any other branch, and any path outside a git repository, passes. On an issue branch an edit
 inside the repository is refused until the project's session folder
 (`~/.claude/projects/<mapped>/specs/`) holds a Markdown document whose front matter reads
-`issue: <number>`, `kind: spec`, `status: approved`, and another with `kind: plan`.
+`issue: <number>`, `kind: spec`, `status: approved`, and another with `kind: plan`. A linked
+git worktree maps to its main checkout's folder, so documents approved there cover it.
 
 Only the user approves. A Write or Edit that would leave a document in a session `specs/` folder
 reading `status: approved` is refused, so an approved document is frozen to Claude. When the user
@@ -37,6 +38,7 @@ from pathlib import Path
 from _hookutil import (
     command_directory,
     command_segments,
+    main_checkout,
     nearest_existing_dir,
     read_payload,
     read_text_or_empty,
@@ -358,7 +360,7 @@ def work_started(path, issue, cwd):
     :return: what shows the work has started, or "" when nothing has
     """
     root = repo_root(nearest_existing_dir(Path(cwd or ".").expanduser()))
-    specs_dir = (session_project_dir(root) / "specs").resolve() if root else None
+    specs_dir = (session_project_dir(main_checkout(root)) / "specs").resolve() if root else None
     if specs_dir is None or not path.resolve().is_relative_to(specs_dir):
         return "this session runs outside the document's repository, so that cannot be ruled out"
 
@@ -481,7 +483,7 @@ def main():
         if gated is None:
             continue
         root, issue = gated
-        specs_dir = session_project_dir(root) / "specs"
+        specs_dir = session_project_dir(main_checkout(root)) / "specs"
         approved, drafts, malformed = issue_documents(specs_dir, issue)
         missing = gaps(approved, drafts)
         if missing:

@@ -812,6 +812,20 @@ def repo_root(cwd):
     return Path(top) if top else None
 
 
+def main_checkout(root):
+    """Map a linked worktree's root to the main checkout it was added from.
+
+    :param root: repository root, as `repo_root` returns it
+    :return: the main checkout's root; `root` itself for a main checkout, or when the shared git
+        directory is not a `.git` folder (a bare or submodule layout)
+    """
+    common = run_git(root, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()
+    if not common:
+        return root
+    common = Path(common)
+    return common.parent if common.name == ".git" else root
+
+
 def nearest_existing_dir(path):
     """Walk up from `path` to the closest directory that exists.
 

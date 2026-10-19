@@ -356,7 +356,8 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   on `Bash`, no configuration and no bypass. On a branch named `<number>-<slug>` (the
   `gh issue develop` default) it refuses edits inside the repository until the project's session
   folder `~/.claude/projects/<mapped>/specs/` holds a Markdown spec AND plan for that issue, each
-  with front matter `issue: <number>`, `kind: spec` or `kind: plan`, and `status: approved`. Any
+  with front matter `issue: <number>`, `kind: spec` or `kind: plan`, and `status: approved`. A
+  linked git worktree reads the main checkout's session folder, not its own. Any
   other branch, and any path outside a repository, passes. It also refuses a Claude write that
   would leave a session spec or plan reading `status: approved`, so only the user approves and an
   approved document is frozen. An edit that only sets one back to draft passes, unless work on
