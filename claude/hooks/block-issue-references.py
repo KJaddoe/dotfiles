@@ -42,11 +42,12 @@ those are the content; other shell write forms (`echo >> f`, `sed -i`) are still
 `grep` for a reference is deliberately left alone.
 
 Nothing in the harness lets a hook see the assistant's chat prose, and a branch name is outside a
-hook's reach as file content. A commit message and a body handed to the tracker ARE within reach,
-since both travel as heredocs, and the rule permits a number in exactly those places, because their
-lifetime matches the tracker's. So a `git commit`, a `gh issue` or `gh pr`, and a `gh api` call to
-an issue or pull endpoint that redirects into no file are passed through. The command is read with
-heredoc bodies stripped, so a file whose content merely mentions one of them is still a file.
+hook's reach as file content. A commit or tag message and a body handed to the tracker ARE within
+reach, since they travel as heredocs, and the rule permits a number in exactly those places, because
+their lifetime matches the tracker's. So a `git commit`, a `git tag`, a `gh issue` or `gh pr`, and a
+`gh api` call to an issue or pull endpoint that redirects into no file are passed through. The
+command is read with heredoc bodies stripped, so a file whose content merely mentions one of them
+is still a file.
 
 Every pattern below is assembled from a HASH constant rather than written literally, so this file
 never contains a reference it would itself refuse.
@@ -110,7 +111,7 @@ WORD_BEFORE = re.compile(r"([A-Za-z]+)[\s:,]*$")
 OUTSIDE_TREE_COMMAND = re.compile(
     r"\bgh\s+(?:issue|pr)\s+[a-z-]+"
     r"|\bgh\s+api\s+\S*/(?:issues|pulls)\b"
-    r"|\bgit\s+(?:-C\s+\S+\s+)?commit\b"
+    r"|\bgit\s+(?:-C\s+\S+\s+)?(?:commit|tag)\b"
 )
 
 LEADING_CD = re.compile(r"\s*cd\s+(?!-)([^\s;&|<>]+)\s*&&")
@@ -234,13 +235,13 @@ def heredoc_targets_prose(command):
 
 
 def lands_outside_tree(command):
-    """Report whether a shell command hands its content to a commit or the tracker, not a file.
+    """Report whether a shell command hands its content to git history or the tracker, not a file.
 
     A command that also redirects is judged as a file write, since that is the half the rule is
     about.
 
     :param command: the shell command
-    :return: True when the content reaches a commit or the tracker and no file
+    :return: True when the content reaches a commit, a tag or the tracker and no file
     """
     invoked = strip_heredocs(command)
     return bool(OUTSIDE_TREE_COMMAND.search(invoked)) and not redirect_targets(command)

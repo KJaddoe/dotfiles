@@ -259,6 +259,10 @@ class TestOutsideTheTree(HookFixture):
         command = f"git -C {self.repo} commit -F - <<'EOF'\nRefs {ref(12)}\nEOF\n"
         self.assertEqual(self.bash(command), ALLOW)
 
+    def test_tag_annotation_on_stdin_is_allowed(self):
+        """`git tag -a -F -` is a message in git history, like a commit's."""
+        self.assertEqual(self.bash(f"git tag -a v1 -F - <<'EOF'\nCloses {ref(12)}\nEOF\n"), ALLOW)
+
     def test_pr_body_is_allowed(self):
         """A PR body lives and dies with the tracker."""
         command = f"gh pr create --title x --body-file - <<'EOF'\nCloses {ref(12)}\nEOF\n"
