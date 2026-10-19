@@ -133,6 +133,8 @@ request), run `script/test-hooks`; see `docs/architecture.md` for the per-suite 
 
 to install the tmux plugins you will have to manually do `prefix + I` to install the plugins using tpm. The set prefix is `ctrl + b`
 
+Copy mode (`prefix + [`) uses vim keys: `v` starts a selection, `V` selects lines, `ctrl + v` toggles a block selection and `y` yanks to the system clipboard. `prefix + v` opens the current pane's whole scrollback read-only in nvim, in a popup; `:q` closes it.
+
 ## Claude Code
 
 The `claude` topic installs [Claude Code][claude-code] and restores the global config. Its `install.sh` installs the binary, then adds the configured marketplaces and plugins. Dotbot symlinks `settings.json`, `CLAUDE.md`, `keybindings.json`, `hooks/`, `memory/`, `skills/` and `templates/` into `~/.claude`, so they stay in sync with the repo. You will need to authenticate once with `claude` on a new machine.
