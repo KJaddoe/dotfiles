@@ -455,13 +455,6 @@ require("lazy").setup({
       })
     end,
   },
-  {
-    "laytan/cloak.nvim",
-    config = function()
-      require("cloak").setup({ --[[ your config ]]
-      })
-    end,
-  },
 
   -- Coding --
   {
