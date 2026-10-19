@@ -1446,10 +1446,17 @@ require("lazy").setup({
           cs = { "csharpier" },
           sql = { "sql_formatter" },
           toml = { "taplo" },
-          -- Without its own entry, xml resolves to "_" and the LSP fallback never runs.
-          xml = { lsp_format = "prefer" },
           zig = { "zigfmt" },
           python = { "isort", "black" },
+          -- LSP-formatted: without its own entry a filetype resolves to "_", so
+          -- the LSP fallback below never runs.
+          c = { lsp_format = "prefer" },
+          cpp = { lsp_format = "prefer" },
+          go = { lsp_format = "prefer" },
+          php = { lsp_format = "prefer" },
+          rust = { lsp_format = "prefer" },
+          swift = { lsp_format = "prefer" },
+          xml = { lsp_format = "prefer" },
           ["_"] = { "trim_whitespace", "trim_newlines" },
         },
         format_after_save = {

@@ -207,7 +207,10 @@ syntax error) and does no rule linting. `yaml.ansible` buffers keep their exact 
 
 XML is formatted by the `lemminx` language server, installed by the `neovim` role, through conform's
 `lsp_format`. `xmllint --format` is not used: it injects an `<?xml …?>` declaration into files that
-lack one, which would rewrite every `.csproj` on first save.
+lack one, which would rewrite every `.csproj` on first save. C, C++, Go, PHP, Rust and Swift are
+likewise formatted by their language server. Each LSP-formatted filetype needs its own
+`formatters_by_ft` entry: without one, conform resolves it to the trim-only `"_"` entry and never
+falls back to the LSP.
 
 ## Other languages
 
