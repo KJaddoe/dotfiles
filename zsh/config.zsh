@@ -57,9 +57,32 @@ setopt ALWAYS_TO_END
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 
-# emacs mode
-# I always enter vi mode by mistake
-bindkey -e
+# vi mode; the cursor shape shows which mode is active (beam insert, block normal)
+bindkey -v
+KEYTIMEOUT=1
+
+autoload -U add-zle-hook-widget edit-command-line
+zle -N edit-command-line
+bindkey -M vicmd v edit-command-line
+
+_vi_cursor_shape() {
+	if [[ $KEYMAP == vicmd ]]; then
+		printf '\e[2 q'
+	else
+		printf '\e[6 q'
+	fi
+}
+_vi_cursor_reset() { printf '\e[2 q' }
+add-zle-hook-widget keymap-select _vi_cursor_shape
+add-zle-hook-widget line-init _vi_cursor_shape
+add-zle-hook-widget line-finish _vi_cursor_reset
+
+# keep the emacs line-editing keys in insert mode
+bindkey -M viins '^A' beginning-of-line
+bindkey -M viins '^E' end-of-line
+bindkey -M viins '^K' kill-line
+bindkey -M viins '^U' backward-kill-line
+bindkey -M viins '^W' backward-kill-word
 
 # fuzzy find: start to type
 bindkey "$terminfo[kcuu1]" up-line-or-beginning-search

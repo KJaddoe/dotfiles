@@ -135,6 +135,10 @@ to install the tmux plugins you will have to manually do `prefix + I` to install
 
 Copy mode (`prefix + [`) uses vim keys: `v` starts a selection, `V` selects lines, `ctrl + v` toggles a block selection and `y` yanks to the system clipboard. `prefix + v` opens the current pane's whole scrollback read-only in nvim, in a popup; `:q` closes it.
 
+## Shell
+
+The zsh prompt runs in vi mode. The cursor is a beam in insert mode and a block in normal mode. `ctrl + a`/`e`/`k`/`u`/`w` keep their emacs meaning in insert mode, and `v` in normal mode opens the current command in nvim.
+
 ## Claude Code
 
 The `claude` topic installs [Claude Code][claude-code] and restores the global config. Its `install.sh` installs the binary, then adds the configured marketplaces and plugins. Dotbot symlinks `settings.json`, `CLAUDE.md`, `keybindings.json`, `hooks/`, `memory/`, `skills/` and `templates/` into `~/.claude`, so they stay in sync with the repo. You will need to authenticate once with `claude` on a new machine.
