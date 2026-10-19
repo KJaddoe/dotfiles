@@ -205,8 +205,9 @@ Python needs `nvim-lint` because `jedi_language_server` publishes at most one di
 syntax error) and does no rule linting. `yaml.ansible` buffers keep their exact filetype, so
 `yamllint` does not fire on files `ansiblels` already lints.
 
-XML is deliberately unformatted: the only locally available tool, `xmllint --format`, injects an
-`<?xml …?>` declaration into files that lack one, which would rewrite every `.csproj` on first save.
+XML is formatted by the `lemminx` language server, installed by the `neovim` role, through conform's
+`lsp_format`. `xmllint --format` is not used: it injects an `<?xml …?>` declaration into files that
+lack one, which would rewrite every `.csproj` on first save.
 
 ## Other languages
 

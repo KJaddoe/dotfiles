@@ -4,4 +4,9 @@ neovim_lua_ls_version: "3.18.2"
 neovim_selene_version: "0.31.0"
 neovim_taplo_version: "0.10.0"
 neovim_zls_version: "0.16.0"
+neovim_lemminx_version: "0.29.3"
+neovim_lemminx_dir: "{{ ansible_env.HOME }}/.local/share/lemminx-v{{ neovim_lemminx_version }}"
+neovim_lemminx_asset: >-
+  lemminx-{{ 'osx' if ansible_facts.os_family == 'Darwin' else 'linux' }}-{{
+  'aarch_64' if ansible_facts.architecture in ['arm64', 'aarch64'] else 'x86_64' }}
 neovim_netcoredbg_version: "3.2.0-1092"

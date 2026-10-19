@@ -155,6 +155,33 @@
     state: link
   when: ansible_facts.os_family == "Debian"
 
+- name: Create lemminx versioned install directory
+  ansible.builtin.file:
+    path: "{{ neovim_lemminx_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Download lemminx archive
+  ansible.builtin.get_url:
+    url: >-
+      https://github.com/redhat-developer/vscode-xml/releases/download/{{
+      neovim_lemminx_version }}/{{ neovim_lemminx_asset }}.zip
+    dest: "{{ neovim_lemminx_dir }}/lemminx.zip"
+    mode: "0644"
+
+- name: Extract lemminx
+  ansible.builtin.unarchive:
+    src: "{{ neovim_lemminx_dir }}/lemminx.zip"
+    dest: "{{ neovim_lemminx_dir }}"
+    remote_src: true
+    creates: "{{ neovim_lemminx_dir }}/{{ neovim_lemminx_asset }}"
+
+- name: Symlink lemminx into PATH
+  ansible.builtin.file:
+    src: "{{ neovim_lemminx_dir }}/{{ neovim_lemminx_asset }}"
+    dest: "{{ ansible_env.HOME }}/.local/bin/lemminx"
+    state: link
+
 - name: Create netcoredbg versioned install directory
   ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/.local/share/netcoredbg-v{{ neovim_netcoredbg_version }}"

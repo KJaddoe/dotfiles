@@ -549,6 +549,7 @@ require("lazy").setup({
         "zls",
         "rust_analyzer",
         "taplo",
+        "lemminx",
         "eslint",
       }) do
         vim.lsp.config(server, {
@@ -724,6 +725,7 @@ require("lazy").setup({
         "lua_ls",
         "rust_analyzer",
         "taplo",
+        "lemminx",
         "roslyn_ls",
         "ansiblels",
         "eslint",
@@ -1444,6 +1446,8 @@ require("lazy").setup({
           cs = { "csharpier" },
           sql = { "sql_formatter" },
           toml = { "taplo" },
+          -- Without its own entry, xml resolves to "_" and the LSP fallback never runs.
+          xml = { lsp_format = "prefer" },
           zig = { "zigfmt" },
           python = { "isort", "black" },
           ["_"] = { "trim_whitespace", "trim_newlines" },
