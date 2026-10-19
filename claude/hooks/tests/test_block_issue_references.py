@@ -305,6 +305,20 @@ class TestRepositoryScope(HookFixture):
         command = f"cd {self.outside} && cat > plan.md <<'EOF'\nFixes {ref(12)}\nEOF\n"
         self.assertEqual(run_hook("Bash", {"command": command}, cwd=self.repo), ALLOW)
 
+    def test_cd_after_the_write_does_not_move_it(self):
+        """Only a cd that runs before the write decides where the write lands."""
+        trailing = f"cat > notes.md <<'EOF' && cd {self.outside}\nFixes {ref(12)}\nEOF\n"
+        separated = f"python3 - <<'PY' ; cd {self.outside}\nprint('Fixes {ref(12)}')\nPY\n"
+        self.assertEqual(run_hook("Bash", {"command": trailing}, cwd=self.repo), BLOCK)
+        self.assertEqual(run_hook("Bash", {"command": separated}, cwd=self.repo), BLOCK)
+
+    def test_git_c_does_not_move_the_write(self):
+        """`git -C` scopes git alone; the shell still writes where the session is."""
+        command = (
+            f"git -C {self.outside} status && python3 - <<'PY'\nprint('Fixes {ref(12)}')\nPY\n"
+        )
+        self.assertEqual(run_hook("Bash", {"command": command}, cwd=self.repo), BLOCK)
+
     def test_target_behind_a_shell_variable_fails_closed(self):
         """An unexpanded variable is not a path the hook can resolve, so the session answers."""
         command = f"cat >> $OUT/plan.md <<'EOF'\nFixes {ref(12)}\nEOF\n"

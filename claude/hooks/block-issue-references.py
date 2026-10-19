@@ -58,14 +58,12 @@ import sys
 from pathlib import Path
 
 from _hookutil import (
-    command_directory,
     heredoc_bodies,
     nearest_existing_dir,
     read_payload,
     read_text_or_empty,
     redirect_targets,
     repo_root,
-    strip_heredocs,
 )
 
 HASH = "#"
@@ -110,6 +108,8 @@ BARE_NUMBER = re.compile(rf"{HASH}(\d{{1,6}})\b")
 WORD_BEFORE = re.compile(r"([A-Za-z]+)[\s:,]*$")
 
 TRACKER_COMMAND = re.compile(r"\bgh\s+(?:issue|pr)\s+[a-z-]+")
+
+LEADING_CD = re.compile(r"\s*cd\s+(?!-)([^\s;&|<>]+)\s*&&")
 
 
 def is_prose_suffix(path):
@@ -283,6 +283,26 @@ def target_path(tool_input):
     return tool_input.get("file_path") or tool_input.get("notebook_path") or ""
 
 
+def leading_directory(command, cwd):
+    """Resolve the directory a shell command writes from, following only a leading `cd` chain.
+
+    A `cd` anywhere later, or a `git -C`, runs after or beside the write and must not move it,
+    or the guard fails open. Only `&&` counts, since a failed `cd` then stops the write.
+
+    :param command: the shell command
+    :param cwd: the session's working directory
+    :return: the directory the command's first non-`cd` step runs in
+    """
+    base = Path(cwd).expanduser() if cwd else Path(".")
+    match = LEADING_CD.match(command)
+    while match:
+        target = Path(match.group(1).strip("'\"")).expanduser()
+        base = target if target.is_absolute() else base / target
+        command = command[match.end() :]
+        match = LEADING_CD.match(command)
+    return base
+
+
 def writes_into_repository(tool, tool_input, cwd):
     """Report whether a tool call would write inside a git working tree.
 
@@ -300,7 +320,7 @@ def writes_into_repository(tool, tool_input, cwd):
     """
     if tool == "Bash":
         command = tool_input.get("command") or ""
-        runs_in = str(command_directory(strip_heredocs(command), cwd))
+        runs_in = str(leading_directory(command, cwd))
         targets = redirect_targets(command)
         if targets:
             return any(in_repository(target, runs_in) for target in targets)
