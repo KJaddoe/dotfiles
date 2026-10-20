@@ -40,7 +40,6 @@
     - { role: poppler, tags: poppler }
     - { role: neovim, tags: neovim }
     - { role: powershell, tags: powershell }
-    - { role: obs, tags: obs }
 
     # databases
     - { role: postgresql, tags: postgresql }

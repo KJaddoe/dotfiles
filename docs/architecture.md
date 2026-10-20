@@ -62,15 +62,6 @@ concern from config (symlink dotfiles, no root). Keeping them separate lets eith
   read; the leading underscore marks it as internal to the directory, and `settings.json` never
   invokes it. The repo-root `CLAUDE.md`
   (this trial) is separate: it is repo-level project instructions, not the global config.
-- **`obs/`**: OBS config is generated, not linked. OBS saves by renaming a temp file over the
-  target, which replaces a symlink on the first save, and its device IDs and source types differ
-  per OS and machine. `configure.ps1` (PowerShell 7, so one generator serves macOS, Ubuntu and
-  Windows) writes a `dotfiles` profile and scene collection with the devices it finds at run time,
-  rewriting a file only when a field it owns differs. The `obs` role runs it after installing;
-  `install.ps1` does the same on Windows. `script/test-powershell.ps1` lints every `.ps1` in
-  `obs/` and `script/` with PSScriptAnalyzer and runs the Pester suites;
-  `.github/workflows/powershell.yml` calls it on every push and pull request, on Ubuntu, macOS
-  and Windows.
 
 ## Python tooling (hooks)
 
@@ -89,6 +80,10 @@ bootstrapped machine before anything is installed.
 `script/test` calls it first, before its (destructive) bootstrap steps, and
 `.github/workflows/hook-tests.yml` calls it on every push and pull request, on both Ubuntu and
 macOS.
+
+`script/test-powershell.ps1` lints every `.ps1` under `script/` with PSScriptAnalyzer;
+`.github/workflows/powershell.yml` calls it on every push and pull request, on Ubuntu, macOS and
+Windows.
 
 `nvim/tests/` is the exception it does **not** run. Those tests drive a real headless nvim against
 `nvim/config`, so they need nvim, an installed plugin set and pylint on PATH, while the hook suites

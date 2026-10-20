@@ -1,9 +1,0 @@
----
-obs_blackhole_version: "0.7.1"
-obs_blackhole_sha256: "57b540f27a3e29c37e310e01bee0fdfab76733087e47f997ef9dccf851400dcf"
-obs_blackhole_pkg_id: "audio.existential.BlackHole2ch"
-obs_blackhole_pkg: "/var/root/dotfiles-obs/BlackHole2ch-{{ obs_blackhole_version }}.pkg"
-obs_backgroundremoval_version: "1.4.1"
-obs_backgroundremoval_macos_sha256: "62457287fac42a6fcf4d2f90fa8a52219ef9f7264e3029d663061f690d0776ea"
-obs_backgroundremoval_pkg_id: "com.royshilkrot.obs-backgroundremoval"
-obs_backgroundremoval_pkg: "{{ ansible_facts.env.HOME }}/Library/Caches/obs-backgroundremoval-{{ obs_backgroundremoval_version }}.pkg"
