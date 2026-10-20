@@ -110,6 +110,12 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
   How to apply: when a skill (e.g. `superpowers:brainstorming`) says to save+commit a spec, instead
   save it to the untracked session-dir location and skip the commit; still do the spec self-review +
   user-review-gate steps. Only put a spec in the repo if the user asks for it that time.
+- 2026-10-20: Spec/plan front matter takes the bare issue number (`issue: 42`). Why:
+  `require-approved-spec.py` matches the number from the branch name, so a repo-qualified value
+  made it report "no spec; no plan" and block every repo edit after both documents were approved;
+  it had happened before. Recovery costs a re-approval round: approved documents are
+  shell-write-protected, so Edit the status line alone to `draft`, fix the line, and have the user
+  re-approve. Binding copy in CLAUDE.md → Working method.
 
 ## Project docs (the repo's own documentation)
 
