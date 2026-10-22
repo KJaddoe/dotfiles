@@ -129,6 +129,22 @@ require("lazy").setup({
               path = 1,
             },
           },
+          lualine_x = {
+            {
+              function()
+                return "DAP: " .. require("dap").session().config.name
+              end,
+              -- package.loaded keeps the statusline from loading the lazy dap.
+              cond = function()
+                return package.loaded.dap ~= nil
+                  and require("dap").session() ~= nil
+              end,
+              color = "DiagnosticOk",
+            },
+            "encoding",
+            "fileformat",
+            "filetype",
+          },
         },
         inactive_sections = {
           lualine_c = {
@@ -1342,6 +1358,26 @@ require("lazy").setup({
       dap.listeners.before.event_terminated["dapui_config"] =
         close_ui_on_root_exit
       dap.listeners.before.event_exited["dapui_config"] = close_ui_on_root_exit
+
+      local exit_codes = {}
+      dap.listeners.after.event_exited["session_status"] = function(
+        session,
+        body
+      )
+        exit_codes[session.id] = body.exitCode
+      end
+      dap.listeners.on_session["session_status"] = function(old, new)
+        if old and not new then
+          local code = exit_codes[old.id]
+          exit_codes[old.id] = nil
+          vim.notify(
+            code and ("Session ended, exit code " .. code)
+              or "Session ended without an exit code",
+            code == 0 and vim.log.levels.INFO or vim.log.levels.WARN,
+            { title = "dap" }
+          )
+        end
+      end
 
       -- Signs. nvim-dap highlights the stopped line with `debugPC`, which
       -- renders darker than the background (invisible); re-point it at
