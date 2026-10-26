@@ -367,8 +367,8 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   check needs the session to run inside the repository the documents belong to, and fails closed
   otherwise, as it does when git cannot compare a branch. A shell command that overwrites, moves
   or deletes an approved document (`cp`, `mv`, `rm`, `install`, `rsync`, `ln`, `tee`, an in-place
-  editor or a redirect, globs expanded) is refused outright, so a reopening always goes through
-  the checked Edit. Under `Bash` it recognises
+  editor or a redirect, globs and variables expanded) is refused outright, so a reopening always
+  goes through the checked Edit. Under `Bash` it recognises
   redirects into the repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an
   interpreter; it is a guard against drift, not a sandbox, and a script written elsewhere and run
   is not caught. A variable in a redirect target expands from the command's own `VAR=...`

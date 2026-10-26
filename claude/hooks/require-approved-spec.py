@@ -426,7 +426,8 @@ def shell_targets(command, cwd):
 
     :param command: the shell command
     :param cwd: the session's working directory
-    :return: (absolute Path, whether a directory there is removed whole) pairs, globs expanded
+    :return: (absolute Path, whether a directory there is removed whole) pairs, globs and
+        variables expanded
     """
     invoked = strip_printed_text(strip_heredocs(command))
     runs_in = str(command_directory(invoked, cwd))
@@ -442,9 +443,10 @@ def shell_targets(command, cwd):
             named.append((args[-1], False))
             named.extend((str(Path(args[-1]) / Path(src).name), False) for src in args[:-1])
 
+    known = shell_variables(invoked)
     paths = []
     for target, whole in named:
-        path = resolve(target, runs_in)
+        path = resolve(expand_variables(target, known), runs_in)
         matches = path.parent.glob(path.name) if GLOB_CHARS.search(path.name) else [path]
         paths.extend((match, whole) for match in matches)
     return paths

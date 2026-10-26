@@ -347,6 +347,21 @@ class TestSelfApproval(GateFixture):
                 self.assertEqual(run.returncode, BLOCK)
                 self.assertIn("Edit its status line", run.stderr)
 
+    def test_shell_replacing_approved_document_by_variable_blocks(self):
+        """A path to an approved document behind a shell variable is still recognised."""
+        self.session_doc(document("spec", "approved"))
+        specs = "$HOME/.claude/projects/-some-project/specs"
+        for command in (
+            f'rm "{specs}/s.md"',
+            "rm ${HOME}/.claude/projects/-some-project/specs/*.md",
+            f"D={specs} && mv $D/s.md /tmp/old.md",
+            f"cat /tmp/draft.md > {specs}/s.md",
+        ):
+            with self.subTest(command=command):
+                run = self.run_tool("Bash", {"command": command}, self.outside)
+                self.assertEqual(run.returncode, BLOCK)
+                self.assertIn("Edit its status line", run.stderr)
+
     def test_shell_copying_approved_document_out_passes(self):
         """Copying an approved document elsewhere leaves it untouched."""
         target = self.session_doc(document("spec", "approved"))
