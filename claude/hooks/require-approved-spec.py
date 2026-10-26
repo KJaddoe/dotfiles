@@ -25,8 +25,9 @@ refused outright, so the reopening always goes through the Edit this gate can ch
 Under Bash the gate is a heuristic against drift, not a sandbox. It refuses redirects into the
 repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an interpreter; a script written
 to `/tmp` and then run is not caught. A `>` inside a quoted argument reads as a redirect and
-fails closed. A variable in a redirect target expands from a standalone assignment before it, or
-from `HOME` or `TMPDIR`; any other leaves the target relative, which fails closed the same way.
+fails closed. A variable in a redirect target expands from a standalone assignment before it
+that is the name's only mention, or from an unmentioned `HOME` or `TMPDIR`; any other leaves the
+target relative, which fails closed the same way.
 
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model. Deliberately
 unconfigurable, with no bypass: an off-switch is the failure it exists to prevent.
@@ -34,6 +35,7 @@ unconfigurable, with no bypass: an off-switch is the failure it exists to preven
 
 import os
 import re
+from collections import Counter
 import sys
 from pathlib import Path
 
@@ -77,6 +79,8 @@ STANDALONE_ASSIGNMENT = re.compile(
 )
 
 TRUSTED_ENVIRONMENT = ("HOME", "TMPDIR")
+
+BARE_NAME = re.compile(r"(?<![\w$])(?<!\$\{)([A-Za-z_]\w*)")
 
 SHELL_VARIABLE = re.compile(r"\$(?:\{(\w+)\}|(\w+))")
 
@@ -226,28 +230,60 @@ def expand_variables(text, known):
     )
 
 
-def shell_variables(invoked, end=None):
-    """Map the variables a path can be trusted to expand to, before `end` in the command.
+def assigned_value(value, known):
+    """Read the value an assignment gives, expanding what it can.
 
-    Only a standalone assignment counts. Any other `NAME=` (a command prefix, an argument, a
-    conditional or subshell one, a command substitution) makes that name unknown again.
-
-    :param invoked: the command with heredoc bodies stripped
-    :param end: offset the assignments must end by, None for the whole command
-    :return: variable name to value, over `TRUSTED_ENVIRONMENT` from the hook's environment
+    :param value: the assignment's right-hand side as written
+    :param known: variable name to value
+    :return: the value, or None for a command substitution
     """
-    standalone = {match.start(1) for match in STANDALONE_ASSIGNMENT.finditer(invoked)}
-    known = {name: os.environ[name] for name in TRUSTED_ENVIRONMENT if name in os.environ}
-    for match in SHELL_ASSIGNMENT.finditer(invoked):
-        if end is not None and match.end() > end:
+    if "$(" in value or "`" in value:
+        return None
+    if value.startswith("'"):
+        return value.strip("'")
+    return expand_variables(value.strip('"'), known)
+
+
+def shell_variables(shell, end):
+    """Map the variables a redirect target can trust, from the command up to offset `end`.
+
+    A name counts only when its one bare mention in the whole command is a standalone assignment
+    before `end`; a loop, `read`, `printf -v`, a second assignment or a quoted look-alike adds a
+    mention and leaves it unknown.
+
+    :param shell: the command with heredoc bodies stripped
+    :param end: offset the assignment must end by
+    :return: variable name to value, over `TRUSTED_ENVIRONMENT` names the command never mentions
+    """
+    mentions = Counter(match.group(1) for match in BARE_NAME.finditer(shell))
+    known = {
+        name: os.environ[name]
+        for name in TRUSTED_ENVIRONMENT
+        if name in os.environ and not mentions[name]
+    }
+    for match in STANDALONE_ASSIGNMENT.finditer(shell):
+        if match.end() > end:
             break
         name, value = match.groups()
-        if match.start(1) not in standalone or "$(" in value or "`" in value:
-            known.pop(name, None)
-        elif value.startswith("'"):
-            known[name] = value.strip("'")
-        else:
-            known[name] = expand_variables(value.strip('"'), known)
+        expanded = assigned_value(value, known)
+        if mentions[name] == 1 and expanded is not None:
+            known[name] = expanded
+    return known
+
+
+def possible_variables(invoked):
+    """Map the variables a command may expand, over the full environment, latest assignment winning.
+
+    For a guard that refuses what a path reaches, where expanding too much is the safe side.
+
+    :param invoked: the command with heredoc bodies and printed text stripped
+    :return: variable name to value
+    """
+    known = dict(os.environ)
+    for name, value in SHELL_ASSIGNMENT.findall(invoked):
+        expanded = assigned_value(value, known)
+        if expanded is not None:
+            known[name] = expanded
     return known
 
 
@@ -269,8 +305,10 @@ def shell_write_dirs(command, cwd):
     for target in redirect_targets(command):
         if target in DISCARD_TARGETS:
             continue
-        known = shell_variables(shell, shell.find(target))
-        dirs.append(nearest_existing_dir(resolve(expand_variables(target, known), runs_in).parent))
+        offsets = [match.start() for match in re.finditer(re.escape(target), shell)] or [0]
+        for offset in offsets:
+            path = resolve(expand_variables(target, shell_variables(shell, offset)), runs_in)
+            dirs.append(nearest_existing_dir(path.parent))
     if writes_opaquely(invoked):
         dirs.append(Path(runs_in))
     return dirs
@@ -458,7 +496,7 @@ def shell_targets(command, cwd):
             named.append((args[-1], False))
             named.extend((str(Path(args[-1]) / Path(src).name), False) for src in args[:-1])
 
-    known = shell_variables(invoked)
+    known = possible_variables(invoked)
     paths = []
     for target, whole in named:
         path = resolve(expand_variables(target, known), runs_in)

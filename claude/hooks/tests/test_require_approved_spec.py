@@ -250,6 +250,10 @@ class TestBash(GateFixture):
             f"S={self.outside}; (S=.; printf x > $S/a.ts)",
             "printf x > $PWD/a.ts",
             "printf x > $OLDPWD/a.ts",
+            f"S={self.outside}; printf x > $S/a.ts; S=.; printf x > $S/a.ts",
+            f"S={self.outside}; for S in .; do printf x > $S/a.ts; done",
+            f"S={self.outside}; printf -v S .; printf x > $S/a.ts",
+            f'S=.; echo "; S={self.outside};"; printf x > $S/a.ts',
         ):
             with self.subTest(command=command):
                 self.assertEqual(self.bash(command), BLOCK)
@@ -355,12 +359,16 @@ class TestSelfApproval(GateFixture):
 
     def test_shell_replacing_approved_document_by_variable_blocks(self):
         """A path to an approved document behind a shell variable is still recognised."""
-        self.session_doc(document("spec", "approved"))
+        target = self.session_doc(document("spec", "approved"))
+        patcher = mock.patch.dict(os.environ, {"HOOK_TEST_SPECS": str(target.parent)})
+        patcher.start()
+        self.addCleanup(patcher.stop)
         specs = "$HOME/.claude/projects/-some-project/specs"
         for command in (
             f'rm "{specs}/s.md"',
             "rm ${HOME}/.claude/projects/-some-project/specs/*.md",
             f"D={specs} && mv $D/s.md /tmp/old.md",
+            "rm $HOOK_TEST_SPECS/s.md",
             f"cat /tmp/draft.md > {specs}/s.md",
         ):
             with self.subTest(command=command):
