@@ -299,7 +299,8 @@ Closing the remaining gaps means adding the config and a command here, not just 
   prompt (`powerlevel10k/p10k.zsh`).
 - **Dotbot** is a git submodule (`dotbot/`).
 - Per-machine secrets/overrides stay out of the repo: `~/.localrc` (shell), `~/.gitconfig`
-  (includes the managed one), `~/.ssh/config.local`.
+  (includes the managed one), `~/.ssh/config.local`, `~/.local/share/db_ui/dbs.lua` (nvim database
+  connections; passwords in the OS keyring).
 
 ## Conventions worth knowing
 

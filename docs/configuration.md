@@ -221,6 +221,23 @@ Exported from `zsh/zshrc`. Override any of them in `~/.localrc`, which is source
 `DOTFILES` is the exception worth care: the clone path is also hardcoded in the autoupdate crontab
 entry and `git/gitconfig.local`, so changing it means changing those too.
 
+## Database connections
+
+nvim's DBUI drawer (`<leader>od`) lists the connections in `~/.local/share/db_ui/dbs.lua`, a
+per-machine file outside the repo that returns `{ { name = "...", url = "..." }, ... }` with
+password-less URLs (`sqlserver://user@host?trustServerCertificate=true`). Optional: without it the
+drawer shows only connections added with `A`.
+
+**Where the passwords come from:** the OS keyring, service `dbui`, account = the connection `name`,
+read when the drawer opens. Store one per connection:
+
+```sh
+security add-generic-password -U -s dbui -a "<name>" -T /usr/bin/security -w   # macOS
+secret-tool store --label="dbui: <name>" service dbui account "<name>"         # Ubuntu
+```
+
+A missing password raises an error naming the connection; the rest still load.
+
 ## Related
 
 - `claude/hooks/undocumented-env-vars.py`: the hook this file's first table configures; its module
