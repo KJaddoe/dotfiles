@@ -25,8 +25,8 @@ refused outright, so the reopening always goes through the Edit this gate can ch
 Under Bash the gate is a heuristic against drift, not a sandbox. It refuses redirects into the
 repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an interpreter; a script written
 to `/tmp` and then run is not caught. A `>` inside a quoted argument reads as a redirect and
-fails closed. A variable in a redirect target expands from the command's own assignments and the
-environment; one it cannot expand leaves the target relative, which fails closed in the same way.
+fails closed. A variable in a redirect target expands from a standalone assignment before it, or
+from `HOME` or `TMPDIR`; any other leaves the target relative, which fails closed the same way.
 
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model. Deliberately
 unconfigurable, with no bypass: an off-switch is the failure it exists to prevent.
@@ -68,9 +68,15 @@ IN_PLACE_FLAG = re.compile(r"^(?:--in-place|-[A-Za-z]*i)")
 
 DISCARD_TARGETS = {"/dev/null", "/dev/stdout", "/dev/stderr"}
 
-SHELL_ASSIGNMENT = re.compile(
-    r"(?:^|[;&|(\s])(?:export\s+)?([A-Za-z_]\w*)=(\"[^\"]*\"|'[^']*'|[^\s;&|]*)"
+ASSIGNMENT_VALUE = r"(\"[^\"]*\"|'[^']*'|[^\s;&|)]*)"
+
+SHELL_ASSIGNMENT = re.compile(rf"(?:^|[;&|(\s])(?:export\s+)?([A-Za-z_]\w*)={ASSIGNMENT_VALUE}")
+
+STANDALONE_ASSIGNMENT = re.compile(
+    rf"(?:^|[;\n])\s*(?:export\s+)?([A-Za-z_]\w*)={ASSIGNMENT_VALUE}(?=\s*(?:;|&&|\|\||\n|$))"
 )
+
+TRUSTED_ENVIRONMENT = ("HOME", "TMPDIR")
 
 SHELL_VARIABLE = re.compile(r"\$(?:\{(\w+)\}|(\w+))")
 
@@ -220,15 +226,23 @@ def expand_variables(text, known):
     )
 
 
-def shell_variables(invoked):
-    """Map the variables a command can expand: its own assignments over the hook's environment.
+def shell_variables(invoked, end=None):
+    """Map the variables a path can be trusted to expand to, before `end` in the command.
 
-    :param invoked: the command with heredoc bodies and printed text stripped
-    :return: variable name to value, leaving out one assigned from a command substitution
+    Only a standalone assignment counts. Any other `NAME=` (a command prefix, an argument, a
+    conditional or subshell one, a command substitution) makes that name unknown again.
+
+    :param invoked: the command with heredoc bodies stripped
+    :param end: offset the assignments must end by, None for the whole command
+    :return: variable name to value, over `TRUSTED_ENVIRONMENT` from the hook's environment
     """
-    known = dict(os.environ)
-    for name, value in SHELL_ASSIGNMENT.findall(invoked):
-        if "$(" in value or "`" in value:
+    standalone = {match.start(1) for match in STANDALONE_ASSIGNMENT.finditer(invoked)}
+    known = {name: os.environ[name] for name in TRUSTED_ENVIRONMENT if name in os.environ}
+    for match in SHELL_ASSIGNMENT.finditer(invoked):
+        if end is not None and match.end() > end:
+            break
+        name, value = match.groups()
+        if match.start(1) not in standalone or "$(" in value or "`" in value:
             known.pop(name, None)
         elif value.startswith("'"):
             known[name] = value.strip("'")
@@ -250,12 +264,13 @@ def shell_write_dirs(command, cwd):
     """
     invoked = strip_printed_text(strip_heredocs(command))
     runs_in = str(command_directory(invoked, cwd))
-    known = shell_variables(invoked)
-    dirs = [
-        nearest_existing_dir(resolve(expand_variables(target, known), runs_in).parent)
-        for target in redirect_targets(command)
-        if target not in DISCARD_TARGETS
-    ]
+    shell = strip_heredocs(command)
+    dirs = []
+    for target in redirect_targets(command):
+        if target in DISCARD_TARGETS:
+            continue
+        known = shell_variables(shell, shell.find(target))
+        dirs.append(nearest_existing_dir(resolve(expand_variables(target, known), runs_in).parent))
     if writes_opaquely(invoked):
         dirs.append(Path(runs_in))
     return dirs

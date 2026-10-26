@@ -244,6 +244,12 @@ class TestBash(GateFixture):
             "S=$(mktemp -d) && printf x > $S/a.ts",
             f"S=../{self.repo.name} && printf x > $S/a.ts",
             f"S={link} && printf x > $S/a.ts",
+            f"S=.; printf x > $S/a.ts; S={self.outside}",
+            f"S={self.outside}; true && S=.; printf x > $S/a.ts",
+            f"S={self.outside} printf x > $S/a.ts",
+            f"S={self.outside}; (S=.; printf x > $S/a.ts)",
+            "printf x > $PWD/a.ts",
+            "printf x > $OLDPWD/a.ts",
         ):
             with self.subTest(command=command):
                 self.assertEqual(self.bash(command), BLOCK)

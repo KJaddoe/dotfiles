@@ -371,9 +371,10 @@ entry and `git/gitconfig.local`, so changing it means changing those too.
   goes through the checked Edit. Under `Bash` it recognises
   redirects into the repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an
   interpreter; it is a guard against drift, not a sandbox, and a script written elsewhere and run
-  is not caught. A variable in a redirect target expands from the command's own `VAR=...`
-  assignments and the environment; one it cannot expand, or one set from a command
-  substitution, leaves the target relative, so it fails closed inside a repository
+  is not caught. A variable in a redirect target expands only from a standalone `VAR=...`
+  statement before the redirect, or from `HOME` or `TMPDIR` in the environment; any other
+  (a prefix, conditional or subshell assignment, a command substitution, `$PWD`) leaves the
+  target relative, so it fails closed inside a repository
 - `claude/hooks/block-artifact-publish.py` - PreToolUse guard on `Artifact`, no configuration.
   Refuses any action that would send local content to claude.ai as a hosted page: `publish`
   (which is also what an OMITTED `action` means, the shape most publish calls take) and
