@@ -1410,74 +1410,6 @@ require("lazy").setup({
       })
     end,
   },
-  { "tpope/vim-dadbod" },
-  {
-    "kristijanhusak/vim-dadbod-ui",
-    dependencies = { "tpope/vim-dadbod" },
-    config = function()
-      vim.g.db_ui_use_nerd_fonts = 1
-      vim.keymap.set("n", "<leader>od", "<cmd>DBUIToggle<CR>", {
-        noremap = true,
-        silent = true,
-        desc = "Toggle DB UI",
-      })
-
-      --- Put the OS keyring password (service "dbui", account = connection
-      --- name) into a password-less dbs.lua URL.
-      ---@param db { name: string, url: string }
-      ---@return string url
-      local function url_with_password(db)
-        local cmd = vim.fn.has("mac") == 1
-            and {
-              "security",
-              "find-generic-password",
-              "-s",
-              "dbui",
-              "-a",
-              db.name,
-              "-w",
-            }
-          or { "secret-tool", "lookup", "service", "dbui", "account", db.name }
-        local ok, job = pcall(vim.system, cmd, { text = true })
-        local result = ok and job:wait() or nil
-        if not result or result.code ~= 0 or result.stdout == "" then
-          vim.notify(
-            ("DBUI: no keyring password for %q (%s %s)"):format(
-              db.name,
-              cmd[1],
-              ok and vim.trim(result.stderr or "") or job
-            ),
-            vim.log.levels.ERROR
-          )
-          return db.url
-        end
-        local password =
-          vim.uri_encode(result.stdout:gsub("\n$", ""), "rfc2396")
-        return (
-          db.url:gsub("^(%a+://[^@/]+)@", function(prefix)
-            return prefix .. ":" .. password .. "@"
-          end, 1)
-        )
-      end
-
-      local dbs_file = vim.fn.expand("~/.local/share/db_ui/dbs.lua")
-      if vim.uv.fs_stat(dbs_file) then
-        vim.g.dbs = vim.tbl_map(function(db)
-          return {
-            name = db.name,
-            url = function()
-              return url_with_password(db)
-            end,
-          }
-        end, dofile(dbs_file))
-      end
-    end,
-  },
-  {
-    "kristijanhusak/vim-dadbod-completion",
-    dependencies = { "tpope/vim-dadbod" },
-    ft = { "sql", "mysql", "plsql" },
-  },
   {
     "mistweaverco/kulala.nvim",
     ft = { "http", "rest" },
@@ -1682,13 +1614,6 @@ require("lazy").setup({
         experimental = {
           native_menu = false,
           ghost_text = false,
-        },
-      })
-
-      cmp.setup.filetype({ "sql" }, {
-        sources = {
-          { name = "vim-dadbod-completion" },
-          { name = "buffer" },
         },
       })
 
