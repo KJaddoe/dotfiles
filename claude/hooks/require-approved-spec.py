@@ -25,12 +25,14 @@ refused outright, so the reopening always goes through the Edit this gate can ch
 Under Bash the gate is a heuristic against drift, not a sandbox. It refuses redirects into the
 repository, `tee`, in-place `sed`/`perl`, and a heredoc fed to an interpreter; a script written
 to `/tmp` and then run is not caught. A `>` inside a quoted argument reads as a redirect and
-fails closed.
+fails closed. A variable in a redirect target expands from the command's own assignments and the
+environment; one it cannot expand leaves the target relative, which fails closed in the same way.
 
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model. Deliberately
 unconfigurable, with no bypass: an off-switch is the failure it exists to prevent.
 """
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -65,6 +67,12 @@ IN_PLACE_EDITORS = {"sed", "perl"}
 IN_PLACE_FLAG = re.compile(r"^(?:--in-place|-[A-Za-z]*i)")
 
 DISCARD_TARGETS = {"/dev/null", "/dev/stdout", "/dev/stderr"}
+
+SHELL_ASSIGNMENT = re.compile(
+    r"(?:^|[;&|(\s])(?:export\s+)?([A-Za-z_]\w*)=(\"[^\"]*\"|'[^']*'|[^\s;&|]*)"
+)
+
+SHELL_VARIABLE = re.compile(r"\$(?:\{(\w+)\}|(\w+))")
 
 APPROVED_LINE = re.compile(r"^status:\s*approved\s*$", re.IGNORECASE | re.MULTILINE)
 
@@ -200,12 +208,41 @@ def writes_opaquely(invoked):
     return False
 
 
+def expand_variables(text, known):
+    """Substitute the shell variables a path names.
+
+    :param text: a path that may name `$VAR` or `${VAR}`
+    :param known: variable name to value
+    :return: the path, with any variable missing from `known` left as written
+    """
+    return SHELL_VARIABLE.sub(
+        lambda match: known.get(match.group(1) or match.group(2), match.group(0)), text
+    )
+
+
+def shell_variables(invoked):
+    """Map the variables a command can expand: its own assignments over the hook's environment.
+
+    :param invoked: the command with heredoc bodies and printed text stripped
+    :return: variable name to value, leaving out one assigned from a command substitution
+    """
+    known = dict(os.environ)
+    for name, value in SHELL_ASSIGNMENT.findall(invoked):
+        if "$(" in value or "`" in value:
+            known.pop(name, None)
+        elif value.startswith("'"):
+            known[name] = value.strip("'")
+        else:
+            known[name] = expand_variables(value.strip('"'), known)
+    return known
+
+
 def shell_write_dirs(command, cwd):
     """List the directories a shell command would write into.
 
-    A redirect names its own target, relative to where the command runs after any `cd`. An
-    in-place editor, tee or an interpreter writes wherever its arguments or script say, so the
-    directory the command runs in answers for it.
+    A redirect names its own target, variables expanded, relative to where the command runs
+    after any `cd`. An in-place editor, tee or an interpreter writes wherever its arguments or
+    script say, so the directory the command runs in answers for it.
 
     :param command: the shell command
     :param cwd: the session's working directory
@@ -213,8 +250,9 @@ def shell_write_dirs(command, cwd):
     """
     invoked = strip_printed_text(strip_heredocs(command))
     runs_in = str(command_directory(invoked, cwd))
+    known = shell_variables(invoked)
     dirs = [
-        nearest_existing_dir(resolve(target, runs_in).parent)
+        nearest_existing_dir(resolve(expand_variables(target, known), runs_in).parent)
         for target in redirect_targets(command)
         if target not in DISCARD_TARGETS
     ]

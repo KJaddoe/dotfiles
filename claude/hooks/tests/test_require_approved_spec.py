@@ -222,6 +222,32 @@ class TestBash(GateFixture):
         run = self.run_tool("Bash", {"command": command}, self.outside)
         self.assertEqual(run.returncode, BLOCK)
 
+    def test_variable_redirect_outside_repo_passes(self):
+        """A redirect behind a variable that expands outside the repo is not gated."""
+        for command in (
+            'printf x > "$HOME/.claude/projects/p/memory/MEMORY.md"',
+            "printf x > ${HOME}/notes.md",
+            f"S={self.outside} && printf x > $S/out.md",
+            f'export S="{self.outside}/pr"; mkdir -p "$S" && git diff > "$S/diff.txt"',
+            f"D={self.outside}; S=$D/pr && git diff > $S/diff.txt",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(self.bash(command), ALLOW)
+
+    def test_variable_redirect_into_repo_blocks(self):
+        """A variable that expands into the repo, or cannot be expanded, still fails closed."""
+        link = self.outside / "link"
+        link.symlink_to(self.repo)
+        for command in (
+            f"S={self.repo} && printf x > $S/a.ts",
+            'printf x > "$HOOK_TEST_UNSET_VARIABLE/a.ts"',
+            "S=$(mktemp -d) && printf x > $S/a.ts",
+            f"S=../{self.repo.name} && printf x > $S/a.ts",
+            f"S={link} && printf x > $S/a.ts",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(self.bash(command), BLOCK)
+
     def test_approval_unblocks_writes(self):
         """With both documents approved, shell writes go through."""
         self.approve_both()
