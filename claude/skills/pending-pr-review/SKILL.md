@@ -16,6 +16,11 @@ allowed-tools:
 
 Walk through PR findings one at a time, attaching each as an inline comment to a single *pending* review, then submit once the user approves. The naive REST path doesn't work, and this skill records the gh + GraphQL workflow that does.
 
+## Finding issues
+
+- Optionally start with `/code-review <n>` as an independent pass over code-level bugs. Never pass `--comment`: it posts straight to the PR, skipping the pending review and the per-comment sign-off. Never pass `--fix` either: it edits the working tree. Its findings join the manual ones and go through the same one-at-a-time sign-off.
+- It reviews the diff only, so check what lies outside it yourself: the linked issue's acceptance criteria and any mockup, and whether a dependency the PR relies on (an API branch, a pinned commit) has moved on since, checked against that dependency's actual contract.
+
 ## Workflow rules (how to conduct the review)
 
 - Build a **pending** review with inline comments + `suggestion` blocks. Walk findings **one at a time**.
