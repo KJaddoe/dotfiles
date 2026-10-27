@@ -62,15 +62,30 @@
     checksum: "sha256:{{ sqlcmd_go_linux_sha256 }}"
   when: ansible_facts.os_family == "Debian"
 
-- name: Extract go-sqlcmd into PATH (Ubuntu)
+- name: Create go-sqlcmd versioned install directory (Ubuntu)
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.local/share/sqlcmd-{{ sqlcmd_go_version }}"
+    state: directory
+    mode: "0755"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Extract go-sqlcmd archive (Ubuntu)
   ansible.builtin.unarchive:
     src: "{{ ansible_env.HOME }}/.local/share/sqlcmd-{{ sqlcmd_go_version }}.tar.bz2"
-    dest: "{{ ansible_env.HOME }}/.local/bin"
+    dest: "{{ ansible_env.HOME }}/.local/share/sqlcmd-{{ sqlcmd_go_version }}"
     include:
       - sqlcmd
     mode: "0755"
     remote_src: true
-    creates: "{{ ansible_env.HOME }}/.local/bin/sqlcmd"
+    creates: "{{ ansible_env.HOME }}/.local/share/sqlcmd-{{ sqlcmd_go_version }}/sqlcmd"
+  when: ansible_facts.os_family == "Debian"
+
+- name: Symlink go-sqlcmd into PATH (Ubuntu)
+  ansible.builtin.file:
+    src: "{{ ansible_env.HOME }}/.local/share/sqlcmd-{{ sqlcmd_go_version }}/sqlcmd"
+    dest: "{{ ansible_env.HOME }}/.local/bin/sqlcmd"
+    state: link
+    force: true
   when: ansible_facts.os_family == "Debian"
 
 - name: Tap Microsoft MSSQL repo (macOS)
