@@ -88,12 +88,6 @@
     force: true
   when: ansible_facts.os_family == "Debian"
 
-- name: Tap Microsoft MSSQL repo (macOS)
-  community.general.homebrew_tap:
-    name: microsoft/mssql-release
-    state: present
-  when: ansible_facts.os_family == "Darwin"
-
 - name: Install sqlcmd (macOS)
   community.general.homebrew:
     name: sqlcmd
