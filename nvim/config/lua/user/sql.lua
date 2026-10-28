@@ -12,6 +12,27 @@ local M = {}
 ---@field database? string
 ---@field trust? boolean SQL Server only: skip certificate validation
 
+---@class UserSqlDefaults
+---@field host string prefill, `host:port` when the engine's env names a port
+---@field user string
+---@field password? string set only when host and user both came from the env
+
+local ENV = {
+  sqlserver = {
+    host = "SQLCMDSERVER",
+    user = "SQLCMDUSER",
+    password = "SQLCMDPASSWORD",
+  },
+  postgresql = {
+    host = "PGHOST",
+    port = "PGPORT",
+    user = "PGUSER",
+    password = "PGPASSWORD",
+  },
+}
+
+local DEFAULT_USER = { sqlserver = "sa", postgresql = "postgres" }
+
 --- Percent-encode all but RFC 3986's unreserved characters; `vim.uri_encode`
 --- keeps `@`, `:` and `/`, which would break the URL's user and password.
 ---@param value string
@@ -71,6 +92,45 @@ function M.parse_host(input)
     return host, port
   end
   return trimmed, nil
+end
+
+--- Prefills for the connect prompts, from the engine's environment variables.
+---@param engine UserSqlEngine
+---@param env table<string, string> usually `vim.env`; an empty value counts as unset
+---@return UserSqlDefaults
+function M.defaults(engine, env)
+  local keys = ENV[engine]
+  local function get(name)
+    local value = name and env[name]
+    if value ~= "" then
+      return value
+    end
+  end
+  local host, port, user = get(keys.host), get(keys.port), get(keys.user)
+  return {
+    host = (host or "localhost") .. (port and (":" .. port) or ""),
+    user = user or DEFAULT_USER[engine],
+    password = (host and user) and get(keys.password) or nil,
+  }
+end
+
+--- The env password, only when the host and user answers kept their prefills.
+---@param defaults UserSqlDefaults
+---@param host_answer string the host as typed, before `parse_host`
+---@param user_answer string
+---@return string|nil
+function M.password_from_env(defaults, host_answer, user_answer)
+  if host_answer == defaults.host and user_answer == defaults.user then
+    return defaults.password
+  end
+  return nil
+end
+
+--- Whether to skip SQL Server's certificate check: only for this machine.
+---@param host string the host after `parse_host`, without a port
+---@return boolean
+function M.auto_trust(host)
+  return host == "localhost" or host == "127.0.0.1"
 end
 
 return M

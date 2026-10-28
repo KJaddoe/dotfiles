@@ -182,5 +182,101 @@ class ParseHost(SqlCase):
         self.assertEqual(self.call("parse_host", "db,abc"), ["db,abc", None])
 
 
+class Defaults(SqlCase):
+    """defaults prefills the prompts from the engine's own environment variables."""
+
+    def test_sqlserver_without_env(self):
+        """localhost and sa, no password."""
+        self.assertEqual(
+            self.call("defaults", "sqlserver", {}), [{"host": "localhost", "user": "sa"}]
+        )
+
+    def test_sqlserver_full_env(self):
+        """Host, user and the password from SQLCMD* variables."""
+        env = {"SQLCMDSERVER": "db", "SQLCMDUSER": "app", "SQLCMDPASSWORD": "pw"}
+        self.assertEqual(
+            self.call("defaults", "sqlserver", env),
+            [{"host": "db", "user": "app", "password": "pw"}],
+        )
+
+    def test_password_needs_host_and_user_from_env(self):
+        """A password variable alone is not trusted for whatever host is typed."""
+        env = {"SQLCMDSERVER": "db", "SQLCMDPASSWORD": "pw"}
+        self.assertEqual(self.call("defaults", "sqlserver", env), [{"host": "db", "user": "sa"}])
+
+    def test_password_not_released_without_host_from_env(self):
+        """User and password variables without the host variable release no password."""
+        env = {"SQLCMDUSER": "app", "SQLCMDPASSWORD": "pw"}
+        self.assertEqual(
+            self.call("defaults", "sqlserver", env), [{"host": "localhost", "user": "app"}]
+        )
+
+    def test_empty_variables_count_as_unset(self):
+        """An exported but empty variable falls back like a missing one."""
+        env = {"SQLCMDSERVER": "", "SQLCMDUSER": "", "SQLCMDPASSWORD": "pw"}
+        self.assertEqual(
+            self.call("defaults", "sqlserver", env), [{"host": "localhost", "user": "sa"}]
+        )
+
+    def test_postgresql_without_env(self):
+        """localhost and postgres, no password."""
+        self.assertEqual(
+            self.call("defaults", "postgresql", {}), [{"host": "localhost", "user": "postgres"}]
+        )
+
+    def test_postgresql_full_env_with_port(self):
+        """PGPORT joins the host prefill as host:port."""
+        env = {"PGHOST": "pg", "PGPORT": "5433", "PGUSER": "app", "PGPASSWORD": "pw"}
+        self.assertEqual(
+            self.call("defaults", "postgresql", env),
+            [{"host": "pg:5433", "user": "app", "password": "pw"}],
+        )
+
+    def test_engines_do_not_share_variables(self):
+        """SQLCMD* variables never prefill a PostgreSQL connection."""
+        env = {"SQLCMDSERVER": "db", "SQLCMDUSER": "app", "SQLCMDPASSWORD": "pw"}
+        self.assertEqual(
+            self.call("defaults", "postgresql", env), [{"host": "localhost", "user": "postgres"}]
+        )
+
+
+class PasswordFromEnv(SqlCase):
+    """password_from_env releases the env password only for the prefilled login."""
+
+    DEFAULTS = {"host": "db", "user": "app", "password": "pw"}
+
+    def test_both_prefills_kept(self):
+        """Accepting both prefills uses the env password."""
+        self.assertEqual(self.call("password_from_env", self.DEFAULTS, "db", "app"), ["pw"])
+
+    def test_host_changed(self):
+        """Another host gets a prompt, never the env password."""
+        self.assertEqual(self.call("password_from_env", self.DEFAULTS, "other", "app"), [None])
+
+    def test_user_changed(self):
+        """Another user gets a prompt, never the env password."""
+        self.assertEqual(self.call("password_from_env", self.DEFAULTS, "db", "other"), [None])
+
+    def test_no_env_password(self):
+        """Without one there is nothing to release."""
+        defaults = {"host": "localhost", "user": "sa"}
+        self.assertEqual(self.call("password_from_env", defaults, "localhost", "sa"), [None])
+
+
+class AutoTrust(SqlCase):
+    """auto_trust skips certificate validation for the local machine only."""
+
+    def test_local_names(self):
+        """localhost and 127.0.0.1 are trusted."""
+        self.assertEqual(self.call("auto_trust", "localhost"), [True])
+        self.assertEqual(self.call("auto_trust", "127.0.0.1"), [True])
+
+    def test_remote_names(self):
+        """Anything else, including look-alikes, is not."""
+        for host in ("db.example.com", "localhost.example.com", "mylocalhost", "127.0.0.2"):
+            with self.subTest(host=host):
+                self.assertEqual(self.call("auto_trust", host), [False])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
