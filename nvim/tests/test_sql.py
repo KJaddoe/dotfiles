@@ -278,5 +278,57 @@ class AutoTrust(SqlCase):
                 self.assertEqual(self.call("auto_trust", host), [False])
 
 
+class DatabaseListArgs(SqlCase):
+    """database_list_args asks each client for one bare name per line."""
+
+    def test_sqlserver(self):
+        """No header, trimmed columns, no row count."""
+        self.assertEqual(
+            self.call("database_list_args", "sqlserver"),
+            [["-h-1", "-W", "-Q", "SET NOCOUNT ON; SELECT name FROM sys.databases ORDER BY name"]],
+        )
+
+    def test_postgresql(self):
+        """Unaligned tuples only, no psqlrc, templates left out."""
+        self.assertEqual(
+            self.call("database_list_args", "postgresql"),
+            [
+                [
+                    "--no-psqlrc",
+                    "-tAX",
+                    "-c",
+                    "SELECT datname FROM pg_database WHERE NOT datistemplate ORDER BY 1",
+                ]
+            ],
+        )
+
+
+class ParseDatabaseList(SqlCase):
+    """parse_database_list turns client output into clean names."""
+
+    def test_plain_lines(self):
+        """One name per line."""
+        self.assertEqual(
+            self.call("parse_database_list", "master\ntempdb\n"), [["master", "tempdb"]]
+        )
+
+    def test_trailing_spaces_and_carriage_returns(self):
+        """sqlcmd padding and CRLF line ends are stripped."""
+        self.assertEqual(self.call("parse_database_list", "a   \r\nb\r\n"), [["a", "b"]])
+
+    def test_blank_lines(self):
+        """Blank lines are not databases."""
+        self.assertEqual(self.call("parse_database_list", "\n\na\n\n"), [["a"]])
+
+    def test_names_with_spaces_are_kept_whole(self):
+        """Only the line ends are trimmed, not inner spaces."""
+        self.assertEqual(self.call("parse_database_list", "probe db-1\n"), [["probe db-1"]])
+
+    def test_empty_and_nil(self):
+        """No output means no databases."""
+        self.assertEqual(self.call("parse_database_list", ""), [[]])
+        self.assertEqual(self.call("parse_database_list", None), [[]])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

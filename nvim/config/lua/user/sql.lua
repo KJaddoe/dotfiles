@@ -133,4 +133,36 @@ function M.auto_trust(host)
   return host == "localhost" or host == "127.0.0.1"
 end
 
+--- Client arguments that print one database name per line, with no header or row
+--- count; appended to vim-dadbod's interactive command for the engine.
+---@param engine UserSqlEngine
+---@return string[]
+function M.database_list_args(engine)
+  if engine == "sqlserver" then
+    return {
+      "-h-1",
+      "-W",
+      "-Q",
+      "SET NOCOUNT ON; SELECT name FROM sys.databases ORDER BY name",
+    }
+  end
+  return {
+    "--no-psqlrc",
+    "-tAX",
+    "-c",
+    "SELECT datname FROM pg_database WHERE NOT datistemplate ORDER BY 1",
+  }
+end
+
+function M.parse_database_list(stdout)
+  local names = {}
+  for line in vim.gsplit(stdout or "", "\n", { plain = true }) do
+    local name = vim.trim(line)
+    if name ~= "" then
+      table.insert(names, name)
+    end
+  end
+  return names
+end
+
 return M
