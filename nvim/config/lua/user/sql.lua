@@ -46,7 +46,8 @@ local function encode(value)
 end
 
 --- The vim-dadbod URL for a connection. PostgreSQL falls back to the `postgres`
---- database, since it cannot connect without one; `trust` applies to SQL Server only.
+--- database, since it cannot connect without one. SQL Server always requires encryption, and
+--- `trust` (SQL Server only) skips its certificate check.
 ---@param conn UserSqlConn
 ---@return string
 function M.build_url(conn)
@@ -65,8 +66,10 @@ function M.build_url(conn)
   if database then
     url = url .. "/" .. encode(database)
   end
-  if conn.engine == "sqlserver" and conn.trust then
-    url = url .. "?trustServerCertificate=true"
+  if conn.engine == "sqlserver" then
+    url = url
+      .. "?encrypt=mandatory"
+      .. (conn.trust and "&trustServerCertificate=true" or "")
   end
   return url
 end

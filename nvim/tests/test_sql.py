@@ -78,7 +78,8 @@ class BuildUrl(SqlCase):
     def test_sqlserver_with_database(self):
         """The plain SQL Server form."""
         self.assertEqual(
-            self.call("build_url", conn(database="app")), ["sqlserver://sa:pw@localhost/app"]
+            self.call("build_url", conn(database="app")),
+            ["sqlserver://sa:pw@localhost/app?encrypt=mandatory"],
         )
 
     def test_reserved_characters_are_encoded(self):
@@ -87,44 +88,59 @@ class BuildUrl(SqlCase):
             "build_url",
             conn(host="db", user="d@m:n", password="p@ss:w/rd%#? x", database="my db-1"),
         )
-        self.assertEqual(url, ["sqlserver://d%40m%3An:p%40ss%3Aw%2Frd%25%23%3F%20x@db/my%20db-1"])
+        self.assertEqual(
+            url,
+            ["sqlserver://d%40m%3An:p%40ss%3Aw%2Frd%25%23%3F%20x@db/my%20db-1?encrypt=mandatory"],
+        )
 
     def test_password_cannot_redirect_the_host(self):
         """A password shaped like a host part stays inside the userinfo."""
         url = self.call("build_url", conn(host="db", password="x@evil.example.com/"))
-        self.assertEqual(url, ["sqlserver://sa:x%40evil.example.com%2F@db"])
+        self.assertEqual(url, ["sqlserver://sa:x%40evil.example.com%2F@db?encrypt=mandatory"])
 
     def test_database_cannot_add_parameters(self):
         """A database name shaped like a query string cannot switch on trust."""
         url = self.call("build_url", conn(database="app?trustServerCertificate=true#"))
         self.assertEqual(
-            url, ["sqlserver://sa:pw@localhost/app%3FtrustServerCertificate%3Dtrue%23"]
+            url,
+            [
+                "sqlserver://sa:pw@localhost/app%3FtrustServerCertificate%3Dtrue%23"
+                "?encrypt=mandatory"
+            ],
         )
 
     def test_port(self):
         """A port follows the host."""
         self.assertEqual(
             self.call("build_url", conn(host="db", port="1433", database="app")),
-            ["sqlserver://sa:pw@db:1433/app"],
+            ["sqlserver://sa:pw@db:1433/app?encrypt=mandatory"],
         )
 
     def test_sqlserver_without_database(self):
         """SQL Server may connect to the login's default database."""
-        self.assertEqual(self.call("build_url", conn()), ["sqlserver://sa:pw@localhost"])
+        self.assertEqual(
+            self.call("build_url", conn()), ["sqlserver://sa:pw@localhost?encrypt=mandatory"]
+        )
 
     def test_without_password(self):
         """A nil password leaves no colon behind."""
         self.assertEqual(
             self.call("build_url", conn(password=None, database="app")),
-            ["sqlserver://sa@localhost/app"],
+            ["sqlserver://sa@localhost/app?encrypt=mandatory"],
         )
 
     def test_trust(self):
-        """trust adds the certificate parameter vim-dadbod maps to -C."""
+        """trust adds the certificate parameter; vim-dadbod maps both to -N mandatory -C."""
         self.assertEqual(
             self.call("build_url", conn(database="app", trust=True)),
-            ["sqlserver://sa:pw@localhost/app?trustServerCertificate=true"],
+            ["sqlserver://sa:pw@localhost/app?encrypt=mandatory&trustServerCertificate=true"],
         )
+
+    def test_sqlserver_requires_encryption(self):
+        """Without trust, encryption is still required and the certificate is checked."""
+        url = self.call("build_url", conn(database="app"))[0]
+        self.assertTrue(url.endswith("?encrypt=mandatory"))
+        self.assertNotIn("trustServerCertificate", url)
 
     def test_postgresql_falls_back_to_postgres(self):
         """PostgreSQL needs a database to connect, so none means postgres."""
