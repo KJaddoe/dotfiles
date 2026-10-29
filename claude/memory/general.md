@@ -15,10 +15,12 @@ CLAUDE.md. When a rule here changes, update CLAUDE.md (the binding copy) too.
   Fine for project specifics, but it still auto-injects into context, so keep real secrets/PII out of it
   too (see CLAUDE.md → "Confidentiality & secrets").
 - 2026-08-27: `permissions.defaultMode` is `auto` (user settings, via the dotfiles symlink). Reads
-  and local edits no longer prompt; commits, pushes, `gh` writes and destructive commands are DENIED
-  rather than asked, because `approval_decision` treats only `default`/`plan` as prompting modes.
-  Switching to `default` is the review checkpoint. `require-destructive-approval.py` was added
-  first, to cover what the permission prompt had been guarding by accident. See ADR 0004.
+  and local edits no longer prompt. `require-destructive-approval.py` was added first, to cover what
+  the permission prompt had been guarding by accident. See ADR 0004.
+- 2026-09-07: the approval gates (commit, push, `gh` writes, destructive commands) ASK in
+  `default`, `plan`, `auto` and `acceptEdits`, and deny only in `dontAsk` and `bypassPermissions`.
+  Measured with a probe hook; the earlier "denied in auto" claim came from a hook docstring, never a
+  test. No mode switch is needed before a commit. See ADR 0005.
 - A PreToolUse hook (`~/.claude/hooks/block-claude-attribution.py`) hard-blocks any git command that
   records a message, and any `gh` command that writes to GitHub, when it carries Claude attribution:
   the trailers, the session link, or `--gpg-sign` on a commit. If a commit or a `gh issue create` is
@@ -100,12 +102,8 @@ Code quality.
 
 ## Code & Writing Style
 
-Doc-comment evolution (seven revisions, 2026-07-13 to 2026-09-24; the last two make each
-language's official standard the baseline and allow tag-free one-line blocks) lives in `domain/doc-comment-style.md`. Binding copy in CLAUDE.md → Code & artifacts. What stays
-here: 2026-06-01, don't add explanatory/descriptive comments to code or config files; keep only
-what's functionally required (e.g. shebangs) and match the surrounding file's existing near-zero
-comment density. Why: the user explicitly rejected added comments in a zsh dotfile and expects this
-as a standing preference; the same terse style applies to commit messages (see Commits & PRs).
+Comment and doc-comment history, from the 2026-06-01 no-comments ancestor rule onwards, lives in
+`domain/doc-comment-style.md`. Binding copy in CLAUDE.md → Code & artifacts.
 
 ## Git & GitHub
 

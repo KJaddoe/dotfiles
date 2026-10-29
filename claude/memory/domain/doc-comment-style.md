@@ -29,7 +29,8 @@ for each is worth keeping, even though only the final state governs behaviour.
 ## Why it took seven passes
 
 - 2026-06-01: the ancestor rule - no explanatory comments in code or config, matching each file's
-  existing near-zero density. Still governs inline narration and config files.
+  existing near-zero density, after the user rejected comments added to a zsh dotfile. Still
+  governs inline narration and config files; the same terse style applies to commit messages.
 - 2026-07-13: first doc-comment mandate - purpose + params + returns on EVERY function, class, and
   method. Produced comments that only restated the signature (a 3-param TS function got 6 comment
   lines).
@@ -40,10 +41,26 @@ for each is worth keeping, even though only the final state governs behaviour.
 - 2026-09-03: an EXPANDED layout was made explicit after a compact form (text starting on the opening
   delimiter) was applied across two client repos and rejected on sight. This axis had never actually
   been decided before; brevity governs how much is written, not how it's laid out.
+- 2026-09-03: the user, on the tags: "I always want those." The live instruction beat a rule
+  derived the day before; the fix was re-applied to work already done in that session so one branch
+  never carried two shapes.
 - 2026-09-03: the whole "every function" absolute was inverted to "earned", tested against a class
   docblock, a constructor, a lifecycle hook, and a self-explanatory method that the strict mandate
   still forced blocks onto. A portal repo still carried 13 blocks on constructors/lifecycle hooks and
-  76 blocks across 170 declarations after a dedicated cleanup pass done under the OLD rule.
+  76 blocks across 170 declarations after a dedicated cleanup pass done under the OLD rule. The
+  user: "Something called userCredentialsStore is self explanatory ... the constructor or angular
+  life cycle hooks etc. those are all self explanatory", and "We don't need comments like this that
+  just explian what can be read NOT EVER". The absolute in the rule had beaten the quality
+  qualifier every time; a narrow exemption for no-arg callables reached none of the four cases.
+- 2026-09-03: "over-documenting" means comment density in the SOURCE, never the size of `docs/`,
+  which the user is happy to see large. A client NestJS API measured 76% comment-to-code (3623
+  against 4753 lines), 70% of it in layers nothing consumed: a legitimate rich-JSDoc layer (the
+  Swagger source) had spread its style outward. Rationale belongs in `docs/architecture.md` or an
+  ADR.
+- 2026-09-03: plain code over machinery, same API. A `NonEmptyArray<T>` brand plus `isNonEmpty`
+  guard lost to `var.length > 0` ("Don't over complicate things"), and three-line `//` WHY blocks on
+  an obvious guard and early return were cut ("not needed"). That is what extended the inline rule
+  from "no narration" to "no justifying an obvious branch either".
 - 2026-09-03 (measurement): comparing active repos showed block LENGTH predicts bloat, not
   comment-to-code ratio or block count. One repo's `application/ports/*.port.ts` hit 293%
   comment-to-code with no Swagger justification; another had MORE blocks (1078 vs 640) at an average

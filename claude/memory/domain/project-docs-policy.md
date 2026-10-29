@@ -72,3 +72,14 @@ fresh agents applying it adversarially found six real defects, including the ant
 coverage floor giving OPPOSITE answers on API/flags/exit codes, and an audit that runs commands to
 verify itself clobbering HOME and the global git identity via `script/test`. An inline-written skill
 reads fine to its author; only a fresh agent applying it surfaces the contradictions.
+
+## Only what the code confirms, never how it was established (2026-09-03)
+
+Two corrections given together while cutting doc-comments in a client API. (1) Write only what the
+code confirms or what the user asked to be documented: "You often make assumptions that are just
+plain incorrect so stick to what you can confirm or don't write it." A claim inherited from a source
+comment is the previous author's assertion. (2) Docs say WHAT, not HOW it was established: no
+"verified against the tenant", no capture dates, no "the source comments say". The provenance
+framing reads as rigour and still ships unverified folklore, now with a hedge. Claims about a third
+party's live behaviour are usually unconfirmable from the repo, so drop them and document what the
+code DOES instead. Before writing a line, name the file and symbol that demonstrates it.

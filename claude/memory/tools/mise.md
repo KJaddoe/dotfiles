@@ -22,8 +22,8 @@ not staging toward a plugin.)
   fails. Fix = pin a current patch (e.g. 3.11.15), and keep verification on, don't disable it.
 - Idempotent pin: guard `mise use -g` on `mise current <tool>` output, NOT `mise ls --installed`
   (installed ≠ pinned: the installed-list guard silently skipped the python pin and fell through to
-  pyenv 3.11.9). java/node roles still use the older `mise ls --installed` guard; retrofit to
-  `mise current` when touched.
+  pyenv 3.11.9). The java, node, go, rust and uv roles still use the older `mise ls --installed`
+  guard; retrofit to `mise current` when touched.
 - Each runtime migration removed its own old `path.zsh` hook in the same commit. The java migration
   MISSED this once: the stale `java/path.zsh` ran `/usr/libexec/java_home -v 17` at shell init and
   errored loudly ("Unable to locate a Java Runtime") on every new shell once brew-openjdk was removed.
@@ -41,6 +41,14 @@ not staging toward a plugin.)
   nvim restart did, by killing the corrupted incremental program, not the version skew). Fix: add a
   devDependency on `@angular/language-server` matching the project's own `@angular/core` version, so
   the local probe location wins.
+- 2026-09-15: `mise activate` puts tool bin dirs on PATH from a `precmd` hook, which fires only
+  before a real prompt. `zsh -c` and `nvim --headless` never fire it, so a freshly installed tool
+  looks absent in a probe while working in the real terminal. Inject PATH explicitly for the probe
+  (`PATH="$(mise where <lang>)/bin:$PATH"`), or run `$precmd_functions` once first.
+- 2026-09-15: bin-dir layout is not uniform. go/java/python/ruby live at `$(mise where <lang>)/bin`;
+  rust defers to rustup, so `cargo`/`rustc` are in `~/.cargo/bin` and mise's rust install dir has
+  no `bin/`. Check `mise env` before writing a probe. A cold first LSP run against a lockfile-less
+  Gemfile/Cargo.toml can take 15-30s; read `lsp.log` before calling a timeout a regression.
 
 ## Android SDK / RN gotchas
 

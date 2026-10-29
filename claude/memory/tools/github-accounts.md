@@ -75,6 +75,11 @@ that account is not a collaborator.
 resolve it with `gh api user -q .login`. After any `gh issue edit` write, read the field back. Exit
 code 0 is not evidence here.
 
+To self-assign, use the literal `--add-assignee @me` after `gh auth status` confirms the active
+account fits the repo (2026-09-01): `@me` resolves to whoever is authenticated, so it is only right
+if that account is. It is also the only form `require-gh-approval.py` lets through (`GH_SELF` in
+`_hookutil.py`); widening that to a username was declined on purpose.
+
 ## Symptom → cause
 
 - 404 from `gh` on a repo you can see in the browser → wrong active `gh` account. **The active
