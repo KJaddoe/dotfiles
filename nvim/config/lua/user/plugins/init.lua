@@ -1411,6 +1411,14 @@ require("lazy").setup({
     end,
   },
   {
+    "kristijanhusak/vim-dadbod-completion",
+    dependencies = { "tpope/vim-dadbod" },
+    ft = { "sql" },
+    config = function()
+      require("user.sql").setup()
+    end,
+  },
+  {
     "mistweaverco/kulala.nvim",
     ft = { "http", "rest" },
     opts = {
@@ -1614,6 +1622,13 @@ require("lazy").setup({
         experimental = {
           native_menu = false,
           ghost_text = false,
+        },
+      })
+
+      cmp.setup.filetype({ "sql" }, {
+        sources = {
+          { name = "vim-dadbod-completion" },
+          { name = "buffer" },
         },
       })
 

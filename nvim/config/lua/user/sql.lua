@@ -33,6 +33,14 @@ local ENV = {
 
 local DEFAULT_USER = { sqlserver = "sa", postgresql = "postgres" }
 
+local ENGINE_LABELS = { sqlserver = "SQL Server", postgresql = "PostgreSQL" }
+
+local NO_CONNECTION = "no connection for this buffer; connect with <leader>sc"
+
+--- Logins held for this nvim session, keyed by `login_key`, without a database.
+---@type table<string, UserSqlConn>
+local logins = {}
+
 --- Percent-encode all but RFC 3986's unreserved characters; `vim.uri_encode`
 --- keeps `@`, `:` and `/`, which would break the URL's user and password.
 ---@param value string
@@ -166,6 +174,217 @@ function M.parse_database_list(stdout)
     end
   end
   return names
+end
+
+local function login_key(conn)
+  local host = conn.port and (conn.host .. ":" .. conn.port) or conn.host
+  return ("%s %s@%s"):format(conn.engine, conn.user, host)
+end
+
+local function notify(message, level)
+  vim.notify(message, level, { title = "sql" })
+end
+
+--- Prompt for a line; Esc and an empty answer both cancel, so `on_answer` never
+--- sees nil or "".
+---@param prompt string
+---@param default string
+---@param on_answer fun(answer: string)
+local function ask(prompt, default, on_answer)
+  vim.ui.input({ prompt = prompt, default = default }, function(answer)
+    if answer and answer ~= "" then
+      on_answer(answer)
+    end
+  end)
+end
+
+local function list_databases(conn, on_names)
+  -- Not vim-dadbod's complete_database(): its db#systemlist returns {} on any failure and drops stderr.
+  local cmd = vim.fn["db#adapter#dispatch"](M.build_url(conn), "interactive")
+  vim.list_extend(cmd, M.database_list_args(conn.engine))
+  vim.system(
+    cmd,
+    { text = true },
+    vim.schedule_wrap(function(result)
+      if result.code ~= 0 then
+        local output =
+          vim.trim(result.stderr ~= "" and result.stderr or result.stdout)
+        notify(
+          ("could not list databases for %s:\n%s"):format(
+            login_key(conn),
+            output
+          ),
+          vim.log.levels.ERROR
+        )
+        return
+      end
+      local names = M.parse_database_list(result.stdout)
+      if #names == 0 then
+        notify(
+          ("no databases visible to %s"):format(login_key(conn)),
+          vim.log.levels.WARN
+        )
+        return
+      end
+      on_names(names)
+    end)
+  )
+end
+
+local function pick_database(buf, conn)
+  list_databases(conn, function(names)
+    vim.ui.select(names, { prompt = "Database" }, function(database)
+      if not database then
+        return
+      end
+      local key = login_key(conn)
+      logins[key] = conn
+      vim.b[buf].db =
+        M.build_url(vim.tbl_extend("force", conn, { database = database }))
+      vim.b[buf].user_sql_login = key
+      -- vim-dadbod-completion fetches the schema on FileType only, before b:db existed.
+      vim.fn["vim_dadbod_completion#fetch"](buf)
+    end)
+  end)
+end
+
+local function new_connection(buf)
+  vim.ui.select({ "sqlserver", "postgresql" }, {
+    prompt = "Engine",
+    format_item = function(engine)
+      return ENGINE_LABELS[engine]
+    end,
+  }, function(engine)
+    if not engine then
+      return
+    end
+    local defaults = M.defaults(engine, vim.env)
+    ask("Host: ", defaults.host, function(host_answer)
+      local host, port = M.parse_host(host_answer)
+      if not host then
+        return
+      end
+      ask("User: ", defaults.user, function(user)
+        local conn = { engine = engine, host = host, port = port, user = user }
+        local env_password = M.password_from_env(defaults, host_answer, user)
+        if not env_password then
+          local password = vim.fn.inputsecret("Password: ")
+          if password == "" then
+            return
+          end
+          conn.password = password
+        elseif engine == "sqlserver" then
+          conn.password = env_password
+        end
+        -- A PostgreSQL env password stays out of the URL: psql reads PGPASSWORD itself, and a
+        -- URL password would show in ps.
+        if engine == "sqlserver" then
+          if M.auto_trust(host) then
+            conn.trust = true
+          else
+            local choice = vim.fn.confirm(
+              ("Trust the server certificate of %s?"):format(host),
+              "&No\n&Yes",
+              1
+            )
+            if choice == 0 then
+              return
+            end
+            conn.trust = choice == 2
+          end
+        end
+        pick_database(buf, conn)
+      end)
+    end)
+  end)
+end
+
+function M.connect()
+  local buf = vim.api.nvim_get_current_buf()
+  local held = vim.tbl_keys(logins)
+  if #held == 0 then
+    new_connection(buf)
+    return
+  end
+  table.sort(held)
+  local new = "New connection"
+  table.insert(held, new)
+  vim.ui.select(held, {
+    prompt = "Connection",
+    format_item = function(item)
+      return item == new and item or ("Reuse " .. item)
+    end,
+  }, function(choice)
+    if not choice then
+      return
+    end
+    if choice == new then
+      new_connection(buf)
+    else
+      pick_database(buf, logins[choice])
+    end
+  end)
+end
+
+function M.switch_database()
+  local buf = vim.api.nvim_get_current_buf()
+  local conn = logins[vim.b[buf].user_sql_login or ""]
+  if not (vim.b[buf].db and conn) then
+    notify(NO_CONNECTION, vim.log.levels.WARN)
+    return
+  end
+  pick_database(buf, conn)
+end
+
+--- Run part of the current buffer through vim-dadbod into its result split.
+---@param range string `%` for the whole buffer, `'<,'>` for the last selection
+function M.run(range)
+  if not vim.b.db then
+    notify(NO_CONNECTION, vim.log.levels.WARN)
+    return
+  end
+  vim.cmd(range .. "DB")
+end
+
+local function attach(buf)
+  local function map(mode, lhs, rhs, desc)
+    vim.keymap.set(mode, lhs, rhs, { buffer = buf, silent = true, desc = desc })
+  end
+  map("n", "<leader>sc", M.connect, "SQL: connect")
+  map("n", "<leader>sd", M.switch_database, "SQL: switch database")
+  map("n", "<leader>sr", function()
+    M.run("%")
+  end, "SQL: run buffer")
+  map(
+    "x",
+    "<leader>sr",
+    [[<Esc><Cmd>lua require("user.sql").run("'<,'>")<CR>]],
+    "SQL: run selection"
+  )
+end
+
+function M.setup()
+  vim.api.nvim_create_user_command(
+    "SqlConnect",
+    M.connect,
+    { desc = "Connect this buffer to a database" }
+  )
+  vim.api.nvim_create_user_command(
+    "SqlDatabase",
+    M.switch_database,
+    { desc = "Switch this buffer's database" }
+  )
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = "sql",
+    callback = function(args)
+      attach(args.buf)
+    end,
+    group = vim.api.nvim_create_augroup("UserSql", { clear = true }),
+  })
+  -- lazy.nvim runs this from the first sql buffer's FileType, which has already fired for it.
+  if vim.bo.filetype == "sql" then
+    attach(vim.api.nvim_get_current_buf())
+  end
 end
 
 return M

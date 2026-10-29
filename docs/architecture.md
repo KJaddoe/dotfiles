@@ -73,6 +73,7 @@ bootstrapped machine before anything is installed.
 | Test hooks | `unittest-parallel -t claude/hooks/tests -s claude/hooks/tests --level test` |
 | Test git   | `unittest-parallel -t git/tests -s git/tests --level test`                   |
 | Test nvim  | `python3 nvim/tests/test_lint.py`                                            |
+| Test sql   | `python3 nvim/tests/test_sql.py`                                             |
 | Format     | `black claude/hooks/ git/tests/ nvim/tests/`                                 |
 | Lint       | `pylint claude/hooks/ git/tests/ nvim/tests/`                                |
 

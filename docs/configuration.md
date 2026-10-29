@@ -221,6 +221,39 @@ Exported from `zsh/zshrc`. Override any of them in `~/.localrc`, which is source
 `DOTFILES` is the exception worth care: the clone path is also hardcoded in the autoupdate crontab
 entry and `git/gitconfig.local`, so changing it means changing those too.
 
+## Database connections
+
+nvim queries SQL Server and PostgreSQL from `sql` buffers through vim-dadbod
+(`nvim/config/lua/user/sql.lua`). There is no connections file. `<leader>sc` (`:SqlConnect`)
+asks for the engine, host, user and password, then offers the server's own database list, and
+points that buffer at the choice. `<leader>sd` (`:SqlDatabase`) picks another database on the same
+login, and `<leader>sr` runs the buffer, or the selection in visual mode, into vim-dadbod's result
+split. Table and column completion comes from vim-dadbod-completion; `:DBCompletionClearCache`
+refreshes it after a schema change. Logins are held in memory for the nvim session only.
+
+The prompts are prefilled from these variables when they are set; all are optional:
+
+| Variable         | Engine     | Purpose                           | Default     |
+|------------------|------------|-----------------------------------|-------------|
+| `SQLCMDSERVER`   | SQL Server | host prefill (`host,port` works)  | `localhost` |
+| `SQLCMDUSER`     | SQL Server | user prefill                      | `sa`        |
+| `SQLCMDPASSWORD` | SQL Server | password, see below               | prompt      |
+| `PGHOST`         | PostgreSQL | host prefill                      | `localhost` |
+| `PGPORT`         | PostgreSQL | port appended to the host prefill | none        |
+| `PGUSER`         | PostgreSQL | user prefill                      | `postgres`  |
+| `PGPASSWORD`     | PostgreSQL | password, see below               | prompt      |
+
+A password variable is used without a prompt only when the engine's host and user variables are
+both set and both prefills are kept. The real values live in the environment of the shell that
+starts nvim (a deploy script, or `~/.localrc`), never in the repo; a placeholder is
+`export SQLCMDSERVER=db.example.internal`. With `PGPORT` set, a typed PostgreSQL host without a
+port connects on `PGPORT`, since psql falls back to it.
+
+SQL Server connections always require encryption (`-N mandatory`), so the server needs a
+certificate; it is trusted without asking for `localhost` and `127.0.0.1` only, and any other host
+asks, where No fails on a self-signed certificate. A typed PostgreSQL password reaches psql inside
+its connection URL, so it shows in `ps` while a query runs; one taken from `PGPASSWORD` does not.
+
 ## Related
 
 - `claude/hooks/undocumented-env-vars.py`: the hook this file's first table configures; its module
