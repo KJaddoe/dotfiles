@@ -346,5 +346,127 @@ class ParseDatabaseList(SqlCase):
         self.assertEqual(self.call("parse_database_list", None), [[]])
 
 
+def padded(*cells, width=20):
+    """A sqlcmd line: left-aligned cells, each padded to `width`, joined by one space."""
+    return " ".join(cell.ljust(width) for cell in cells)
+
+
+def dashes(columns, width=20):
+    """The sqlcmd separator line under a header of `columns` cells."""
+    return " ".join("-" * width for _ in range(columns))
+
+
+class AlignSqlserver(SqlCase):
+    """align_sqlserver shrinks sqlcmd's result columns to their content."""
+
+    def test_columns_shrink_to_their_longest_cell(self):
+        """Header included; the separator follows the new widths; the row count stays."""
+        lines = [
+            padded("name", "kind"),
+            dashes(2),
+            padded("alpha", "x"),
+            padded("be", "yy"),
+            "",
+            "(2 rows affected)",
+        ]
+        self.assertEqual(
+            self.call("align_sqlserver", lines),
+            [["name  kind", "----- ----", "alpha x   ", "be    yy  ", "", "(2 rows affected)"]],
+        )
+
+    def test_right_aligned_numbers_and_inner_spaces(self):
+        """Numbers stay right-aligned under a left-aligned header; inner spaces survive."""
+        lines = [
+            "n".ljust(11) + " " + "at".ljust(30),
+            "-" * 11 + " " + "-" * 30,
+            "42".rjust(11) + " " + "2015-12-03 15:14:30".ljust(30),
+            "7".rjust(11) + " " + "NULL".ljust(30),
+        ]
+        self.assertEqual(
+            self.call("align_sqlserver", lines),
+            [
+                [
+                    "n  " + "at".ljust(19),
+                    "-- " + "-" * 19,
+                    "42 2015-12-03 15:14:30",
+                    " 7 " + "NULL".ljust(19),
+                ]
+            ],
+        )
+
+    def test_header_wider_than_its_values(self):
+        """A bit column keeps its header's width, values right-aligned under it."""
+        lines = [padded("Confirmed", width=14), dashes(1, 14), "1".rjust(14), "0".rjust(14)]
+        self.assertEqual(
+            self.call("align_sqlserver", lines),
+            [["Confirmed", "-" * 9, "        1", "        0"]],
+        )
+
+    def test_several_result_sets_and_a_message(self):
+        """Each set shrinks on its own; a PRINT line between them is untouched."""
+        lines = [
+            padded("a"),
+            dashes(1),
+            padded("x"),
+            "",
+            "(1 row affected)",
+            "hello",
+            padded("bb"),
+            dashes(1),
+            padded("yy"),
+            "",
+            "(1 row affected)",
+        ]
+        self.assertEqual(
+            self.call("align_sqlserver", lines),
+            [
+                [
+                    "a",
+                    "-",
+                    "x",
+                    "",
+                    "(1 row affected)",
+                    "hello",
+                    "bb",
+                    "--",
+                    "yy",
+                    "",
+                    "(1 row affected)",
+                ]
+            ],
+        )
+
+    def test_empty_result_set(self):
+        """No rows: the columns shrink to their headers."""
+        lines = [padded("id", "name"), dashes(2), "", "(0 rows affected)"]
+        self.assertEqual(
+            self.call("align_sqlserver", lines), [["id name", "-- ----", "", "(0 rows affected)"]]
+        )
+
+    def test_multibyte_values_align_by_character(self):
+        """sqlcmd pads by characters, so a multibyte value is not cut or misaligned."""
+        lines = [padded("mail", width=10), dashes(1, 10), "ünï".ljust(10), "a".ljust(10)]
+        self.assertEqual(self.call("align_sqlserver", lines), [["mail", "----", "ünï ", "a   "]])
+
+    def test_line_broken_value_leaves_the_set_alone(self):
+        """Rows narrower than the separator mean a value spans lines; nothing is guessed."""
+        lines = ["multi".ljust(20), "-" * 20, "line1", "line2".ljust(14), "", "(1 row affected)"]
+        self.assertEqual(self.call("align_sqlserver", lines), [lines])
+
+    def test_psql_output_is_not_a_result_set(self):
+        """psql's `-+-` separator is not sqlcmd's."""
+        lines = [" id | label ", "----+-------", "  1 | one", "(1 row)"]
+        self.assertEqual(self.call("align_sqlserver", lines), [lines])
+
+    def test_dash_lines_that_are_not_separators(self):
+        """Double spaces, other characters or a trailing space rule a line out."""
+        lines = ["ab  cd", "--  --", "ab  cd", "", "abc", "-x-", "ab", "- "]
+        self.assertEqual(self.call("align_sqlserver", lines), [lines])
+
+    def test_empty(self):
+        """No lines in, no lines out."""
+        self.assertEqual(self.call("align_sqlserver", []), [[]])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -176,6 +176,74 @@ function M.parse_database_list(stdout)
   return names
 end
 
+local function is_separator(line, header)
+  return (line == "-" or line:match("^%-[- ]*%-$") ~= nil)
+    and not line:find("  ", 1, true)
+    and vim.fn.strchars(header) == #line
+end
+
+local function align_block(block)
+  local width = #block[2]
+  for _, line in ipairs(block) do
+    if vim.fn.strchars(line) ~= width then
+      return block
+    end
+  end
+  local aligned, rule = {}, {}
+  for i = 1, #block do
+    aligned[i] = {}
+  end
+  for start, run in block[2]:gmatch("()(%-+)") do
+    local offset, span = start - 1, #run
+    local header = vim.fn.strcharpart(block[1], offset, span):gsub("%s+$", "")
+    local lead, trail = span, span
+    for i = 3, #block do
+      local cell = vim.fn.strcharpart(block[i], offset, span)
+      lead = math.min(lead, #cell:match("^ *"))
+      trail = math.min(trail, #cell:match(" *$"))
+    end
+    local content = math.max(0, span - lead - trail)
+    local column = math.max(content, vim.fn.strchars(header))
+    local right = lead > 0 and trail == 0
+    aligned[1][#aligned[1] + 1] = header
+      .. (" "):rep(column - vim.fn.strchars(header))
+    rule[#rule + 1] = ("-"):rep(column)
+    for i = 3, #block do
+      local cell = vim.fn.strcharpart(block[i], offset + lead, content)
+      local pad = (" "):rep(column - content)
+      aligned[i][#aligned[i] + 1] = right and pad .. cell or cell .. pad
+    end
+  end
+  local lines = {}
+  for i = 1, #block do
+    lines[i] = i == 2 and table.concat(rule, " ")
+      or table.concat(aligned[i], " ")
+  end
+  return lines
+end
+
+--- Shrink sqlcmd's result columns to their content; sqlcmd pads each to its declared width.
+---@param lines string[] the lines of a SQL Server result buffer
+---@return string[]
+function M.align_sqlserver(lines)
+  local out, i = {}, 1
+  while i <= #lines do
+    local header, separator = lines[i], lines[i + 1]
+    if header ~= "" and separator and is_separator(separator, header) then
+      local last = i + 1
+      while lines[last + 1] and lines[last + 1] ~= "" do
+        last = last + 1
+      end
+      vim.list_extend(out, align_block(vim.list_slice(lines, i, last)))
+      i = last + 1
+    else
+      out[#out + 1] = header
+      i = i + 1
+    end
+  end
+  return out
+end
+
 local function login_key(conn)
   local host = conn.port and (conn.host .. ":" .. conn.port) or conn.host
   return ("%s %s@%s"):format(conn.engine, conn.user, host)
