@@ -244,6 +244,25 @@ function M.align_sqlserver(lines)
   return out
 end
 
+--- The statement under the cursor: the block of non-blank lines holding `row`.
+---@param lines string[] the buffer's lines
+---@param row integer the cursor's 1-based line
+---@return integer|nil first nil on a blank line
+---@return integer|nil last
+function M.statement_range(lines, row)
+  if not (lines[row] or ""):match("%S") then
+    return nil
+  end
+  local first, last = row, row
+  while first > 1 and lines[first - 1]:match("%S") do
+    first = first - 1
+  end
+  while last < #lines and lines[last + 1]:match("%S") do
+    last = last + 1
+  end
+  return first, last
+end
+
 local function login_key(conn)
   local host = conn.port and (conn.host .. ":" .. conn.port) or conn.host
   return ("%s %s@%s"):format(conn.engine, conn.user, host)
@@ -423,6 +442,17 @@ local function attach(buf)
   map("n", "<leader>sr", function()
     M.run("%")
   end, "SQL: run buffer")
+  map("n", "<leader>ss", function()
+    local first, last = M.statement_range(
+      vim.api.nvim_buf_get_lines(0, 0, -1, false),
+      vim.fn.line(".")
+    )
+    if not first then
+      notify("no statement under the cursor", vim.log.levels.WARN)
+      return
+    end
+    M.run(("%d,%d"):format(first, last))
+  end, "SQL: run statement")
   map(
     "x",
     "<leader>sr",

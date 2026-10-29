@@ -468,5 +468,40 @@ class AlignSqlserver(SqlCase):
         self.assertEqual(self.call("align_sqlserver", []), [[]])
 
 
+class StatementRange(SqlCase):
+    """statement_range finds the block of non-blank lines around the cursor."""
+
+    BUFFER = ["SELECT 1;", "", "SELECT id", "FROM t", "WHERE id = 1;", "", "SELECT 3;"]
+
+    def test_middle_statement(self):
+        """Blank lines bound the statement on both sides."""
+        self.assertEqual(self.call("statement_range", self.BUFFER, 4), [3, 5])
+
+    def test_first_and_last_statements(self):
+        """The buffer's start and end bound a statement too, without a blank line."""
+        self.assertEqual(self.call("statement_range", self.BUFFER, 1), [1, 1])
+        self.assertEqual(self.call("statement_range", self.BUFFER, 7), [7, 7])
+
+    def test_any_line_of_a_statement(self):
+        """Every line of a multi-line statement gives the same range."""
+        for row in (3, 4, 5):
+            with self.subTest(row=row):
+                self.assertEqual(self.call("statement_range", self.BUFFER, row), [3, 5])
+
+    def test_whitespace_only_lines_are_blank(self):
+        """Spaces and tabs alone do not join two statements."""
+        lines = ["SELECT 1;", "  \t ", "SELECT 2;"]
+        self.assertEqual(self.call("statement_range", lines, 3), [3, 3])
+
+    def test_blank_line_has_no_statement(self):
+        """Nothing to run from between statements."""
+        self.assertEqual(self.call("statement_range", self.BUFFER, 2), [None])
+        self.assertEqual(self.call("statement_range", ["SELECT 1;", "   "], 2), [None])
+
+    def test_empty_buffer(self):
+        """An empty buffer has one empty line and no statement."""
+        self.assertEqual(self.call("statement_range", [""], 1), [None])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
