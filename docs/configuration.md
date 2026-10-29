@@ -229,7 +229,9 @@ asks for the engine, host, user and password, then offers the server's own datab
 points that buffer at the choice. `<leader>sd` (`:SqlDatabase`) picks another database on the same
 login, and `<leader>sr` runs the buffer, or the selection in visual mode, into vim-dadbod's result
 split. Table and column completion comes from vim-dadbod-completion; `:DBCompletionClearCache`
-refreshes it after a schema change. Logins are held in memory for the nvim session only.
+refreshes it after a schema change. Logins are held in memory for the nvim session only. SQL
+Server result columns are shrunk to their content in the result split, since sqlcmd pads each to
+its declared width; the output file on disk keeps that padding.
 
 The prompts are prefilled from these variables when they are set; all are optional:
 

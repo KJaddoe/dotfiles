@@ -442,12 +442,36 @@ function M.setup()
     M.switch_database,
     { desc = "Switch this buffer's database" }
   )
+  local group = vim.api.nvim_create_augroup("UserSql", { clear = true })
   vim.api.nvim_create_autocmd("FileType", {
     pattern = "sql",
     callback = function(args)
       attach(args.buf)
     end,
-    group = vim.api.nvim_create_augroup("UserSql", { clear = true }),
+    group = group,
+  })
+  vim.api.nvim_create_autocmd("User", {
+    pattern = "*/DBExecutePost",
+    callback = function(args)
+      -- Parenthesised: gsub's count would become bufnr's create flag.
+      local buf = vim.fn.bufnr((args.match:gsub("/DBExecutePost$", "")))
+      if buf == -1 or not vim.api.nvim_buf_is_loaded(buf) then
+        return
+      end
+      local query = vim.b[buf].db
+      if
+        type(query) ~= "table"
+        or not vim.startswith(query.db_url or "", "sqlserver:")
+      then
+        return
+      end
+      local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+      vim.bo[buf].modifiable = true
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, M.align_sqlserver(lines))
+      vim.bo[buf].modifiable = false
+      vim.bo[buf].modified = false
+    end,
+    group = group,
   })
   -- lazy.nvim runs this from the first sql buffer's FileType, which has already fired for it.
   if vim.bo.filetype == "sql" then
